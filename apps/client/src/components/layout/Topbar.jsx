@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, Shield, Bell, CheckCircle2 } from 'lucide-react';
+import { Menu, Shield, Bell, Globe } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ProfileMenu from './ProfileMenu';
@@ -7,7 +7,7 @@ import Button from '../common/Button';
 import api from '../../api/apiClient';
 
 export const Topbar = ({ onToggleSidebar }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [apiOnline, setApiOnline] = useState(true);
 
@@ -29,6 +29,18 @@ export const Topbar = ({ onToggleSidebar }) => {
     };
   }, []);
 
+  const getDashboardPath = () => {
+    switch (user?.role) {
+      case 'super_admin': return '/admin';
+      case 'principal': return '/principal';
+      case 'hod': return '/hod';
+      case 'faculty': return '/faculty';
+      case 'student': return '/student';
+      case 'accounts': return '/accounts';
+      default: return '/dashboard';
+    }
+  };
+
   return (
     <header className="h-16 bg-white/95 backdrop-blur-md border-b border-navy-100 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-subtle">
       {/* Left: Mobile hamburger & breadcrumb/title */}
@@ -41,12 +53,12 @@ export const Topbar = ({ onToggleSidebar }) => {
           <Menu className="w-5 h-5" />
         </button>
         <div>
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to={isAuthenticated ? getDashboardPath() : '/'} className="flex items-center space-x-2">
             <h2 className="text-sm sm:text-base font-bold text-navy-950 tracking-tight">
               Apex Engineering College
             </h2>
             <span className="hidden md:inline-block text-[10px] font-semibold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
-              ERP Foundation
+              ERP Portal
             </span>
           </Link>
           <span className="text-[10px] text-navy-400 font-normal hidden sm:block">
@@ -57,6 +69,16 @@ export const Topbar = ({ onToggleSidebar }) => {
 
       {/* Right: User status & actions */}
       <div className="flex items-center space-x-3">
+        {/* Link to public website */}
+        <Link
+          to="/"
+          className="hidden md:inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-medium text-navy-600 hover:bg-navy-50 hover:text-navy-900 transition-colors"
+          title="Visit Public Website"
+        >
+          <Globe className="w-3.5 h-3.5 text-teal-600" />
+          <span>Public Home</span>
+        </Link>
+
         {/* System online badge */}
         <div className={`hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
           apiOnline

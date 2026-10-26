@@ -1,6 +1,6 @@
 const express = require('express');
-const { listUsers, getUserById, updateUserStatus } = require('./users.controller');
-const { validateUserStatusInput } = require('./users.validator');
+const { listUsers, getUserById, createUser, updateUserStatus } = require('./users.controller');
+const { validateUserStatusInput, validateCreateUserInput } = require('./users.validator');
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
 const validateRequest = require('../../middleware/validate');
@@ -14,6 +14,14 @@ router.use(authenticate);
 router.get('/', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS), listUsers);
 router.get('/:id', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS), getUserById);
 
+// Super Admin creates other institutional accounts through protected user management
+router.post(
+  '/',
+  authorizeRoles(ROLES.SUPER_ADMIN),
+  validateRequest(validateCreateUserInput),
+  createUser
+);
+
 // Restricted to Super Admin for status updates
 router.patch(
   '/:id/status',
@@ -23,4 +31,3 @@ router.patch(
 );
 
 module.exports = router;
-

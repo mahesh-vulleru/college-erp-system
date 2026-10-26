@@ -1,6 +1,6 @@
 const User = require('../auth/auth.model');
 const { sendSuccess, sendError } = require('../../utils/response');
-const { HTTP_STATUS } = require('@college-erp/shared');
+const { HTTP_STATUS, USER_STATUS } = require('@college-erp/shared');
 
 /**
  * GET /api/v1/users
@@ -57,6 +57,50 @@ async function getUserById(req, res, next) {
 }
 
 /**
+ * POST /api/v1/users
+ * Super Admin creates other institutional accounts
+ */
+async function createUser(req, res, next) {
+  try {
+    const { name, email, password, role, department, status } = req.body;
+
+    const existing = await User.findOne({ email });
+    if (existing) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.CONFLICT,
+        message: 'A user account with this email address already exists',
+        code: 'DUPLICATE_RESOURCE'
+      });
+    }
+
+    const newUser = await User.create({
+      name,
+      email,
+      password,
+      role,
+      department,
+      status: status || USER_STATUS.ACTIVE
+    });
+
+    return sendSuccess(res, {
+      statusCode: HTTP_STATUS.CREATED,
+      message: 'Institutional user created successfully',
+      data: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        department: newUser.department,
+        status: newUser.status,
+        createdAt: newUser.createdAt
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * PATCH /api/v1/users/:id/status
  */
 async function updateUserStatus(req, res, next) {
@@ -88,6 +132,6 @@ async function updateUserStatus(req, res, next) {
 module.exports = {
   listUsers,
   getUserById,
+  createUser,
   updateUserStatus
 };
-

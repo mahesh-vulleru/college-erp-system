@@ -57,8 +57,9 @@ export const AuthProvider = ({ children }) => {
     };
   }, [token]);
 
-  const login = async (email, password) => {
-    const response = await api.login({ email, password });
+  const login = async (email, password, role) => {
+    const payload = typeof email === 'object' ? email : { email, password, role };
+    const response = await api.login(payload);
     if (response?.token && response?.user) {
       setToken(response.token);
       setUser(response.user);

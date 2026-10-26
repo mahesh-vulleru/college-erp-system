@@ -1,16 +1,19 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/routing/ProtectedRoute';
 
-// Pages
+// Public Pages
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ErrorPage from './pages/ErrorPage';
+
+// Internal Institutional Overview
+import DashboardPage from './pages/DashboardPage';
 
 // Role Dashboards
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -24,24 +27,68 @@ import AccountsDashboard from './pages/accounts/AccountsDashboard';
 import ModulePlaceholderPage from './pages/modules/ModulePlaceholderPage';
 import { ROLES } from '@college-erp/shared';
 
+// Smart redirector for /dashboard based on authenticated role
+const DashboardRedirect = () => {
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  switch (user.role) {
+    case ROLES.SUPER_ADMIN:
+      return <Navigate to="/admin" replace />;
+    case ROLES.PRINCIPAL:
+      return <Navigate to="/principal" replace />;
+    case ROLES.HOD:
+      return <Navigate to="/hod" replace />;
+    case ROLES.FACULTY:
+      return <Navigate to="/faculty" replace />;
+    case ROLES.STUDENT:
+      return <Navigate to="/student" replace />;
+    case ROLES.ACCOUNTS:
+      return <Navigate to="/accounts" replace />;
+    default:
+      return <Navigate to="/" replace />;
+  }
+};
+
 export const App = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
         <ToastProvider>
           <Routes>
-            {/* Public Unauthenticated Routes */}
+            {/* 1. Public Landing Page */}
+            <Route path="/" element={<LandingPage />} />
+
+            {/* 2. Public Role-Based Login Gateway */}
             <Route path="/login" element={<LoginPage />} />
+
+            {/* Public Utility Status Pages */}
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
             <Route path="/error" element={<ErrorPage />} />
 
-            {/* Application Layout Routes */}
-            <Route path="/" element={<AppLayout />}>
-              {/* Institutional Overview Hub */}
-              <Route index element={<DashboardPage />} />
-              <Route path="dashboard" element={<Navigate to="/" replace />} />
+            {/* Dynamic Dashboard Route - redirects to authenticated user's role portal */}
+            <Route path="/dashboard" element={<DashboardRedirect />} />
 
-              {/* Role-Protected Portals */}
+            {/* 3. Protected Institutional Portals & Subsystems inside AppLayout */}
+            <Route element={<AppLayout />}>
+              {/* Optional System Diagnostics & Team Allocation Hub */}
+              <Route
+                path="overview"
+                element={
+                  <ProtectedRoute>
+                    <DashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Protected Role Dashboards */}
               <Route
                 path="admin"
                 element={
@@ -261,7 +308,7 @@ export const App = () => {
                 }
               />
 
-              {/* 404 Catch-All within Layout */}
+              {/* Catch-all 404 inside layout */}
               <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>

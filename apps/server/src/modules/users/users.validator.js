@@ -1,4 +1,4 @@
-const { USER_STATUS } = require('@college-erp/shared');
+const { ALL_ROLES, USER_STATUS } = require('@college-erp/shared');
 
 function validateUserStatusInput(data = {}) {
   const errors = [];
@@ -14,7 +14,35 @@ function validateUserStatusInput(data = {}) {
   };
 }
 
-module.exports = {
-  validateUserStatusInput
-};
+function validateCreateUserInput(data = {}) {
+  const errors = [];
+  const { name, email, password, role } = data;
 
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    errors.push('Full legal name is required');
+  }
+
+  if (!email || typeof email !== 'string' || !email.trim()) {
+    errors.push('Valid email address is required');
+  } else if (!/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,})+$/.test(email.trim())) {
+    errors.push('Please provide a valid institutional email format');
+  }
+
+  if (!password || typeof password !== 'string' || password.length < 6) {
+    errors.push('Password must be at least 6 characters');
+  }
+
+  if (!role || !ALL_ROLES.includes(role)) {
+    errors.push(`Role is required and must be one of: ${ALL_ROLES.join(', ')}`);
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
+
+module.exports = {
+  validateUserStatusInput,
+  validateCreateUserInput
+};
