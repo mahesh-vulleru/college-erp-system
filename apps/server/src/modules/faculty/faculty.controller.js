@@ -1,6 +1,7 @@
 const Faculty = require('./faculty.model');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS } = require('@college-erp/shared');
+const { recordAuditLog } = require('../../utils/auditLogger');
 
 async function listFaculty(req, res, next) {
   try {
@@ -9,7 +10,7 @@ async function listFaculty(req, res, next) {
     if (req.query.designation) query.designation = req.query.designation;
 
     const facultyList = await Faculty.find(query)
-      .populate('user', 'name email status')
+      .populate('user', 'name email status role lastLogin')
       .populate('department', 'name code');
 
     return sendSuccess(res, {
@@ -25,7 +26,7 @@ async function listFaculty(req, res, next) {
 async function getFacultyById(req, res, next) {
   try {
     const faculty = await Faculty.findById(req.params.id)
-      .populate('user', 'name email status')
+      .populate('user', 'name email status role lastLogin')
       .populate('department', 'name code');
 
     if (!faculty) {
@@ -64,6 +65,14 @@ async function createFacultyProfile(req, res, next) {
       specialization
     });
 
+    await recordAuditLog({
+      req,
+      action: 'FACULTY_PROFILE_CREATED',
+      entityType: 'Faculty',
+      entityId: faculty._id,
+      details: { employeeId: faculty.employeeId, designation: faculty.designation }
+    });
+
     return sendSuccess(res, {
       statusCode: HTTP_STATUS.CREATED,
       message: 'Faculty profile created successfully',
@@ -74,9 +83,47 @@ async function createFacultyProfile(req, res, next) {
   }
 }
 
+async function updateFacultyProfile(req, res, next) {
+  try {
+    const { department, designation, qualification, specialization } = req.body;
+    const faculty = await Faculty.findById(req.params.id);
+    if (!faculty) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        message: 'Faculty profile not found',
+        code: 'NOT_FOUND'
+      });
+    }
+
+    if (department) faculty.department = department;
+    if (designation) faculty.designation = designation;
+    if (qualification !== undefined) faculty.qualification = qualification;
+    if (specialization !== undefined) faculty.specialization = specialization;
+
+    await faculty.save();
+    await faculty.populate('user', 'name email status role lastLogin');
+    await faculty.populate('department', 'name code');
+
+    await recordAuditLog({
+      req,
+      action: 'FACULTY_PROFILE_UPDATED',
+      entityType: 'Faculty',
+      entityId: faculty._id,
+      details: { employeeId: faculty.employeeId, designation: faculty.designation }
+    });
+
+    return sendSuccess(res, {
+      message: 'Faculty profile updated successfully',
+      data: faculty
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   listFaculty,
   getFacultyById,
-  createFacultyProfile
+  createFacultyProfile,
+  updateFacultyProfile
 };
-

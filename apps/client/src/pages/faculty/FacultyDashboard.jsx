@@ -1,107 +1,775 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   CalendarCheck,
   Award,
   BookOpen,
   Clock,
   CheckCircle,
-  FileText
+  Users,
+  Search,
+  UserPlus,
+  RefreshCw,
+  Edit2,
+  Key,
+  UserCheck,
+  UserX,
+  Mail,
+  Building2,
+  GraduationCap
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import StatWidget from '../../components/common/StatWidget';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
-import { useNavigate } from 'react-router-dom';
+import Table from '../../components/common/Table';
+import Modal from '../../components/common/Modal';
+import Input from '../../components/common/Input';
+import Select from '../../components/common/Select';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
+import Notification from '../../components/common/Notification';
+import api from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { ROLES, USER_STATUS, DEPARTMENTS } from '@college-erp/shared';
 
 export const FacultyDashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const { addToast } = useToast();
+
+  const [facultyList, setFacultyList] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [timetableSlots, setTimetableSlots] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Filters
+  const [selectedDeptFilter, setSelectedDeptFilter] = useState('');
+  const [selectedDesigFilter, setSelectedDesigFilter] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Modals state
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isResetOpen, setIsResetOpen] = useState(false);
+  const [selectedFaculty, setSelectedFaculty] = useState(null);
+  const [confirmToggleUser, setConfirmToggleUser] = useState(null);
+
+  // Forms
+  const [editForm, setEditForm] = useState({
+    designation: 'Assistant Professor',
+    department: '',
+    qualification: '',
+    specialization: ''
+  });
+
+  const [createForm, setCreateForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    employeeId: '',
+    departmentId: '',
+    designation: 'Assistant Professor',
+    qualification: 'M.Tech in Engineering',
+    specialization: ''
+  });
+
+  const [newPasswordVal, setNewPasswordVal] = useState('');
+  const [formError, setFormError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [facRes, subjRes, timeRes, deptRes, usersRes] = await Promise.all([
+        api.getFaculty({
+          department: selectedDeptFilter,
+          designation: selectedDesigFilter
+        }).catch(() => ({ data: [] })),
+        api.getSubjects().catch(() => ({ data: [] })),
+        api.getTimetable().catch(() => ({ data: [] })),
+        api.getDepartments().catch(() => ({ data: [] })),
+        api.getUsers({ role: ROLES.FACULTY, limit: 100 }).catch(() => ({ data: [] }))
+      ]);
+
+      if (facRes?.data) setFacultyList(facRes.data);
+      if (subjRes?.data) setSubjects(subjRes.data);
+      if (timeRes?.data) setTimetableSlots(timeRes.data);
+      if (deptRes?.data) setDepartments(deptRes.data);
+      if (usersRes?.data) setAllUsers(usersRes.data);
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Error loading faculty workplace',
+        message: err.message
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedDeptFilter, selectedDesigFilter, addToast]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Open Edit Profile
+  const handleOpenEdit = (fac) => {
+    setSelectedFaculty(fac);
+    setEditForm({
+      designation: fac.designation || 'Assistant Professor',
+      department: fac.department?._id || fac.department?.id || '',
+      qualification: fac.qualification || '',
+      specialization: fac.specialization || ''
+    });
+    setFormError('');
+    setIsEditOpen(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedFaculty) return;
+    setFormError('');
+
+    setIsSubmitting(true);
+    try {
+      await api.updateFaculty(selectedFaculty._id || selectedFaculty.id, editForm);
+      addToast({
+        type: 'success',
+        title: 'Faculty Profile Updated',
+        message: `Updated profile details for employee ${selectedFaculty.employeeId}`
+      });
+      setIsEditOpen(false);
+      loadData();
+    } catch (err) {
+      setFormError(err.message || 'Failed to update faculty profile.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Open Create Faculty
+  const handleOpenCreate = () => {
+    setCreateForm({
+      name: '',
+      email: '',
+      password: '',
+      employeeId: `FAC-${Date.now().toString().slice(-4)}`,
+      departmentId: departments[0]?._id || '',
+      designation: 'Assistant Professor',
+      qualification: 'M.Tech / Ph.D.',
+      specialization: 'Computer Systems'
+    });
+    setFormError('');
+    setIsCreateOpen(true);
+  };
+
+  const handleCreateSubmit = async (e) => {
+    e.preventDefault();
+    setFormError('');
+
+    if (!createForm.name || !createForm.email || !createForm.password || !createForm.employeeId) {
+      setFormError('Please fill in all mandatory fields.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // 1. Create or ensure user account
+      const userRes = await api.createUser({
+        name: createForm.name,
+        email: createForm.email,
+        password: createForm.password,
+        role: ROLES.FACULTY,
+        department: departments.find((d) => d._id === createForm.departmentId)?.name || 'Engineering',
+        status: USER_STATUS.ACTIVE
+      });
+
+      const newUserId = userRes.data?.id || userRes.data?._id;
+
+      // 2. Create faculty record
+      await api.createFaculty({
+        user: newUserId,
+        employeeId: createForm.employeeId,
+        department: createForm.departmentId || departments[0]?._id,
+        designation: createForm.designation,
+        qualification: createForm.qualification,
+        specialization: createForm.specialization
+      });
+
+      addToast({
+        type: 'success',
+        title: 'Faculty Provisioned',
+        message: `Created faculty account & employee profile for ${createForm.email}`
+      });
+      setIsCreateOpen(false);
+      loadData();
+    } catch (err) {
+      setFormError(err.message || 'Failed to provision faculty profile.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Reset Password
+  const handleResetPassSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedFaculty?.user?._id) return;
+    if (!newPasswordVal || newPasswordVal.length < 6) {
+      setFormError('New password must be at least 6 characters.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await api.resetUserPassword(selectedFaculty.user._id, newPasswordVal);
+      addToast({
+        type: 'success',
+        title: 'Password Reset',
+        message: `Temporary password assigned to ${selectedFaculty.user.email}`
+      });
+      setIsResetOpen(false);
+      loadData();
+    } catch (err) {
+      setFormError(err.message || 'Failed to reset password.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Toggle Status
+  const handleConfirmToggle = async () => {
+    if (!confirmToggleUser?.user?._id) return;
+    const currentStatus = confirmToggleUser.user.status;
+    const newStatus = currentStatus === USER_STATUS.ACTIVE ? USER_STATUS.DISABLED : USER_STATUS.ACTIVE;
+
+    setIsSubmitting(true);
+    try {
+      await api.updateUserStatus(confirmToggleUser.user._id, newStatus);
+      addToast({
+        type: 'success',
+        title: 'Status Updated',
+        message: `Faculty user ${confirmToggleUser.user.email} is now ${newStatus}.`
+      });
+      setConfirmToggleUser(null);
+      loadData();
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Status Update Failed',
+        message: err.message
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Filtered Faculty List by Search
+  const filteredFaculty = facultyList.filter((f) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      f.employeeId?.toLowerCase().includes(q) ||
+      f.user?.name?.toLowerCase().includes(q) ||
+      f.user?.email?.toLowerCase().includes(q) ||
+      f.specialization?.toLowerCase().includes(q)
+    );
+  });
+
+  // Columns for Faculty Directory Table
+  const facultyColumns = [
+    {
+      header: 'Employee ID & Details',
+      cell: (row) => (
+        <div>
+          <span className="font-semibold text-navy-950 text-sm block">
+            {row.user?.name || 'Faculty Member'}
+          </span>
+          <span className="text-xs text-teal-800 font-mono font-bold">
+            {row.employeeId}
+          </span>
+        </div>
+      )
+    },
+    {
+      header: 'Department',
+      cell: (row) => (
+        <span className="text-xs text-navy-800 font-medium">
+          {row.department?.name || '—'}
+        </span>
+      )
+    },
+    {
+      header: 'Designation',
+      cell: (row) => (
+        <Badge variant="teal" size="xs">
+          {row.designation}
+        </Badge>
+      )
+    },
+    {
+      header: 'Specialization & Degree',
+      cell: (row) => (
+        <div>
+          <span className="text-xs text-navy-900 block">{row.specialization || 'Engineering'}</span>
+          <span className="text-[11px] text-navy-500 font-light">{row.qualification || 'M.Tech'}</span>
+        </div>
+      )
+    },
+    {
+      header: 'Status',
+      cell: (row) => {
+        const isActive = row.user?.status === USER_STATUS.ACTIVE;
+        return (
+          <span className="inline-flex items-center space-x-1.5">
+            <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+            <span className={`text-xs font-semibold capitalize ${isActive ? 'text-emerald-700' : 'text-rose-700'}`}>
+              {row.user?.status || 'Active'}
+            </span>
+          </span>
+        );
+      }
+    },
+    {
+      header: 'Actions',
+      cellClassName: 'text-right',
+      cell: (row) => {
+        const isActive = row.user?.status === USER_STATUS.ACTIVE;
+        return (
+          <div className="flex items-center justify-end space-x-1.5">
+            <Button
+              variant="secondary"
+              size="xs"
+              onClick={() => handleOpenEdit(row)}
+              icon={Edit2}
+              title="Edit Profile"
+            >
+              Edit
+            </Button>
+            <Button
+              variant="secondary"
+              size="xs"
+              onClick={() => {
+                setSelectedFaculty(row);
+                setNewPasswordVal('');
+                setFormError('');
+                setIsResetOpen(true);
+              }}
+              icon={Key}
+              title="Reset Password"
+            >
+              Reset Pass
+            </Button>
+            <Button
+              variant={isActive ? 'danger' : 'secondary'}
+              size="xs"
+              onClick={() => setConfirmToggleUser(row)}
+              icon={isActive ? UserX : UserCheck}
+            >
+              {isActive ? 'Disable' : 'Activate'}
+            </Button>
+          </div>
+        );
+      }
+    }
+  ];
 
   return (
     <div className="space-y-6">
+      {/* Header Banner */}
       <div className="bg-navy-900 rounded-2xl p-6 text-white shadow-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-xs font-semibold uppercase tracking-wider mb-2 border border-teal-500/30">
             <CalendarCheck className="w-3.5 h-3.5 mr-1" />
-            <span>Faculty Academic Workplace</span>
+            <span>Faculty Workplace & Academic Staff Management</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-            Welcome, {user?.name}
-          </h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Teaching Faculty Administration</h1>
           <p className="mt-1 text-xs sm:text-sm text-navy-200 font-light">
-            Record period attendance, log internal examination marks, manage subject notes, and review your daily timetable.
+            Authorized oversight of academic staff profiles, department designations, timetable slots, and credentials.
           </p>
         </div>
-        <div>
-          <Badge variant="teal" size="md">Teacher Portal Active</Badge>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="teal"
+            size="md"
+            onClick={handleOpenCreate}
+            icon={UserPlus}
+            className="shadow-elevation"
+          >
+            Provision Faculty Profile
+          </Button>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={loadData}
+            icon={RefreshCw}
+            isLoading={isLoading}
+          />
         </div>
       </div>
 
+      {/* KPI Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatWidget title="Assigned Subjects" value="3 Courses" subtitle="CS301, CS302, CS305" icon={BookOpen} color="teal" />
-        <StatWidget title="Today's Lectures" value="3 Sessions" subtitle="09:00, 11:15, 14:00" icon={Clock} color="navy" />
-        <StatWidget title="Pending Attendance" value="1 Class" subtitle="Period 4: CS301 (Sec A)" icon={CalendarCheck} color="amber" />
-        <StatWidget title="Internal Marks" value="Completed" subtitle="Mid-Term 1 Marks Locked" icon={Award} color="emerald" />
+        <StatWidget
+          title="Total Faculty Staff"
+          value={`${facultyList.length} Members`}
+          subtitle="Registered in College"
+          icon={Users}
+          color="teal"
+        />
+        <StatWidget
+          title="Departments Staffed"
+          value={`${departments.length} Units`}
+          subtitle="Engineering Faculties"
+          icon={Building2}
+          color="navy"
+        />
+        <StatWidget
+          title="Teaching Subjects"
+          value={`${subjects.length} Courses`}
+          subtitle="Curriculum Progression"
+          icon={BookOpen}
+          color="emerald"
+        />
+        <StatWidget
+          title="Scheduled Lecture Slots"
+          value={`${timetableSlots.length} Slots`}
+          subtitle="Weekly Master Timetable"
+          icon={Clock}
+          color="amber"
+        />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* 1. Faculty Directory Table */}
+      <Card
+        title="Institutional Faculty Directory"
+        subtitle="Manage designations, specializations, qualifications, and account access"
+        headerAction={
+          <Button
+            variant="teal"
+            size="xs"
+            onClick={handleOpenCreate}
+            icon={UserPlus}
+          >
+            New Faculty
+          </Button>
+        }
+      >
+        {/* Filters */}
+        <div className="mb-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Input
+            id="search-faculty"
+            placeholder="Search by ID, name, email or field..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            icon={Search}
+          />
+
+          <Select
+            id="filter-dept"
+            value={selectedDeptFilter}
+            onChange={(e) => setSelectedDeptFilter(e.target.value)}
+            options={[
+              { value: '', label: 'All Academic Departments' },
+              ...departments.map((d) => ({ value: d._id, label: d.name }))
+            ]}
+          />
+
+          <Select
+            id="filter-desig"
+            value={selectedDesigFilter}
+            onChange={(e) => setSelectedDesigFilter(e.target.value)}
+            options={[
+              { value: '', label: 'All Designations' },
+              { value: 'Professor', label: 'Professor' },
+              { value: 'Associate Professor', label: 'Associate Professor' },
+              { value: 'Assistant Professor', label: 'Assistant Professor' },
+              { value: 'Lecturer', label: 'Lecturer' },
+              { value: 'Lab Assistant', label: 'Lab Assistant' }
+            ]}
+          />
+        </div>
+
+        <Table
+          columns={facultyColumns}
+          data={filteredFaculty}
+          keyField="_id"
+          isLoading={isLoading}
+          emptyMessage="No faculty profiles match the search parameters."
+        />
+      </Card>
+
+      {/* 2. Course & Timetable Schedules */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card
-          title="Today's Lecture Schedule"
-          subtitle="Timetable slots allocated for your teaching schedule"
-          className="lg:col-span-2"
+          title="Curriculum Subjects Allocated to Faculty"
+          subtitle="Department lecture courses & lab credits"
         >
-          <div className="space-y-3">
-            {[
-              { time: '09:00 - 09:50 AM', subject: 'Data Structures & Algorithms (CS301)', venue: 'Room 302 (CSE Dept)', status: 'Completed', marked: true },
-              { time: '11:15 - 12:05 PM', subject: 'Database Management Systems (CS302)', venue: 'Room 304 (CSE Dept)', status: 'Completed', marked: true },
-              { time: '02:00 - 02:50 PM', subject: 'Data Structures Lab (CS301-P)', venue: 'Computing Lab 2', status: 'Upcoming', marked: false }
-            ].map((slot, idx) => (
-              <div key={idx} className="p-4 rounded-xl bg-warm-50 border border-navy-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-bold text-navy-900">{slot.subject}</span>
-                    <Badge variant={slot.marked ? 'success' : 'warning'} size="xs">
-                      {slot.status}
-                    </Badge>
+          {subjects.length === 0 ? (
+            <p className="text-xs text-navy-400 py-6 text-center">No subjects recorded.</p>
+          ) : (
+            <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+              {subjects.map((sub) => (
+                <div key={sub._id} className="p-3 rounded-xl bg-warm-50 border border-navy-100 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-bold text-navy-900 block">{sub.name}</span>
+                    <span className="text-[11px] text-navy-500 font-mono">
+                      {sub.code} &bull; Semester {sub.semester}
+                    </span>
                   </div>
-                  <p className="text-xs text-navy-500 mt-1 font-light">
-                    {slot.time} &bull; {slot.venue}
-                  </p>
+                  <Badge variant="teal" size="xs">
+                    {sub.credits} Credits
+                  </Badge>
                 </div>
-                <Button
-                  variant={slot.marked ? 'secondary' : 'teal'}
-                  size="sm"
-                  onClick={() => navigate('/attendance')}
-                  icon={slot.marked ? CheckCircle : CalendarCheck}
-                >
-                  {slot.marked ? 'View Register' : 'Mark Attendance'}
-                </Button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </Card>
 
-        <Card title="Quick Academic Tasks">
-          <div className="space-y-2">
-            <Button variant="teal" size="sm" className="w-full justify-start" onClick={() => navigate('/attendance')} icon={CalendarCheck}>
-              Take Class Attendance
-            </Button>
-            <Button variant="secondary" size="sm" className="w-full justify-start" onClick={() => navigate('/results')} icon={Award}>
-              Enter Mid-Term Marks
-            </Button>
-            <Button variant="secondary" size="sm" className="w-full justify-start" onClick={() => navigate('/timetable')} icon={Clock}>
-              My Weekly Timetable
-            </Button>
-            <Button variant="secondary" size="sm" className="w-full justify-start" onClick={() => navigate('/notices')} icon={FileText}>
-              View College Notices
-            </Button>
-          </div>
+        <Card
+          title="Class Timetable & Scheduled Sessions"
+          subtitle="Allocated lecture periods across departments"
+        >
+          {timetableSlots.length === 0 ? (
+            <p className="text-xs text-navy-400 py-6 text-center">No timetable slots scheduled.</p>
+          ) : (
+            <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+              {timetableSlots.map((slot) => (
+                <div key={slot._id} className="p-3 rounded-xl bg-white border border-navy-100 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-semibold text-navy-900 block">
+                      {slot.subject?.name || 'Class Period'}
+                    </span>
+                    <span className="text-[11px] text-navy-500 font-mono">
+                      {slot.dayOfWeek} &bull; Period {slot.periodNumber} &bull; Venue: {slot.roomNumber || 'Room 302'}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono text-navy-600 bg-navy-50 px-2 py-0.5 rounded border border-navy-100">
+                    {slot.startTime} - {slot.endTime}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
       </div>
+
+      {/* Modal 1: Edit Faculty Profile */}
+      <Modal
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        title={`Edit Faculty Profile: ${selectedFaculty?.employeeId || ''}`}
+        subtitle={`Update academic designation and department for ${selectedFaculty?.user?.name || 'Staff'}`}
+        maxWidth="max-w-md"
+        footer={
+          <>
+            <Button variant="secondary" size="sm" onClick={() => setIsEditOpen(false)} disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" onClick={handleEditSubmit} isLoading={isSubmitting}>
+              Save Profile
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleEditSubmit} className="space-y-4">
+          {formError && <Notification type="error" message={formError} onClose={() => setFormError('')} />}
+
+          <Select
+            label="Academic Designation"
+            id="edit-desig"
+            value={editForm.designation}
+            onChange={(e) => setEditForm({ ...editForm, designation: e.target.value })}
+            options={[
+              { value: 'Professor', label: 'Professor' },
+              { value: 'Associate Professor', label: 'Associate Professor' },
+              { value: 'Assistant Professor', label: 'Assistant Professor' },
+              { value: 'Lecturer', label: 'Lecturer' },
+              { value: 'Lab Assistant', label: 'Lab Assistant' }
+            ]}
+          />
+
+          <Select
+            label="Department"
+            id="edit-dept"
+            value={editForm.department}
+            onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
+            options={departments.map((d) => ({ value: d._id, label: d.name }))}
+          />
+
+          <Input
+            label="Qualification / Degrees"
+            id="edit-qual"
+            value={editForm.qualification}
+            onChange={(e) => setEditForm({ ...editForm, qualification: e.target.value })}
+            placeholder="e.g. Ph.D. in Computer Science"
+          />
+
+          <Input
+            label="Specialization / Area of Research"
+            id="edit-spec"
+            value={editForm.specialization}
+            onChange={(e) => setEditForm({ ...editForm, specialization: e.target.value })}
+            placeholder="e.g. Distributed Systems & Algorithms"
+          />
+        </form>
+      </Modal>
+
+      {/* Modal 2: Provision Faculty Profile */}
+      <Modal
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        title="Provision Faculty Member"
+        subtitle="Creates an institutional account and linked faculty profile record"
+        maxWidth="max-w-lg"
+        footer={
+          <>
+            <Button variant="secondary" size="sm" onClick={() => setIsCreateOpen(false)} disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button variant="teal" size="sm" onClick={handleCreateSubmit} isLoading={isSubmitting}>
+              Create Faculty Member
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleCreateSubmit} className="space-y-4">
+          {formError && <Notification type="error" message={formError} onClose={() => setFormError('')} />}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="Full Name"
+              id="fac-name"
+              required
+              value={createForm.name}
+              onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+              placeholder="e.g. Dr. Alan Turing"
+            />
+
+            <Input
+              label="Employee ID"
+              id="fac-empid"
+              required
+              value={createForm.employeeId}
+              onChange={(e) => setCreateForm({ ...createForm, employeeId: e.target.value })}
+              placeholder="e.g. FAC-CSE-009"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="Institutional Email"
+              id="fac-email"
+              type="email"
+              required
+              value={createForm.email}
+              onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+              placeholder="e.g. faculty02@college.edu"
+            />
+
+            <Input
+              label="Initial Password"
+              id="fac-pass"
+              type="password"
+              required
+              value={createForm.password}
+              onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+              placeholder="At least 6 characters"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Select
+              label="Department"
+              id="fac-dept"
+              value={createForm.departmentId}
+              onChange={(e) => setCreateForm({ ...createForm, departmentId: e.target.value })}
+              options={departments.map((d) => ({ value: d._id, label: d.name }))}
+            />
+
+            <Select
+              label="Designation"
+              id="fac-desig"
+              value={createForm.designation}
+              onChange={(e) => setCreateForm({ ...createForm, designation: e.target.value })}
+              options={[
+                { value: 'Professor', label: 'Professor' },
+                { value: 'Associate Professor', label: 'Associate Professor' },
+                { value: 'Assistant Professor', label: 'Assistant Professor' },
+                { value: 'Lecturer', label: 'Lecturer' }
+              ]}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="Qualification"
+              id="fac-qual"
+              value={createForm.qualification}
+              onChange={(e) => setCreateForm({ ...createForm, qualification: e.target.value })}
+              placeholder="e.g. Ph.D. in Computer Science"
+            />
+
+            <Input
+              label="Specialization"
+              id="fac-spec"
+              value={createForm.specialization}
+              onChange={(e) => setCreateForm({ ...createForm, specialization: e.target.value })}
+              placeholder="e.g. Artificial Intelligence"
+            />
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal 3: Reset Password */}
+      <Modal
+        isOpen={isResetOpen}
+        onClose={() => setIsResetOpen(false)}
+        title={`Reset Password for ${selectedFaculty?.user?.name || 'Faculty'}`}
+        subtitle={`Set temporary password for ${selectedFaculty?.user?.email || ''}`}
+        maxWidth="max-w-md"
+        footer={
+          <>
+            <Button variant="secondary" size="sm" onClick={() => setIsResetOpen(false)} disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" onClick={handleResetPassSubmit} isLoading={isSubmitting} icon={Key}>
+              Apply New Password
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleResetPassSubmit} className="space-y-4">
+          {formError && <Notification type="error" message={formError} onClose={() => setFormError('')} />}
+
+          <Input
+            label="New Confidential Password"
+            id="reset-fac-pass"
+            type="password"
+            required
+            value={newPasswordVal}
+            onChange={(e) => setNewPasswordVal(e.target.value)}
+            placeholder="At least 6 characters"
+          />
+        </form>
+      </Modal>
+
+      {/* Confirm Dialog: Disable / Activate */}
+      <ConfirmDialog
+        isOpen={!!confirmToggleUser}
+        onClose={() => setConfirmToggleUser(null)}
+        onConfirm={handleConfirmToggle}
+        title={confirmToggleUser?.user?.status === USER_STATUS.ACTIVE ? 'Disable Faculty Account?' : 'Activate Faculty Account?'}
+        message={
+          confirmToggleUser?.user?.status === USER_STATUS.ACTIVE
+            ? `Disabling account '${confirmToggleUser?.user?.email}' will prevent them from logging attendance or marks.`
+            : `Activating account '${confirmToggleUser?.user?.email}' will restore access.`
+        }
+        confirmText={confirmToggleUser?.user?.status === USER_STATUS.ACTIVE ? 'Disable Account' : 'Activate Account'}
+        isDanger={confirmToggleUser?.user?.status === USER_STATUS.ACTIVE}
+        isLoading={isSubmitting}
+      />
     </div>
   );
 };
 
 export default FacultyDashboard;
-

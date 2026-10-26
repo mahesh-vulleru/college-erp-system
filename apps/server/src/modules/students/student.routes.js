@@ -3,7 +3,8 @@ const {
   listStudents,
   getStudentById,
   getMyStudentProfile,
-  createStudentProfile
+  createStudentProfile,
+  updateStudentProfile
 } = require('./student.controller');
 const { validateStudentProfileInput } = require('./student.validator');
 const authenticate = require('../../middleware/auth');
@@ -38,5 +39,10 @@ router.post(
   createStudentProfile
 );
 
-module.exports = router;
+router.put(
+  '/:id',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  updateStudentProfile
+);
 
+module.exports = router;

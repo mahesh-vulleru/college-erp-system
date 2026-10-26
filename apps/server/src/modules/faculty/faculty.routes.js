@@ -1,5 +1,10 @@
 const express = require('express');
-const { listFaculty, getFacultyById, createFacultyProfile } = require('./faculty.controller');
+const {
+  listFaculty,
+  getFacultyById,
+  createFacultyProfile,
+  updateFacultyProfile
+} = require('./faculty.controller');
 const { validateFacultyInput } = require('./faculty.validator');
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
@@ -20,5 +25,10 @@ router.post(
   createFacultyProfile
 );
 
-module.exports = router;
+router.put(
+  '/:id',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  updateFacultyProfile
+);
 
+module.exports = router;

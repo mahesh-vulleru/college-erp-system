@@ -45,7 +45,6 @@ class ApiClient {
       return data;
     } catch (error) {
       if (error.status === 401 && endpoint !== '/v1/auth/login') {
-        // Clear expired session and dispatch event for AuthContext
         localStorage.removeItem('college_erp_token');
         localStorage.removeItem('college_erp_user');
         window.dispatchEvent(new Event('auth:unauthorized'));
@@ -91,7 +90,7 @@ class ApiClient {
     return this.post('/v1/auth/change-password', { currentPassword, newPassword });
   }
 
-  // Protected User Management endpoints (Super Admin)
+  // User Management endpoints (Super Admin)
   getUsers(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.page) searchParams.append('page', params.page);
@@ -123,6 +122,187 @@ class ApiClient {
 
   resetUserPassword(id, newPassword) {
     return this.post(`/v1/users/${id}/reset-password`, { newPassword });
+  }
+
+  // Reports & Live Executive Metrics
+  getAdminOverview() {
+    return this.get('/v1/reports/admin-overview');
+  }
+
+  getDepartmentSummaries() {
+    return this.get('/v1/reports/department-summaries');
+  }
+
+  getAcademicSummary() {
+    return this.get('/v1/reports/academic-summary');
+  }
+
+  getAttendanceOverview() {
+    return this.get('/v1/reports/attendance-overview');
+  }
+
+  getFeeCollectionSummary() {
+    return this.get('/v1/reports/fee-collection');
+  }
+
+  // Departments
+  getDepartments() {
+    return this.get('/v1/departments');
+  }
+
+  getDepartmentById(id) {
+    return this.get(`/v1/departments/${id}`);
+  }
+
+  createDepartment(data) {
+    return this.post('/v1/departments', data);
+  }
+
+  updateDepartment(id, data) {
+    return this.put(`/v1/departments/${id}`, data);
+  }
+
+  // Courses & Subjects
+  getCourses() {
+    return this.get('/v1/courses');
+  }
+
+  getSubjects() {
+    return this.get('/v1/subjects');
+  }
+
+  // Faculty
+  getFaculty(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.department) searchParams.append('department', params.department);
+    if (params.designation) searchParams.append('designation', params.designation);
+    const qs = searchParams.toString();
+    return this.get(`/v1/faculty${qs ? `?${qs}` : ''}`);
+  }
+
+  getFacultyById(id) {
+    return this.get(`/v1/faculty/${id}`);
+  }
+
+  createFaculty(data) {
+    return this.post('/v1/faculty', data);
+  }
+
+  updateFaculty(id, data) {
+    return this.put(`/v1/faculty/${id}`, data);
+  }
+
+  // Students
+  getStudents(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.page) searchParams.append('page', params.page);
+    if (params.limit) searchParams.append('limit', params.limit);
+    if (params.department) searchParams.append('department', params.department);
+    if (params.semester) searchParams.append('semester', params.semester);
+    if (params.batch) searchParams.append('batch', params.batch);
+    if (params.status) searchParams.append('status', params.status);
+    if (params.q) searchParams.append('q', params.q);
+
+    const qs = searchParams.toString();
+    return this.get(`/v1/students${qs ? `?${qs}` : ''}`);
+  }
+
+  getStudentById(id) {
+    return this.get(`/v1/students/${id}`);
+  }
+
+  getMyStudentProfile() {
+    return this.get('/v1/students/me');
+  }
+
+  createStudent(data) {
+    return this.post('/v1/students', data);
+  }
+
+  updateStudent(id, data) {
+    return this.put(`/v1/students/${id}`, data);
+  }
+
+  // Fees & Payments
+  getFeeStructures(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.department) searchParams.append('department', params.department);
+    if (params.semester) searchParams.append('semester', params.semester);
+    if (params.academicYear) searchParams.append('academicYear', params.academicYear);
+    const qs = searchParams.toString();
+    return this.get(`/v1/fees${qs ? `?${qs}` : ''}`);
+  }
+
+  createFeeStructure(data) {
+    return this.post('/v1/fees', data);
+  }
+
+  getPayments(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.student) searchParams.append('student', params.student);
+    const qs = searchParams.toString();
+    return this.get(`/v1/payments${qs ? `?${qs}` : ''}`);
+  }
+
+  recordPayment(data) {
+    return this.post('/v1/payments', data);
+  }
+
+  // Notices
+  getNotices() {
+    return this.get('/v1/notices');
+  }
+
+  createNotice(data) {
+    return this.post('/v1/notices', data);
+  }
+
+  // Audit Logs
+  getAuditLogs(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.page) searchParams.append('page', params.page);
+    if (params.limit) searchParams.append('limit', params.limit);
+    const qs = searchParams.toString();
+    return this.get(`/v1/audit-logs${qs ? `?${qs}` : ''}`);
+  }
+
+  // Timetable, Exams & Results
+  getTimetable(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.department) searchParams.append('department', params.department);
+    if (params.semester) searchParams.append('semester', params.semester);
+    if (params.faculty) searchParams.append('faculty', params.faculty);
+    if (params.dayOfWeek) searchParams.append('dayOfWeek', params.dayOfWeek);
+    const qs = searchParams.toString();
+    return this.get(`/v1/timetable${qs ? `?${qs}` : ''}`);
+  }
+
+  createTimetableSlot(data) {
+    return this.post('/v1/timetable', data);
+  }
+
+  getExams(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.semester) searchParams.append('semester', params.semester);
+    if (params.academicYear) searchParams.append('academicYear', params.academicYear);
+    const qs = searchParams.toString();
+    return this.get(`/v1/examinations${qs ? `?${qs}` : ''}`);
+  }
+
+  getResults(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.examination) searchParams.append('examination', params.examination);
+    if (params.student) searchParams.append('student', params.student);
+    const qs = searchParams.toString();
+    return this.get(`/v1/results${qs ? `?${qs}` : ''}`);
+  }
+
+  getAttendance(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.student) searchParams.append('student', params.student);
+    if (params.subject) searchParams.append('subject', params.subject);
+    const qs = searchParams.toString();
+    return this.get(`/v1/attendance${qs ? `?${qs}` : ''}`);
   }
 }
 
