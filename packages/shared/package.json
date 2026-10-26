@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "main": "index.js",
+  "module": "index.mjs",
+  "exports": {
+    "import": "./index.mjs",
+    "require": "./index.js",
+    "default": "./index.js"
+  },
   "type": "commonjs",
   "scripts": {
     "test": "node -e \"console.log('@college-erp/shared: syntax OK')\""

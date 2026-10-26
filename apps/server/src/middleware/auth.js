@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { HTTP_STATUS, USER_STATUS } = require('@college-erp/shared');
-const env = require('../../config/env');
+const env = require('../config/env');
 const User = require('../modules/auth/auth.model');
 
 /**

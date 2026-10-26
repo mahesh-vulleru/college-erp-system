@@ -65,7 +65,13 @@ cp apps/client/.env.example apps/client/.env
 
 Ensure `JWT_SECRET` is set in `.env` (min 32 characters in production).
 
-### Step 3: Run the Services
+### Step 3: Populate Development Fixtures (Optional)
+```bash
+# Populate safe development seed data (<1,000 students, 6 depts, demo users)
+npm run seed
+```
+
+### Step 4: Run the Services
 
 #### Run Backend Service:
 ```bash

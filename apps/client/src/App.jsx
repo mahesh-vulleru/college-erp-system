@@ -1,51 +1,273 @@
-import React, { useState } from 'react';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import AppLayout from './components/layout/AppLayout';
+import ProtectedRoute from './components/routing/ProtectedRoute';
+
+// Pages
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
-import LoadingState from './components/common/LoadingState';
+import UnauthorizedPage from './pages/UnauthorizedPage';
+import NotFoundPage from './pages/NotFoundPage';
+import ErrorPage from './pages/ErrorPage';
 
-const MainApp = () => {
-  const { isLoading } = useAuth();
-  const [currentTab, setCurrentTab] = useState('dashboard');
-  const [showLoginModal, setShowLoginModal] = useState(false);
+// Role Dashboards
+import AdminDashboard from './pages/admin/AdminDashboard';
+import PrincipalDashboard from './pages/principal/PrincipalDashboard';
+import HodDashboard from './pages/hod/HodDashboard';
+import FacultyDashboard from './pages/faculty/FacultyDashboard';
+import StudentDashboard from './pages/student/StudentDashboard';
+import AccountsDashboard from './pages/accounts/AccountsDashboard';
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <LoadingState message="Initializing College ERP Foundation..." />
-      </div>
-    );
-  }
-
-  if (showLoginModal) {
-    return (
-      <LoginPage
-        onLoginSuccess={() => setShowLoginModal(false)}
-        onCancel={() => setShowLoginModal(false)}
-      />
-    );
-  }
-
-  return (
-    <AppLayout
-      currentTab={currentTab}
-      onSelectTab={setCurrentTab}
-      onNavigateLogin={() => setShowLoginModal(true)}
-    >
-      <DashboardPage
-        currentTab={currentTab}
-        onNavigateLogin={() => setShowLoginModal(true)}
-      />
-    </AppLayout>
-  );
-};
+// Module Scaffolding Template
+import ModulePlaceholderPage from './pages/modules/ModulePlaceholderPage';
+import { ROLES } from '@college-erp/shared';
 
 export const App = () => {
   return (
-    <AuthProvider>
-      <MainApp />
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <ToastProvider>
+          <Routes>
+            {/* Public Unauthenticated Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/unauthorized" element={<UnauthorizedPage />} />
+            <Route path="/error" element={<ErrorPage />} />
+
+            {/* Application Layout Routes */}
+            <Route path="/" element={<AppLayout />}>
+              {/* Institutional Overview Hub */}
+              <Route index element={<DashboardPage />} />
+              <Route path="dashboard" element={<Navigate to="/" replace />} />
+
+              {/* Role-Protected Portals */}
+              <Route
+                path="admin"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="principal"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL]}>
+                    <PrincipalDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="hod"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD]}>
+                    <HodDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="faculty"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY]}>
+                    <FacultyDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="student"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.STUDENT]}>
+                    <StudentDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="accounts"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS]}>
+                    <AccountsDashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Modular Academic & Administrative Subsystems */}
+              <Route
+                path="departments"
+                element={
+                  <ProtectedRoute>
+                    <ModulePlaceholderPage
+                      title="Department Management"
+                      description="Catalog of academic engineering departments, intake limits, assigned HODs, and faculty allotment."
+                      apiEndpoint="/v1/departments"
+                      assignedMember="M2 (Academic Backend)"
+                      branchName="feature/m2-academics-mongo"
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="courses"
+                element={
+                  <ProtectedRoute>
+                    <ModulePlaceholderPage
+                      title="Programs & Courses"
+                      description="Undergraduate B.Tech degree programs, curriculum duration, total credits, and semester mappings."
+                      apiEndpoint="/v1/courses"
+                      assignedMember="M2 (Academic Backend)"
+                      branchName="feature/m2-academics-mongo"
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="subjects"
+                element={
+                  <ProtectedRoute>
+                    <ModulePlaceholderPage
+                      title="Curriculum Subjects"
+                      description="Semester syllabus courses, theory lectures, laboratory practicals, and credit values."
+                      apiEndpoint="/v1/subjects"
+                      assignedMember="M2 (Academic Backend)"
+                      branchName="feature/m2-academics-mongo"
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="timetable"
+                element={
+                  <ProtectedRoute>
+                    <ModulePlaceholderPage
+                      title="Class Schedules & Timetable"
+                      description="Weekly master schedule, room numbers, lecture slots, faculty clash detection, and period timings."
+                      apiEndpoint="/v1/timetable"
+                      assignedMember="M2 (Academic Backend)"
+                      branchName="feature/m2-academics-mongo"
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="attendance"
+                element={
+                  <ProtectedRoute>
+                    <ModulePlaceholderPage
+                      title="Attendance Management"
+                      description="Daily period attendance capture, percentage computation, and condonation monitoring."
+                      apiEndpoint="/v1/attendance"
+                      assignedMember="M2 (Academic Backend)"
+                      branchName="feature/m2-academics-mongo"
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="examinations"
+                element={
+                  <ProtectedRoute>
+                    <ModulePlaceholderPage
+                      title="Examinations System"
+                      description="Mid-term evaluations, semester-end exam slots, invigilation duty registers, and hall schedules."
+                      apiEndpoint="/v1/examinations"
+                      assignedMember="M2 (Academic Backend)"
+                      branchName="feature/m2-academics-mongo"
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="results"
+                element={
+                  <ProtectedRoute>
+                    <ModulePlaceholderPage
+                      title="Marks & Grade Evaluation"
+                      description="Internal test marks entry, external exam scores, letter grades calculation, and semester GPA."
+                      apiEndpoint="/v1/results"
+                      assignedMember="M2 (Academic Backend)"
+                      branchName="feature/m2-academics-mongo"
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="fees"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT]}>
+                    <ModulePlaceholderPage
+                      title="Institutional Fee Schedules"
+                      description="Departmental tuition fee heads, lab fees, library fees, semester deadlines, and dues calculation."
+                      apiEndpoint="/v1/fees/structures"
+                      assignedMember="M4 (Finance & QA)"
+                      branchName="feature/m4-fees-testing"
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="payments"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT]}>
+                    <ModulePlaceholderPage
+                      title="Payment Receipts & Reconciliation"
+                      description="Fee transaction processing, official receipt numbers, collection ledgers, and accounts settlement."
+                      apiEndpoint="/v1/payments"
+                      assignedMember="M4 (Finance & QA)"
+                      branchName="feature/m4-fees-testing"
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="notices"
+                element={
+                  <ProtectedRoute>
+                    <ModulePlaceholderPage
+                      title="Institutional Notices & Circulars"
+                      description="Campus announcements, emergency notices, holiday schedules, and role-targeted circulars."
+                      apiEndpoint="/v1/notices"
+                      assignedMember="M1 (Architecture & Auth)"
+                      branchName="feature/m1-auth-contracts"
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="reports"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS]}>
+                    <ModulePlaceholderPage
+                      title="Executive Reports & Analytics"
+                      description="Aggregated institutional reports covering academic performance, student retention, and finances."
+                      apiEndpoint="/v1/reports/academic-summary"
+                      assignedMember="M1 (Architecture & Auth)"
+                      branchName="feature/m1-auth-contracts"
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="audit-logs"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL]}>
+                    <ModulePlaceholderPage
+                      title="Security Audit & Compliance"
+                      description="Cryptographically recorded event log of administrative actions, user logins, and database mutations."
+                      apiEndpoint="/v1/audit-logs"
+                      assignedMember="M1 (Architecture & Auth)"
+                      branchName="feature/m1-auth-contracts"
+                    />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* 404 Catch-All within Layout */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Route>
+          </Routes>
+        </ToastProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 };
 
