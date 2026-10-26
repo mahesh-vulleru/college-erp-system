@@ -40,13 +40,22 @@ async function seed() {
   console.log('[Seed] Creating institutional users with role-based credentials...');
   const commonPassword = 'Password123!';
 
-  // 1. Create Core Users
+  // 1. Create Core Users matching prompt guidelines and test suites
   const adminUser = await User.create({
     name: 'Dr. Arthur Mitchell',
     email: 'admin@college.edu',
     password: commonPassword,
     role: ROLES.SUPER_ADMIN,
     department: 'Administration',
+    status: USER_STATUS.ACTIVE
+  });
+
+  const superAdminUser = await User.create({
+    name: 'Super Administrator',
+    email: 'superadmin@college.edu',
+    password: commonPassword,
+    role: ROLES.SUPER_ADMIN,
+    department: 'System Governance',
     status: USER_STATUS.ACTIVE
   });
 
@@ -87,6 +96,15 @@ async function seed() {
   });
 
   const facultyUser2 = await User.create({
+    name: 'Prof. Rajesh Iyer',
+    email: 'faculty01@college.edu',
+    password: commonPassword,
+    role: ROLES.FACULTY,
+    department: 'Computer Science & Engineering',
+    status: USER_STATUS.ACTIVE
+  });
+
+  const facultyUser3 = await User.create({
     name: 'Dr. Claude Shannon',
     email: 'faculty.shannon@college.edu',
     password: commonPassword,
@@ -114,12 +132,31 @@ async function seed() {
   });
 
   const studentUser2 = await User.create({
+    name: 'Rohan Gupta',
+    email: 'student01@college.edu',
+    password: commonPassword,
+    role: ROLES.STUDENT,
+    department: 'Computer Science & Engineering',
+    status: USER_STATUS.ACTIVE
+  });
+
+  const studentUser3 = await User.create({
     name: 'Priya Patel',
     email: 'student.priya@college.edu',
     password: commonPassword,
     role: ROLES.STUDENT,
     department: 'Electronics & Communication Engineering',
     status: USER_STATUS.ACTIVE
+  });
+
+  // Sample Disabled Account for status enforcement testing
+  const disabledUser = await User.create({
+    name: 'Disabled User Demo',
+    email: 'disabled.user@college.edu',
+    password: commonPassword,
+    role: ROLES.STUDENT,
+    department: 'Mechanical Engineering',
+    status: USER_STATUS.DISABLED
   });
 
   console.log('[Seed] Creating Academic Departments...');
@@ -201,7 +238,7 @@ async function seed() {
   });
 
   console.log('[Seed] Creating Faculty Profiles...');
-  const facultyProfile1 = await Faculty.create({
+  await Faculty.create({
     user: facultyUser1._id,
     employeeId: 'FAC-CSE-001',
     department: cseDept._id,
@@ -210,8 +247,17 @@ async function seed() {
     specialization: 'Algorithms & Distributed Systems'
   });
 
-  const facultyProfile2 = await Faculty.create({
+  await Faculty.create({
     user: facultyUser2._id,
+    employeeId: 'FAC-CSE-002',
+    department: cseDept._id,
+    designation: 'Assistant Professor',
+    qualification: 'M.Tech in Computer Engineering',
+    specialization: 'Software Engineering'
+  });
+
+  await Faculty.create({
+    user: facultyUser3._id,
     employeeId: 'FAC-ECE-001',
     department: eceDept._id,
     designation: 'Associate Professor',
@@ -234,6 +280,18 @@ async function seed() {
 
   await Student.create({
     user: studentUser2._id,
+    rollNumber: '24CSE001',
+    enrollmentNumber: 'EN20240001',
+    department: cseDept._id,
+    course: btechCse._id,
+    currentSemester: 3,
+    batchYear: '2024-2028',
+    guardianName: 'Anil Gupta',
+    guardianPhone: '+91 98765 43219'
+  });
+
+  await Student.create({
+    user: studentUser3._id,
     rollNumber: '24ECE018',
     enrollmentNumber: 'EN20240018',
     department: eceDept._id,
@@ -283,13 +341,14 @@ async function seed() {
   console.log('======================================================');
   console.log(' Institutional Demo Logins:');
   console.log(' Password for all seed users: Password123!\n');
-  console.log(' 1. Super Admin:  admin@college.edu');
+  console.log(' 1. Super Admin:  superadmin@college.edu (or admin@college.edu)');
   console.log(' 2. Principal:    principal@college.edu');
   console.log(' 3. HOD (CSE):    hod.cse@college.edu');
   console.log(' 4. HOD (ECE):    hod.ece@college.edu');
-  console.log(' 5. Faculty CSE:  faculty.turing@college.edu');
-  console.log(' 6. Student CSE:  student.aarav@college.edu');
+  console.log(' 5. Faculty CSE:  faculty01@college.edu (or faculty.turing@college.edu)');
+  console.log(' 6. Student CSE:  student01@college.edu (or student.aarav@college.edu)');
   console.log(' 7. Accounts:     accounts@college.edu');
+  console.log(' 8. Disabled Demo: disabled.user@college.edu');
   console.log('======================================================\n');
 
   await mongoose.connection.close();
@@ -304,4 +363,3 @@ if (require.main === module) {
 }
 
 module.exports = seed;
-

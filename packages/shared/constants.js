@@ -26,6 +26,7 @@ const ACADEMIC_SEMESTERS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8]);
 
 const USER_STATUS = Object.freeze({
   ACTIVE: 'active',
+  DISABLED: 'disabled',
   INACTIVE: 'inactive',
   SUSPENDED: 'suspended'
 });

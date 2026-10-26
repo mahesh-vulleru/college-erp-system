@@ -45,6 +45,10 @@ const userSchema = new mongoose.Schema(
       enum: Object.values(USER_STATUS),
       default: USER_STATUS.ACTIVE
     },
+    isTemporaryPassword: {
+      type: Boolean,
+      default: false
+    },
     lastLogin: {
       type: Date
     }
@@ -53,6 +57,9 @@ const userSchema = new mongoose.Schema(
     timestamps: true
   }
 );
+
+// Enforce unique index on email
+userSchema.index({ email: 1 }, { unique: true });
 
 // Hash password before saving if modified
 userSchema.pre('save', async function (next) {
@@ -66,7 +73,24 @@ userSchema.pre('save', async function (next) {
 
 // Compare entered password with hashed password in database
 userSchema.methods.comparePassword = async function (enteredPassword) {
+  if (!this.password) return false;
   return bcrypt.compare(enteredPassword, this.password);
+};
+
+// Safe presentation helper (never includes password)
+userSchema.methods.toSafeObject = function () {
+  return {
+    id: this._id,
+    name: this.name,
+    email: this.email,
+    role: this.role,
+    department: this.department,
+    status: this.status,
+    isTemporaryPassword: this.isTemporaryPassword,
+    lastLogin: this.lastLogin,
+    createdAt: this.createdAt,
+    updatedAt: this.updatedAt
+  };
 };
 
 const User = mongoose.model('User', userSchema);

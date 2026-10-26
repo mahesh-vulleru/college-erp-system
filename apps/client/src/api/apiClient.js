@@ -66,11 +66,15 @@ class ApiClient {
     return this.request(endpoint, { ...options, method: 'PUT', body });
   }
 
+  patch(endpoint, body, options = {}) {
+    return this.request(endpoint, { ...options, method: 'PATCH', body });
+  }
+
   delete(endpoint, options = {}) {
     return this.request(endpoint, { ...options, method: 'DELETE' });
   }
 
-  // Common endpoints
+  // Common authentication endpoints
   checkHealth() {
     return this.get('/health');
   }
@@ -81,6 +85,44 @@ class ApiClient {
 
   getCurrentUser() {
     return this.get('/v1/auth/me');
+  }
+
+  changePassword(currentPassword, newPassword) {
+    return this.post('/v1/auth/change-password', { currentPassword, newPassword });
+  }
+
+  // Protected User Management endpoints (Super Admin)
+  getUsers(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.page) searchParams.append('page', params.page);
+    if (params.limit) searchParams.append('limit', params.limit);
+    if (params.role) searchParams.append('role', params.role);
+    if (params.department) searchParams.append('department', params.department);
+    if (params.status) searchParams.append('status', params.status);
+    if (params.q) searchParams.append('q', params.q);
+
+    const qs = searchParams.toString();
+    return this.get(`/v1/users${qs ? `?${qs}` : ''}`);
+  }
+
+  getUserById(id) {
+    return this.get(`/v1/users/${id}`);
+  }
+
+  createUser(userData) {
+    return this.post('/v1/users', userData);
+  }
+
+  updateUser(id, userData) {
+    return this.put(`/v1/users/${id}`, userData);
+  }
+
+  updateUserStatus(id, status) {
+    return this.patch(`/v1/users/${id}/status`, { status });
+  }
+
+  resetUserPassword(id, newPassword) {
+    return this.post(`/v1/users/${id}/reset-password`, { newPassword });
   }
 }
 

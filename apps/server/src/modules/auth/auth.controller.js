@@ -14,14 +14,14 @@ function signToken(userId, role) {
 
 /**
  * POST /api/v1/auth/login
- * Validates user credentials and enforces role verification when a role is selected.
+ * Validates user credentials, rejects role mismatches, and enforces account status checks.
  */
 async function login(req, res, next) {
   try {
     const { email, password, role } = req.body;
 
     // Explicitly query password since it has select: false
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email: email ? email.toLowerCase().trim() : '' }).select('+password');
 
     if (!user) {
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -46,7 +46,7 @@ async function login(req, res, next) {
       });
     }
 
-    // Check account status
+    // Check account status: reject login if account is disabled or inactive
     if (user.status !== USER_STATUS.ACTIVE) {
       return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
@@ -73,7 +73,9 @@ async function login(req, res, next) {
         role: user.role,
         department: user.department,
         status: user.status,
-        lastLogin: user.lastLogin
+        isTemporaryPassword: user.isTemporaryPassword || false,
+        lastLogin: user.lastLogin,
+        createdAt: user.createdAt
       }
     });
   } catch (error) {
@@ -83,13 +85,15 @@ async function login(req, res, next) {
 
 /**
  * POST /api/v1/auth/register
- * Initial registration endpoint. Role defaults to student unless super_admin registers.
+ * Public registration endpoint. Role is strictly locked to Student.
+ * Privileged accounts can ONLY be provisioned by Super Admin via /api/v1/users.
  */
 async function register(req, res, next) {
   try {
     const { name, email, password, role, department } = req.body;
 
-    const existing = await User.findOne({ email });
+    const cleanEmail = email ? email.toLowerCase().trim() : '';
+    const existing = await User.findOne({ email: cleanEmail });
     if (existing) {
       return res.status(HTTP_STATUS.CONFLICT).json({
         success: false,
@@ -97,17 +101,19 @@ async function register(req, res, next) {
       });
     }
 
-    // Never trust client role blindly: if unauthenticated, force student role
+    // Security invariant: never trust client role blindly from public endpoint.
+    // If authenticated as Super Admin, honor role; otherwise force ROLES.STUDENT.
     const assignedRole = (req.user && req.user.role === ROLES.SUPER_ADMIN && role)
       ? role
       : ROLES.STUDENT;
 
     const newUser = await User.create({
       name,
-      email,
+      email: cleanEmail,
       password,
       role: assignedRole,
-      department
+      department,
+      status: USER_STATUS.ACTIVE
     });
 
     const token = signToken(newUser._id, newUser.role);
@@ -124,7 +130,8 @@ async function register(req, res, next) {
         email: newUser.email,
         role: newUser.role,
         department: newUser.department,
-        status: newUser.status
+        status: newUser.status,
+        createdAt: newUser.createdAt
       }
     });
   } catch (error) {
@@ -147,6 +154,7 @@ async function getMe(req, res, next) {
         role: req.user.role,
         department: req.user.department,
         status: req.user.status,
+        isTemporaryPassword: req.user.isTemporaryPassword || false,
         lastLogin: req.user.lastLogin,
         createdAt: req.user.createdAt
       }
@@ -156,8 +164,62 @@ async function getMe(req, res, next) {
   }
 }
 
+/**
+ * POST /api/v1/auth/change-password
+ * Allows an authenticated user to change their password and clear temporary status.
+ */
+async function changePassword(req, res, next) {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        message: 'Both current password and new password are required.'
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        message: 'New password must be at least 6 characters long.'
+      });
+    }
+
+    const user = await User.findById(req.user._id).select('+password');
+    if (!user) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        success: false,
+        message: 'User account not found.'
+      });
+    }
+
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        success: false,
+        message: 'Current password provided is incorrect.'
+      });
+    }
+
+    user.password = newPassword;
+    user.isTemporaryPassword = false;
+    await user.save();
+
+    logger.info(`Password changed successfully for user: ${user.email}`);
+
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      message: 'Password changed successfully.'
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   login,
   register,
-  getMe
+  getMe,
+  changePassword
 };
