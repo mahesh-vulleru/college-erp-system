@@ -1,68 +1,96 @@
 import React from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   GraduationCap,
   LayoutDashboard,
-  Users,
+  ShieldCheck,
+  Building2,
   BookOpen,
   CalendarCheck,
   Award,
   CreditCard,
+  Bell,
+  BarChart3,
+  FileText,
+  Clock,
+  Users,
   Settings,
-  ShieldAlert,
   X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { ROLES } from '@college-erp/shared';
 
-export const Sidebar = ({ isOpen, onClose, currentTab, onSelectTab }) => {
+export const Sidebar = ({ isOpen, onClose }) => {
   const { user } = useAuth();
   const role = user?.role;
+  const location = useLocation();
 
-  // Role-aware navigation items
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['*'] },
-    { id: 'users', label: 'User Directory', icon: Users, roles: ['super_admin', 'principal', 'hod', 'accounts'] },
-    { id: 'academics', label: 'Academics & Courses', icon: BookOpen, roles: ['super_admin', 'principal', 'hod', 'faculty'] },
-    { id: 'attendance', label: 'Attendance', icon: CalendarCheck, roles: ['*'] },
-    { id: 'marks', label: 'Examinations & Marks', icon: Award, roles: ['*'] },
-    { id: 'fees', label: 'Fee Payments', icon: CreditCard, roles: ['super_admin', 'principal', 'accounts', 'student'] },
-    { id: 'admin', label: 'System Administration', icon: ShieldAlert, roles: ['super_admin'] },
-    { id: 'settings', label: 'Profile Settings', icon: Settings, roles: ['*'] }
+  // Navigation Items with role-based filtering
+  const navSections = [
+    {
+      title: 'Core Portals',
+      items: [
+        { path: '/', label: 'Institutional Hub', icon: LayoutDashboard, roles: ['*'] },
+        { path: '/admin', label: 'Super Admin Portal', icon: ShieldCheck, roles: [ROLES.SUPER_ADMIN] },
+        { path: '/principal', label: 'Principal & Exec', icon: Building2, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL] },
+        { path: '/hod', label: 'Department Head (HOD)', icon: Users, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD] },
+        { path: '/faculty', label: 'Faculty Workplace', icon: CalendarCheck, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY] },
+        { path: '/student', label: 'Student Self-Service', icon: GraduationCap, roles: [ROLES.SUPER_ADMIN, ROLES.STUDENT] },
+        { path: '/accounts', label: 'Accounts & Finance', icon: CreditCard, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS] }
+      ]
+    },
+    {
+      title: 'Academic Modules',
+      items: [
+        { path: '/departments', label: 'Departments', icon: Building2, roles: ['*'] },
+        { path: '/courses', label: 'Programs & Courses', icon: BookOpen, roles: ['*'] },
+        { path: '/timetable', label: 'Class Timetable', icon: Clock, roles: ['*'] },
+        { path: '/attendance', label: 'Daily Attendance', icon: CalendarCheck, roles: ['*'] },
+        { path: '/examinations', label: 'Examinations', icon: Award, roles: ['*'] },
+        { path: '/results', label: 'Results & Grades', icon: FileText, roles: ['*'] }
+      ]
+    },
+    {
+      title: 'Institutional Administration',
+      items: [
+        { path: '/fees', label: 'Fee Schedules & Dues', icon: CreditCard, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT] },
+        { path: '/notices', label: 'Notice Board', icon: Bell, roles: ['*'] },
+        { path: '/reports', label: 'Executive Reports', icon: BarChart3, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS] },
+        { path: '/audit-logs', label: 'Security & Audit Logs', icon: ShieldCheck, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL] }
+      ]
+    }
   ];
-
-  const visibleItems = navItems.filter(
-    (item) => item.roles.includes('*') || (role && item.roles.includes(role))
-  );
 
   return (
     <>
       {/* Mobile backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-navy-950/60 backdrop-blur-xs lg:hidden transition-opacity"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar container */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-100 flex flex-col transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-navy-950 text-navy-100 flex flex-col transition-transform duration-300 ease-in-out border-r border-navy-900 lg:static lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Brand header */}
-        <div className="h-16 px-5 border-b border-slate-800 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-md">
+        <div className="h-16 px-5 border-b border-navy-900 flex items-center justify-between">
+          <NavLink to="/" onClick={onClose} className="flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center text-white shadow-subtle">
               <GraduationCap className="w-5 h-5" />
             </div>
             <div>
-              <span className="font-bold text-sm tracking-wide text-white block">COLLEGE ERP</span>
-              <span className="text-[10px] text-slate-400 block tracking-wider uppercase">Portal Foundation</span>
+              <span className="font-extrabold text-sm tracking-wider text-white block">COLLEGE ERP</span>
+              <span className="text-[10px] text-teal-400 block tracking-widest uppercase font-semibold">Institutional v1</span>
             </div>
-          </div>
+          </NavLink>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-slate-400 hover:text-white lg:hidden"
+            className="p-1 rounded-lg text-navy-400 hover:text-white lg:hidden"
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />
@@ -70,40 +98,56 @@ export const Sidebar = ({ isOpen, onClose, currentTab, onSelectTab }) => {
         </div>
 
         {/* Navigation list */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {visibleItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentTab === item.id;
+        <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
+          {navSections.map((section, sIdx) => {
+            const filteredItems = section.items.filter(
+              (item) => item.roles.includes('*') || (role && item.roles.includes(role))
+            );
+
+            if (filteredItems.length === 0) return null;
+
             return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  onSelectTab(item.id);
-                  if (window.innerWidth < 1024) onClose();
-                }}
-                className={`w-full flex items-center px-3 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-colors ${
-                  isActive
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                }`}
-              >
-                <Icon className={`w-4 h-4 mr-3 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                <span>{item.label}</span>
-              </button>
+              <div key={sIdx} className="space-y-1">
+                <span className="px-3 text-[10px] font-bold tracking-wider text-navy-400 uppercase block">
+                  {section.title}
+                </span>
+                {filteredItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path;
+
+                  return (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => {
+                        if (window.innerWidth < 1024) onClose();
+                      }}
+                      className={`w-full flex items-center px-3 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all ${
+                        isActive
+                          ? 'bg-teal-600 text-white shadow-subtle'
+                          : 'text-navy-300 hover:bg-navy-900/80 hover:text-white'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 mr-3 ${isActive ? 'text-white' : 'text-navy-400'}`} />
+                      <span className="truncate">{item.label}</span>
+                    </NavLink>
+                  );
+                })}
+              </div>
             );
           })}
         </nav>
 
-        {/* User Role Card at bottom */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/60">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs uppercase">
-              {user?.name ? user.name.charAt(0) : 'U'}
+        {/* User Info Card at bottom */}
+        <div className="p-3.5 border-t border-navy-900 bg-navy-950">
+          <div className="flex items-center space-x-3 p-2 rounded-xl bg-navy-900/60 border border-navy-800">
+            <div className="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold text-xs uppercase">
+              {user?.name ? user.name.charAt(0) : 'G'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-white truncate">{user?.name || 'Guest User'}</p>
-              <p className="text-[10px] text-blue-400 font-semibold tracking-wider uppercase truncate">
-                {user?.role?.replace('_', ' ') || 'Visitor'}
+              <p className="text-xs font-semibold text-white truncate">{user?.name || 'Guest User'}</p>
+              <p className="text-[10px] text-teal-400 font-medium uppercase tracking-wider truncate">
+                {user?.role?.replace(/_/g, ' ') || 'Visitor Session'}
               </p>
             </div>
           </div>

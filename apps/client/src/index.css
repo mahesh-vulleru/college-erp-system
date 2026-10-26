@@ -2,8 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Mobile view optimizations */
+@layer base {
+  body {
+    @apply bg-warm-50 text-navy-900 antialiased font-sans selection:bg-teal-100 selection:text-teal-900;
+  }
+}
+
+/* Mobile & Android view optimizations */
 html, body {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  min-height: 100%;
+}
+
+/* Subtle scrollbars for data tables and sidebar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(15, 31, 51, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 31, 51, 0.25);
 }

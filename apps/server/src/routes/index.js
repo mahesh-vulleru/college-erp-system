@@ -1,11 +1,47 @@
 const express = require('express');
 const healthRoutes = require('./health.routes');
 const authRoutes = require('../modules/auth/auth.routes');
+const usersRoutes = require('../modules/users/users.routes');
+const departmentRoutes = require('../modules/departments/department.routes');
+const courseRoutes = require('../modules/courses/course.routes');
+const subjectRoutes = require('../modules/subjects/subject.routes');
+const studentRoutes = require('../modules/students/student.routes');
+const facultyRoutes = require('../modules/faculty/faculty.routes');
+const timetableRoutes = require('../modules/timetable/timetable.routes');
+const attendanceRoutes = require('../modules/attendance/attendance.routes');
+const examRoutes = require('../modules/examinations/exam.routes');
+const resultRoutes = require('../modules/results/result.routes');
+const feeRoutes = require('../modules/fees/fee.routes');
+const paymentRoutes = require('../modules/payments/payment.routes');
+const noticeRoutes = require('../modules/notices/notice.routes');
+const reportRoutes = require('../modules/reports/report.routes');
+const auditRoutes = require('../modules/audit-logs/audit.routes');
 
 const router = express.Router();
 
-// Mount standard routes
+// Health Check
 router.use('/health', healthRoutes);
-router.use('/v1/auth', authRoutes);
+
+// Versioned API v1 Router
+const v1Router = express.Router();
+
+v1Router.use('/auth', authRoutes);
+v1Router.use('/users', usersRoutes);
+v1Router.use('/departments', departmentRoutes);
+v1Router.use('/courses', courseRoutes);
+v1Router.use('/subjects', subjectRoutes);
+v1Router.use('/students', studentRoutes);
+v1Router.use('/faculty', facultyRoutes);
+v1Router.use('/timetable', timetableRoutes);
+v1Router.use('/attendance', attendanceRoutes);
+v1Router.use('/examinations', examRoutes);
+v1Router.use('/results', resultRoutes);
+v1Router.use('/fees', feeRoutes);
+v1Router.use('/payments', paymentRoutes);
+v1Router.use('/notices', noticeRoutes);
+v1Router.use('/reports', reportRoutes);
+v1Router.use('/audit-logs', auditRoutes);
+
+router.use('/v1', v1Router);
 
 module.exports = router;
