@@ -1,0 +1,10 @@
+{
+  "name": "@college-erp/shared",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node -e \"console.log('@college-erp/shared: syntax OK')\""
+  }
+}

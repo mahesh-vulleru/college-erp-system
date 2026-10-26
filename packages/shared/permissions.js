@@ -1,0 +1,91 @@
+const { ROLES } = require('./roles');
+
+/**
+ * System Permission Flags
+ */
+const PERMISSIONS = Object.freeze({
+  // User Management
+  USER_CREATE: 'user:create',
+  USER_READ: 'user:read',
+  USER_UPDATE: 'user:update',
+  USER_DELETE: 'user:delete',
+
+  // Academic Configuration
+  ACADEMIC_SETUP: 'academic:setup',
+  COURSE_MANAGE: 'course:manage',
+  SUBJECT_MANAGE: 'subject:manage',
+  STUDENT_ENROLL: 'student:enroll',
+
+  // Attendance
+  ATTENDANCE_MARK: 'attendance:mark',
+  ATTENDANCE_VIEW_DEPT: 'attendance:view_dept',
+  ATTENDANCE_VIEW_SELF: 'attendance:view_self',
+
+  // Marks & Grading
+  MARKS_ENTRY: 'marks:entry',
+  MARKS_APPROVE: 'marks:approve',
+  MARKS_VIEW_SELF: 'marks:view_self',
+
+  // Fees & Accounts
+  FEE_STRUCTURE_MANAGE: 'fee:manage_structure',
+  FEE_PAYMENT_COLLECT: 'fee:collect',
+  FEE_REPORTS_VIEW: 'fee:view_reports',
+  FEE_VIEW_SELF: 'fee:view_self',
+
+  // System & Audit
+  SYSTEM_AUDIT_LOGS: 'system:audit_logs',
+  SYSTEM_SETTINGS: 'system:settings'
+});
+
+/**
+ * Default Role-to-Permissions Mapping
+ */
+const ROLE_PERMISSIONS = Object.freeze({
+  [ROLES.SUPER_ADMIN]: Object.values(PERMISSIONS),
+
+  [ROLES.PRINCIPAL]: [
+    PERMISSIONS.USER_READ,
+    PERMISSIONS.ACADEMIC_SETUP,
+    PERMISSIONS.COURSE_MANAGE,
+    PERMISSIONS.SUBJECT_MANAGE,
+    PERMISSIONS.ATTENDANCE_VIEW_DEPT,
+    PERMISSIONS.MARKS_APPROVE,
+    PERMISSIONS.FEE_REPORTS_VIEW,
+    PERMISSIONS.SYSTEM_AUDIT_LOGS
+  ],
+
+  [ROLES.HOD]: [
+    PERMISSIONS.USER_READ,
+    PERMISSIONS.COURSE_MANAGE,
+    PERMISSIONS.SUBJECT_MANAGE,
+    PERMISSIONS.STUDENT_ENROLL,
+    PERMISSIONS.ATTENDANCE_MARK,
+    PERMISSIONS.ATTENDANCE_VIEW_DEPT,
+    PERMISSIONS.MARKS_ENTRY,
+    PERMISSIONS.MARKS_APPROVE
+  ],
+
+  [ROLES.FACULTY]: [
+    PERMISSIONS.USER_READ,
+    PERMISSIONS.ATTENDANCE_MARK,
+    PERMISSIONS.MARKS_ENTRY
+  ],
+
+  [ROLES.STUDENT]: [
+    PERMISSIONS.ATTENDANCE_VIEW_SELF,
+    PERMISSIONS.MARKS_VIEW_SELF,
+    PERMISSIONS.FEE_VIEW_SELF
+  ],
+
+  [ROLES.ACCOUNTS]: [
+    PERMISSIONS.USER_READ,
+    PERMISSIONS.FEE_STRUCTURE_MANAGE,
+    PERMISSIONS.FEE_PAYMENT_COLLECT,
+    PERMISSIONS.FEE_REPORTS_VIEW
+  ]
+});
+
+module.exports = {
+  PERMISSIONS,
+  ROLE_PERMISSIONS
+};

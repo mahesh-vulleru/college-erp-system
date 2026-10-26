@@ -1,0 +1,28 @@
+{
+  "name": "college-erp-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "College ERP Foundation for Engineering Institutions (<1,000 students)",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@college-erp/server & npm run dev --workspace=@college-erp/client",
+    "dev:server": "npm run dev --workspace=@college-erp/server",
+    "dev:client": "npm run dev --workspace=@college-erp/client",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present"
+  },
+  "keywords": [
+    "erp",
+    "college",
+    "higher-education",
+    "student-management",
+    "mern"
+  ],
+  "author": "Mahesh Vulleru & College ERP Team",
+  "license": "UNLICENSED"
+}

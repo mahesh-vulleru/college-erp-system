@@ -1,0 +1,15 @@
+const { ROLES, ROLE_LABELS, ALL_ROLES } = require('./roles');
+const { PERMISSIONS, ROLE_PERMISSIONS } = require('./permissions');
+const { HTTP_STATUS, DEPARTMENTS, ACADEMIC_SEMESTERS, USER_STATUS } = require('./constants');
+
+module.exports = {
+  ROLES,
+  ROLE_LABELS,
+  ALL_ROLES,
+  PERMISSIONS,
+  ROLE_PERMISSIONS,
+  HTTP_STATUS,
+  DEPARTMENTS,
+  ACADEMIC_SEMESTERS,
+  USER_STATUS
+};
