@@ -3,6 +3,13 @@
  * Populates sample development data for a single engineering college (<1,000 students)
  * SAFETY: Only executes in non-production environments!
  */
+const dns = require('dns');
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch {
+  // Ignore DNS config failure if restricted
+}
+
 const mongoose = require('mongoose');
 const env = require('../config/env');
 const { ROLES, USER_STATUS } = require('@college-erp/shared');
@@ -39,12 +46,13 @@ async function seed() {
 
   console.log('[Seed] Creating institutional users with role-based credentials...');
   const commonPassword = 'Password123!';
+  const adminPassword = 'Admin@12345';
 
   // 1. Create Core Users
   const adminUser = await User.create({
     name: 'Dr. Arthur Mitchell',
     email: 'admin@college.edu',
-    password: commonPassword,
+    password: adminPassword,
     role: ROLES.SUPER_ADMIN,
     department: 'Administration',
     status: USER_STATUS.ACTIVE
@@ -282,14 +290,15 @@ async function seed() {
   console.log(' SEED DATA COMPLETED SUCCESSFULLY');
   console.log('======================================================');
   console.log(' Institutional Demo Logins:');
-  console.log(' Password for all seed users: Password123!\n');
-  console.log(' 1. Super Admin:  admin@college.edu');
-  console.log(' 2. Principal:    principal@college.edu');
-  console.log(' 3. HOD (CSE):    hod.cse@college.edu');
-  console.log(' 4. HOD (ECE):    hod.ece@college.edu');
-  console.log(' 5. Faculty CSE:  faculty.turing@college.edu');
-  console.log(' 6. Student CSE:  student.aarav@college.edu');
-  console.log(' 7. Accounts:     accounts@college.edu');
+  console.log(' Super Admin password:  Admin@12345');
+  console.log(' All other users password: Password123!\n');
+  console.log(' 1. Super Admin:  admin@college.edu (Admin@12345)');
+  console.log(' 2. Principal:    principal@college.edu (Password123!)');
+  console.log(' 3. HOD (CSE):    hod.cse@college.edu (Password123!)');
+  console.log(' 4. HOD (ECE):    hod.ece@college.edu (Password123!)');
+  console.log(' 5. Faculty CSE:  faculty.turing@college.edu (Password123!)');
+  console.log(' 6. Student CSE:  student.aarav@college.edu (Password123!)');
+  console.log(' 7. Accounts:     accounts@college.edu (Password123!)');
   console.log('======================================================\n');
 
   await mongoose.connection.close();

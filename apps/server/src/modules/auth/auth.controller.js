@@ -19,11 +19,13 @@ function signToken(userId, role) {
 async function login(req, res, next) {
   try {
     const { email, password, role } = req.body;
+    const normalizedEmail = (email || '').trim().toLowerCase();
 
     // Explicitly query password since it has select: false
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
     if (!user) {
+      logger.warn(`[AUTH_FAILURE] Category: AUTH_USER_NOT_FOUND | Email: ${normalizedEmail}`);
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
         message: 'Invalid email or password credentials.'
@@ -32,6 +34,7 @@ async function login(req, res, next) {
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
+      logger.warn(`[AUTH_FAILURE] Category: AUTH_PASSWORD_MISMATCH | Email: ${normalizedEmail}`);
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
         message: 'Invalid email or password credentials.'
@@ -40,6 +43,7 @@ async function login(req, res, next) {
 
     // Role mismatch check: verify that the user's registered role matches the selected role
     if (role && user.role !== role) {
+      logger.warn(`[AUTH_FAILURE] Category: AUTH_ROLE_MISMATCH | Email: ${normalizedEmail} | StoredRole: ${user.role} | SelectedRole: ${role}`);
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
         message: `Role mismatch: This account is registered as '${user.role.replace(/_/g, ' ')}', not '${role.replace(/_/g, ' ')}'. Please choose the correct role.`
@@ -48,6 +52,7 @@ async function login(req, res, next) {
 
     // Check account status
     if (user.status !== USER_STATUS.ACTIVE) {
+      logger.warn(`[AUTH_FAILURE] Category: AUTH_ACCOUNT_INACTIVE | Email: ${normalizedEmail} | Status: ${user.status}`);
       return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
         message: `Account is ${user.status}. Please contact the institution administrator.`

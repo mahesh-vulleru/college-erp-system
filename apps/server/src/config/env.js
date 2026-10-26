@@ -1,9 +1,10 @@
 const dotenv = require('dotenv');
 const path = require('path');
 
-// Load environment from current directory or root
+// Load environment from current directory, server directory, or workspace root
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-dotenv.config({ path: path.resolve(process.cwd(), '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../../../.env') });
 
 const requiredVars = ['JWT_SECRET'];
 

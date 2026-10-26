@@ -104,7 +104,7 @@ export const LoginPage = () => {
   const handleFillDevCredentials = () => {
     const devEmail = devCredentials[selectedRole] || '';
     setEmail(devEmail);
-    setPassword('Password123!');
+    setPassword(selectedRole === ROLES.SUPER_ADMIN ? 'Admin@12345' : 'Password123!');
   };
 
   const getDashboardPath = (role) => {
