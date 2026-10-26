@@ -58,9 +58,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Enforce unique index on email
-userSchema.index({ email: 1 }, { unique: true });
-
 // Hash password before saving if modified
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) {

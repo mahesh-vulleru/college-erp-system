@@ -1,6 +1,7 @@
 const User = require('../auth/auth.model');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, USER_STATUS } = require('@college-erp/shared');
+const { recordAuditLog } = require('../../utils/auditLogger');
 
 /**
  * GET /api/v1/users
@@ -95,6 +96,14 @@ async function createUser(req, res, next) {
       isTemporaryPassword: isTemporaryPassword !== undefined ? !!isTemporaryPassword : true
     });
 
+    await recordAuditLog({
+      req,
+      action: 'USER_PROVISIONED',
+      entityType: 'User',
+      entityId: newUser._id,
+      details: { email: newUser.email, role: newUser.role, department: newUser.department }
+    });
+
     return sendSuccess(res, {
       statusCode: HTTP_STATUS.CREATED,
       message: 'Institutional user created successfully',
@@ -131,12 +140,27 @@ async function updateUser(req, res, next) {
       });
     }
 
+    const previousRole = user.role;
+    const previousStatus = user.status;
+
     if (name) user.name = name.trim();
     if (role) user.role = role;
     if (department !== undefined) user.department = department ? department.trim() : '';
     if (status) user.status = status;
 
     await user.save();
+
+    await recordAuditLog({
+      req,
+      action: 'USER_UPDATED',
+      entityType: 'User',
+      entityId: user._id,
+      details: {
+        email: user.email,
+        roleChanged: previousRole !== user.role ? { from: previousRole, to: user.role } : null,
+        statusChanged: previousStatus !== user.status ? { from: previousStatus, to: user.status } : null
+      }
+    });
 
     return sendSuccess(res, {
       message: 'User account updated successfully',
@@ -178,6 +202,14 @@ async function updateUserStatus(req, res, next) {
       });
     }
 
+    await recordAuditLog({
+      req,
+      action: status === USER_STATUS.ACTIVE ? 'USER_ACTIVATED' : 'USER_DEACTIVATED',
+      entityType: 'User',
+      entityId: user._id,
+      details: { email: user.email, newStatus: status }
+    });
+
     return sendSuccess(res, {
       message: `User status updated to ${status} successfully`,
       data: user
@@ -207,6 +239,14 @@ async function resetUserPassword(req, res, next) {
     user.password = newPassword;
     user.isTemporaryPassword = true;
     await user.save(); // Triggers bcrypt hashing pre-save hook
+
+    await recordAuditLog({
+      req,
+      action: 'PASSWORD_RESET_INITIATED',
+      entityType: 'User',
+      entityId: user._id,
+      details: { email: user.email, resetBy: req.user.email }
+    });
 
     return sendSuccess(res, {
       message: `Password has been reset successfully for ${user.email}. Temporary password flag set.`

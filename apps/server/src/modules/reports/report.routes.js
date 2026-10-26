@@ -2,7 +2,9 @@ const express = require('express');
 const {
   getAcademicSummary,
   getAttendanceOverview,
-  getFeeCollectionSummary
+  getFeeCollectionSummary,
+  getAdminOverview,
+  getDepartmentSummaries
 } = require('./report.controller');
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
@@ -31,5 +33,18 @@ router.get(
   getFeeCollectionSummary
 );
 
-module.exports = router;
+// High-level system-wide executive dashboard overview
+router.get(
+  '/admin-overview',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL),
+  getAdminOverview
+);
 
+// Department-level metrics with enrollment and faculty tallies
+router.get(
+  '/department-summaries',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getDepartmentSummaries
+);
+
+module.exports = router;
