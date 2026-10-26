@@ -1,3 +1,9 @@
+const dns = require('dns');
+// Configure reliable DNS servers for MongoDB Atlas SRV record resolution
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (e) {}
+
 const app = require('./app');
 const env = require('./config/env');
 const { connectDB } = require('./config/db');

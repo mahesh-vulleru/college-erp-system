@@ -1,4 +1,13 @@
 const mongoose = require('mongoose');
+const dns = require('dns');
+
+// On Windows, local DNS sometimes fails on MongoDB Atlas SRV lookups (querySrv ECONNREFUSED)
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (e) {
+  // fallback to system resolver
+}
+
 const env = require('./env');
 
 let isConnected = false;

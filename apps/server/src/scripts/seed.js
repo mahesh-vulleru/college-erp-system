@@ -3,6 +3,13 @@
  * Populates sample development data for a single engineering college (<1,000 students)
  * SAFETY: Only executes in non-production environments!
  */
+const dns = require('dns');
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch {
+  // Ignore DNS config failure if restricted
+}
+
 const mongoose = require('mongoose');
 const env = require('../config/env');
 const { ROLES, USER_STATUS } = require('@college-erp/shared');
@@ -38,28 +45,47 @@ async function seed() {
   ]);
 
   console.log('[Seed] Creating institutional users with role-based credentials...');
-  const commonPassword = 'Password123!';
+  const commonPassword = process.env.SEED_COMMON_PASSWORD || 'Password123!';
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'Admin@12345';
+
+  // Helper to prevent duplicate user creation when seed script runs more than once
+  async function upsertUser(userData) {
+    const cleanEmail = userData.email.toLowerCase().trim();
+    let existingUser = await User.findOne({ email: cleanEmail });
+    if (existingUser) {
+      existingUser.name = userData.name;
+      existingUser.role = userData.role;
+      existingUser.department = userData.department;
+      existingUser.status = userData.status || USER_STATUS.ACTIVE;
+      if (userData.password) {
+        existingUser.password = userData.password;
+      }
+      await existingUser.save();
+      return existingUser;
+    }
+    return await User.create({ ...userData, email: cleanEmail });
+  }
 
   // 1. Create Core Users matching prompt guidelines and test suites
-  const adminUser = await User.create({
+  const adminUser = await upsertUser({
     name: 'Dr. Arthur Mitchell',
     email: 'admin@college.edu',
-    password: commonPassword,
+    password: adminPassword,
     role: ROLES.SUPER_ADMIN,
     department: 'Administration',
     status: USER_STATUS.ACTIVE
   });
 
-  const superAdminUser = await User.create({
+  const superAdminUser = await upsertUser({
     name: 'Super Administrator',
     email: 'superadmin@college.edu',
-    password: commonPassword,
+    password: adminPassword,
     role: ROLES.SUPER_ADMIN,
     department: 'System Governance',
     status: USER_STATUS.ACTIVE
   });
 
-  const principalUser = await User.create({
+  const principalUser = await upsertUser({
     name: 'Dr. Eleanor Vance',
     email: 'principal@college.edu',
     password: commonPassword,
@@ -68,7 +94,7 @@ async function seed() {
     status: USER_STATUS.ACTIVE
   });
 
-  const hodCseUser = await User.create({
+  const hodCseUser = await upsertUser({
     name: 'Prof. David Kumar',
     email: 'hod.cse@college.edu',
     password: commonPassword,
@@ -77,7 +103,7 @@ async function seed() {
     status: USER_STATUS.ACTIVE
   });
 
-  const hodEceUser = await User.create({
+  const hodEceUser = await upsertUser({
     name: 'Prof. Sarah Jenkins',
     email: 'hod.ece@college.edu',
     password: commonPassword,
@@ -86,7 +112,7 @@ async function seed() {
     status: USER_STATUS.ACTIVE
   });
 
-  const facultyUser1 = await User.create({
+  const facultyUser1 = await upsertUser({
     name: 'Dr. Alan Turing',
     email: 'faculty.turing@college.edu',
     password: commonPassword,
@@ -95,7 +121,7 @@ async function seed() {
     status: USER_STATUS.ACTIVE
   });
 
-  const facultyUser2 = await User.create({
+  const facultyUser2 = await upsertUser({
     name: 'Prof. Rajesh Iyer',
     email: 'faculty01@college.edu',
     password: commonPassword,
@@ -104,7 +130,7 @@ async function seed() {
     status: USER_STATUS.ACTIVE
   });
 
-  const facultyUser3 = await User.create({
+  const facultyUser3 = await upsertUser({
     name: 'Dr. Claude Shannon',
     email: 'faculty.shannon@college.edu',
     password: commonPassword,
@@ -113,7 +139,7 @@ async function seed() {
     status: USER_STATUS.ACTIVE
   });
 
-  const accountsUser = await User.create({
+  const accountsUser = await upsertUser({
     name: 'Mr. Robert Sterling',
     email: 'accounts@college.edu',
     password: commonPassword,
@@ -122,7 +148,7 @@ async function seed() {
     status: USER_STATUS.ACTIVE
   });
 
-  const studentUser1 = await User.create({
+  const studentUser1 = await upsertUser({
     name: 'Aarav Sharma',
     email: 'student.aarav@college.edu',
     password: commonPassword,
@@ -131,7 +157,7 @@ async function seed() {
     status: USER_STATUS.ACTIVE
   });
 
-  const studentUser2 = await User.create({
+  const studentUser2 = await upsertUser({
     name: 'Rohan Gupta',
     email: 'student01@college.edu',
     password: commonPassword,
@@ -140,7 +166,7 @@ async function seed() {
     status: USER_STATUS.ACTIVE
   });
 
-  const studentUser3 = await User.create({
+  const studentUser3 = await upsertUser({
     name: 'Priya Patel',
     email: 'student.priya@college.edu',
     password: commonPassword,
@@ -150,7 +176,7 @@ async function seed() {
   });
 
   // Sample Disabled Account for status enforcement testing
-  const disabledUser = await User.create({
+  const disabledUser = await upsertUser({
     name: 'Disabled User Demo',
     email: 'disabled.user@college.edu',
     password: commonPassword,
@@ -340,7 +366,8 @@ async function seed() {
   console.log(' SEED DATA COMPLETED SUCCESSFULLY');
   console.log('======================================================');
   console.log(' Institutional Demo Logins:');
-  console.log(' Password for all seed users: Password123!\n');
+  console.log(' Super Admin password:  ' + adminPassword);
+  console.log(' All other users password: ' + commonPassword + '\n');
   console.log(' 1. Super Admin:  superadmin@college.edu (or admin@college.edu)');
   console.log(' 2. Principal:    principal@college.edu');
   console.log(' 3. HOD (CSE):    hod.cse@college.edu');
@@ -348,7 +375,7 @@ async function seed() {
   console.log(' 5. Faculty CSE:  faculty01@college.edu (or faculty.turing@college.edu)');
   console.log(' 6. Student CSE:  student01@college.edu (or student.aarav@college.edu)');
   console.log(' 7. Accounts:     accounts@college.edu');
-  console.log(' 8. Disabled Demo: disabled.user@college.edu');
+  console.log(' 8. Disabled Demo: disabled.user@college.edu (status: disabled)');
   console.log('======================================================\n');
 
   await mongoose.connection.close();
