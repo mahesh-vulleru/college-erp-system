@@ -9,6 +9,12 @@ dotenv.config({ path: path.resolve(__dirname, '../../../../.env') });
 const requiredVars = ['JWT_SECRET'];
 
 function validateEnv() {
+  // Safe test fallback for automated testing
+  if (process.env.NODE_ENV === 'test') {
+    process.env.JWT_SECRET = process.env.JWT_SECRET || 'test_jwt_secret_must_be_at_least_32_characters_long_for_jest';
+    return;
+  }
+
   const missing = [];
   for (const varName of requiredVars) {
     if (!process.env[varName]) {

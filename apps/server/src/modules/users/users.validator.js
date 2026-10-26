@@ -16,7 +16,7 @@ function validateUserStatusInput(data = {}) {
 
 function validateCreateUserInput(data = {}) {
   const errors = [];
-  const { name, email, password, role } = data;
+  const { name, email, password, role, status } = data;
 
   if (!name || typeof name !== 'string' || !name.trim()) {
     errors.push('Full legal name is required');
@@ -36,6 +36,46 @@ function validateCreateUserInput(data = {}) {
     errors.push(`Role is required and must be one of: ${ALL_ROLES.join(', ')}`);
   }
 
+  if (status && !Object.values(USER_STATUS).includes(status)) {
+    errors.push(`Status must be one of: ${Object.values(USER_STATUS).join(', ')}`);
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
+
+function validateUpdateUserInput(data = {}) {
+  const errors = [];
+  const { name, role, status } = data;
+
+  if (name !== undefined && (typeof name !== 'string' || !name.trim())) {
+    errors.push('Name cannot be empty');
+  }
+
+  if (role !== undefined && !ALL_ROLES.includes(role)) {
+    errors.push(`Role must be one of: ${ALL_ROLES.join(', ')}`);
+  }
+
+  if (status !== undefined && !Object.values(USER_STATUS).includes(status)) {
+    errors.push(`Status must be one of: ${Object.values(USER_STATUS).join(', ')}`);
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
+
+function validateResetPasswordInput(data = {}) {
+  const errors = [];
+  const { newPassword } = data;
+
+  if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
+    errors.push('New password is required and must be at least 6 characters long');
+  }
+
   return {
     isValid: errors.length === 0,
     errors
@@ -44,5 +84,7 @@ function validateCreateUserInput(data = {}) {
 
 module.exports = {
   validateUserStatusInput,
-  validateCreateUserInput
+  validateCreateUserInput,
+  validateUpdateUserInput,
+  validateResetPasswordInput
 };

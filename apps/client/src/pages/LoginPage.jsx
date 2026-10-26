@@ -88,11 +88,11 @@ export const LoginPage = () => {
 
   // Development-only sample credential fixtures (stripped from production builds)
   const devCredentials = {
-    [ROLES.SUPER_ADMIN]: 'admin@college.edu',
+    [ROLES.SUPER_ADMIN]: 'superadmin@college.edu',
     [ROLES.PRINCIPAL]: 'principal@college.edu',
     [ROLES.HOD]: 'hod.cse@college.edu',
-    [ROLES.FACULTY]: 'faculty.turing@college.edu',
-    [ROLES.STUDENT]: 'student.aarav@college.edu',
+    [ROLES.FACULTY]: 'faculty01@college.edu',
+    [ROLES.STUDENT]: 'student01@college.edu',
     [ROLES.ACCOUNTS]: 'accounts@college.edu'
   };
 
@@ -245,7 +245,7 @@ export const LoginPage = () => {
                 name="email"
                 type="email"
                 required
-                placeholder="e.g. principal@college.edu or student@college.edu"
+                placeholder="e.g. principal@college.edu or student01@college.edu"
                 icon={Mail}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
