@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, Link } from 'react-router-dom';
 import {
   GraduationCap,
   LayoutDashboard,
@@ -14,7 +14,7 @@ import {
   FileText,
   Clock,
   Users,
-  Settings,
+  Globe,
   X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -25,18 +25,30 @@ export const Sidebar = ({ isOpen, onClose }) => {
   const role = user?.role;
   const location = useLocation();
 
+  const getMyPortalPath = () => {
+    switch (role) {
+      case ROLES.SUPER_ADMIN: return '/admin';
+      case ROLES.PRINCIPAL: return '/principal';
+      case ROLES.HOD: return '/hod';
+      case ROLES.FACULTY: return '/faculty';
+      case ROLES.STUDENT: return '/student';
+      case ROLES.ACCOUNTS: return '/accounts';
+      default: return '/';
+    }
+  };
+
   // Navigation Items with role-based filtering
   const navSections = [
     {
-      title: 'Core Portals',
+      title: 'Institutional Portals',
       items: [
-        { path: '/', label: 'Institutional Hub', icon: LayoutDashboard, roles: ['*'] },
         { path: '/admin', label: 'Super Admin Portal', icon: ShieldCheck, roles: [ROLES.SUPER_ADMIN] },
         { path: '/principal', label: 'Principal & Exec', icon: Building2, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL] },
         { path: '/hod', label: 'Department Head (HOD)', icon: Users, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD] },
         { path: '/faculty', label: 'Faculty Workplace', icon: CalendarCheck, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY] },
         { path: '/student', label: 'Student Self-Service', icon: GraduationCap, roles: [ROLES.SUPER_ADMIN, ROLES.STUDENT] },
-        { path: '/accounts', label: 'Accounts & Finance', icon: CreditCard, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS] }
+        { path: '/accounts', label: 'Accounts & Finance', icon: CreditCard, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS] },
+        { path: '/overview', label: 'System Overview Hub', icon: LayoutDashboard, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL] }
       ]
     },
     {
@@ -79,7 +91,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       >
         {/* Brand header */}
         <div className="h-16 px-5 border-b border-navy-900 flex items-center justify-between">
-          <NavLink to="/" onClick={onClose} className="flex items-center space-x-3">
+          <Link to={getMyPortalPath()} onClick={onClose} className="flex items-center space-x-3">
             <div className="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center text-white shadow-subtle">
               <GraduationCap className="w-5 h-5" />
             </div>
@@ -87,7 +99,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
               <span className="font-extrabold text-sm tracking-wider text-white block">COLLEGE ERP</span>
               <span className="text-[10px] text-teal-400 block tracking-widest uppercase font-semibold">Institutional v1</span>
             </div>
-          </NavLink>
+          </Link>
           <button
             onClick={onClose}
             className="p-1 rounded-lg text-navy-400 hover:text-white lg:hidden"
@@ -138,8 +150,19 @@ export const Sidebar = ({ isOpen, onClose }) => {
           })}
         </nav>
 
-        {/* User Info Card at bottom */}
-        <div className="p-3.5 border-t border-navy-900 bg-navy-950">
+        {/* Public Website Shortcut & User Info Card at bottom */}
+        <div className="p-3 border-t border-navy-900 bg-navy-950 space-y-2">
+          <Link
+            to="/"
+            className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-medium text-navy-400 hover:text-teal-300 hover:bg-navy-900/60 transition-colors"
+          >
+            <span className="flex items-center">
+              <Globe className="w-3.5 h-3.5 mr-2 text-teal-500" />
+              <span>Public Campus Home</span>
+            </span>
+            <span className="text-[10px]">&rarr;</span>
+          </Link>
+
           <div className="flex items-center space-x-3 p-2 rounded-xl bg-navy-900/60 border border-navy-800">
             <div className="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold text-xs uppercase">
               {user?.name ? user.name.charAt(0) : 'G'}

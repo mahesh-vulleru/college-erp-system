@@ -2,7 +2,7 @@ const { ALL_ROLES } = require('@college-erp/shared');
 
 function validateLoginInput(data = {}) {
   const errors = [];
-  const { email, password } = data;
+  const { email, password, role } = data;
 
   if (!email || typeof email !== 'string' || !email.trim()) {
     errors.push('Valid email address is required');
@@ -12,6 +12,10 @@ function validateLoginInput(data = {}) {
 
   if (!password || typeof password !== 'string' || password.length < 6) {
     errors.push('Password must be at least 6 characters');
+  }
+
+  if (role && !ALL_ROLES.includes(role)) {
+    errors.push(`Role must be one of: ${ALL_ROLES.join(', ')}`);
   }
 
   return {

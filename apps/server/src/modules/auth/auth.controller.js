@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
+const { HTTP_STATUS, ROLES, USER_STATUS } = require('@college-erp/shared');
 const env = require('../../config/env');
 const User = require('./auth.model');
 const logger = require('../../utils/logger');
@@ -14,10 +14,11 @@ function signToken(userId, role) {
 
 /**
  * POST /api/v1/auth/login
+ * Validates user credentials and enforces role verification when a role is selected.
  */
 async function login(req, res, next) {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
     // Explicitly query password since it has select: false
     const user = await User.findOne({ email }).select('+password');
@@ -34,6 +35,22 @@ async function login(req, res, next) {
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
         message: 'Invalid email or password credentials.'
+      });
+    }
+
+    // Role mismatch check: verify that the user's registered role matches the selected role
+    if (role && user.role !== role) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        success: false,
+        message: `Role mismatch: This account is registered as '${user.role.replace(/_/g, ' ')}', not '${role.replace(/_/g, ' ')}'. Please choose the correct role.`
+      });
+    }
+
+    // Check account status
+    if (user.status !== USER_STATUS.ACTIVE) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        success: false,
+        message: `Account is ${user.status}. Please contact the institution administrator.`
       });
     }
 
@@ -55,6 +72,7 @@ async function login(req, res, next) {
         email: user.email,
         role: user.role,
         department: user.department,
+        status: user.status,
         lastLogin: user.lastLogin
       }
     });
@@ -105,7 +123,8 @@ async function register(req, res, next) {
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
-        department: newUser.department
+        department: newUser.department,
+        status: newUser.status
       }
     });
   } catch (error) {
