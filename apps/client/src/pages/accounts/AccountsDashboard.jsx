@@ -216,7 +216,7 @@ export const AccountsDashboard = () => {
       addToast({
         type: 'success',
         title: 'Fee Plan Created',
-        message: `Registered fee schedule with total â‚¹ ${total.toLocaleString('en-IN')}`
+        message: `Registered fee schedule with total ₹ ${total.toLocaleString('en-IN')}`
       });
       setIsCreateStructureOpen(false);
       loadData();
@@ -340,7 +340,7 @@ export const AccountsDashboard = () => {
       header: 'Amount Paid (INR)',
       cell: (row) => (
         <span className="font-mono font-bold text-sm text-navy-950">
-          â‚¹ {row.amountPaid ? Number(row.amountPaid).toLocaleString('en-IN') : '0'}
+          ₹ {row.amountPaid ? Number(row.amountPaid).toLocaleString('en-IN') : '0'}
         </span>
       )
     },
@@ -396,7 +396,7 @@ export const AccountsDashboard = () => {
       header: 'Tuition Fee',
       cell: (row) => (
         <span className="text-xs text-navy-700 font-mono">
-          â‚¹ {Number(row.tuitionFee || 0).toLocaleString('en-IN')}
+          ₹ {Number(row.tuitionFee || 0).toLocaleString('en-IN')}
         </span>
       )
     },
@@ -404,7 +404,7 @@ export const AccountsDashboard = () => {
       header: 'Lab & Library',
       cell: (row) => (
         <span className="text-xs text-navy-600 font-mono">
-          â‚¹ {(Number(row.labFee || 0) + Number(row.libraryFee || 0)).toLocaleString('en-IN')}
+          ₹ {(Number(row.labFee || 0) + Number(row.libraryFee || 0)).toLocaleString('en-IN')}
         </span>
       )
     },
@@ -412,7 +412,7 @@ export const AccountsDashboard = () => {
       header: 'Total Scheduled Fee',
       cell: (row) => (
         <span className="font-mono font-bold text-sm text-teal-950 block">
-          â‚¹ {Number(row.totalAmount || 0).toLocaleString('en-IN')}
+          ₹ {Number(row.totalAmount || 0).toLocaleString('en-IN')}
         </span>
       )
     }
@@ -780,7 +780,7 @@ export const AccountsDashboard = () => {
                       <span className="text-[11px] text-navy-500 font-mono">{count} Transaction(s) &bull; {pct}% Share</span>
                     </div>
                     <span className="font-mono font-bold text-sm text-navy-900">
-                      â‚¹ {totalMethodAmount.toLocaleString('en-IN')}
+                      ₹ {totalMethodAmount.toLocaleString('en-IN')}
                     </span>
                   </div>
                 );
@@ -856,7 +856,7 @@ export const AccountsDashboard = () => {
               }}
               options={feeStructures.map((f) => ({
                 value: f._id,
-                label: `${f.title} (â‚¹ ${Number(f.totalAmount || 0).toLocaleString('en-IN')})`
+                label: `${f.title} (₹ ${Number(f.totalAmount || 0).toLocaleString('en-IN')})`
               }))}
             />
           </div>

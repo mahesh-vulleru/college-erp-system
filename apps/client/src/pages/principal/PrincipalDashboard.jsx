@@ -359,6 +359,49 @@ export const PrincipalDashboard = () => {
         />
       </div>
 
+      {/* 4 Quick Action Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <Link
+          to="/departments"
+          className="bg-white hover:bg-slate-50 transition-all border border-slate-200/80 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-subtle hover:shadow-card group cursor-pointer"
+        >
+          <div className="w-11 h-11 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+            <Building2 className="w-5 h-5" />
+          </div>
+          <span className="text-xs sm:text-sm font-semibold text-slate-800">Departments</span>
+        </Link>
+
+        <Link
+          to="/examinations"
+          className="bg-white hover:bg-slate-50 transition-all border border-slate-200/80 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-subtle hover:shadow-card group cursor-pointer"
+        >
+          <div className="w-11 h-11 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+            <Award className="w-5 h-5" />
+          </div>
+          <span className="text-xs sm:text-sm font-semibold text-slate-800">Examinations</span>
+        </Link>
+
+        <Link
+          to="/notices"
+          className="bg-white hover:bg-slate-50 transition-all border border-slate-200/80 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-subtle hover:shadow-card group cursor-pointer"
+        >
+          <div className="w-11 h-11 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+            <Bell className="w-5 h-5" />
+          </div>
+          <span className="text-xs sm:text-sm font-semibold text-slate-800">Notice Board</span>
+        </Link>
+
+        <Link
+          to="/reports"
+          className="bg-white hover:bg-slate-50 transition-all border border-slate-200/80 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-subtle hover:shadow-card group cursor-pointer"
+        >
+          <div className="w-11 h-11 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+            <FileSpreadsheet className="w-5 h-5" />
+          </div>
+          <span className="text-xs sm:text-sm font-semibold text-slate-800">Executive Reports</span>
+        </Link>
+      </div>
+
       {/* Charts Row: Enrollment Trend & Department Strength */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
@@ -450,6 +493,11 @@ export const PrincipalDashboard = () => {
       <Card
         title="Department-Wise Enrollment & Faculty Distribution"
         subtitle="Live metrics computed directly from enrolled student profiles and department allocations in MongoDB"
+        headerAction={
+          <Link to="/departments" className="text-xs font-semibold text-teal-700 hover:text-teal-800 flex items-center">
+            Manage Departments <ArrowRight className="w-3.5 h-3.5 ml-1" />
+          </Link>
+        }
       >
         <Table
           columns={deptColumns}

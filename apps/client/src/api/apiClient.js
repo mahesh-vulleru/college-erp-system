@@ -167,8 +167,29 @@ class ApiClient {
     return this.get('/v1/courses');
   }
 
-  getSubjects() {
-    return this.get('/v1/subjects');
+  createCourse(data) {
+    return this.post('/v1/courses', data);
+  }
+
+  updateCourse(id, data) {
+    return this.put(`/v1/courses/${id}`, data);
+  }
+
+  deleteCourse(id) {
+    return this.delete(`/v1/courses/${id}`);
+  }
+
+  getSubjects(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.course) searchParams.append('course', params.course);
+    if (params.semester) searchParams.append('semester', params.semester);
+    if (params.department) searchParams.append('department', params.department);
+    const qs = searchParams.toString();
+    return this.get(`/v1/subjects${qs ? `?${qs}` : ''}`);
+  }
+
+  createSubject(data) {
+    return this.post('/v1/subjects', data);
   }
 
   // Faculty
@@ -256,6 +277,10 @@ class ApiClient {
   }
 
   // Invoices & Dues
+  getFeeInvoices(params = {}) {
+    return this.getInvoices(params);
+  }
+
   getInvoices(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.student) searchParams.append('student', params.student);
@@ -429,12 +454,40 @@ class ApiClient {
     return this.post('/v1/timetable', data);
   }
 
+  updateTimetableSlot(id, data) {
+    return this.put(`/v1/timetable/${id}`, data);
+  }
+
+  deleteTimetableSlot(id) {
+    return this.delete(`/v1/timetable/${id}`);
+  }
+
+  createExam(data) {
+    return this.post('/v1/examinations', data);
+  }
+
+  updateExam(id, data) {
+    return this.put(`/v1/examinations/${id}`, data);
+  }
+
+  deleteExam(id) {
+    return this.delete(`/v1/examinations/${id}`);
+  }
+
   getExams(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.semester) searchParams.append('semester', params.semester);
     if (params.academicYear) searchParams.append('academicYear', params.academicYear);
     const qs = searchParams.toString();
     return this.get(`/v1/examinations${qs ? `?${qs}` : ''}`);
+  }
+
+  recordResult(data) {
+    return this.post('/v1/results', data);
+  }
+
+  batchRecordResults(data) {
+    return this.post('/v1/results/batch', data);
   }
 
   getResults(params = {}) {
@@ -455,6 +508,14 @@ class ApiClient {
 
   markAttendanceBatch(data) {
     return this.post('/v1/attendance/mark', data);
+  }
+
+  getAttendanceSummary(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.student) searchParams.append('student', params.student);
+    if (params.subject) searchParams.append('subject', params.subject);
+    const qs = searchParams.toString();
+    return this.get(`/v1/attendance/summary${qs ? `?${qs}` : ''}`);
   }
 }
 

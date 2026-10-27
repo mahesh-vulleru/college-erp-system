@@ -592,9 +592,9 @@ export const HodDashboard = () => {
           <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm sm:text-base font-bold text-slate-900">Recent Department Activities</h2>
-              <span className="text-xs font-semibold text-amber-600 hover:text-amber-700 cursor-pointer">
+              <Link to="/notices" className="text-xs font-semibold text-amber-600 hover:text-amber-700">
                 View All
-              </span>
+              </Link>
             </div>
             <div className="space-y-3">
               {deptActivities.map((act, i) => (

@@ -631,9 +631,9 @@ export const FacultyDashboard = () => {
           <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm sm:text-base font-bold text-slate-900">Recent Activities</h2>
-              <span className="text-xs font-semibold text-purple-600 hover:text-purple-700 cursor-pointer">
+              <Link to="/attendance" className="text-xs font-semibold text-purple-600 hover:text-purple-700">
                 View All
-              </span>
+              </Link>
             </div>
             <div className="space-y-3">
               {facultyRecentActivities.map((act, i) => (
