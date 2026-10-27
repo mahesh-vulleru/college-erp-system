@@ -6,6 +6,9 @@ async function listCourses(req, res, next) {
   try {
     const query = {};
     if (req.query.department) query.department = req.query.department;
+    if (req.query.isActive !== undefined) {
+      query.isActive = req.query.isActive === 'true';
+    }
     const courses = await Course.find(query).populate('department', 'name code');
     return sendSuccess(res, {
       message: 'Courses retrieved successfully',
@@ -36,7 +39,8 @@ async function getCourseById(req, res, next) {
 async function createCourse(req, res, next) {
   try {
     const { name, code, department, degreeType, durationSemesters, totalCredits } = req.body;
-    const existing = await Course.findOne({ code });
+    const cleanCode = (code || '').toUpperCase().trim();
+    const existing = await Course.findOne({ code: cleanCode });
     if (existing) {
       return sendError(res, {
         statusCode: HTTP_STATUS.CONFLICT,
@@ -46,13 +50,15 @@ async function createCourse(req, res, next) {
     }
 
     const course = await Course.create({
-      name,
-      code,
+      name: (name || '').trim(),
+      code: cleanCode,
       department,
-      degreeType,
-      durationSemesters,
-      totalCredits
+      degreeType: degreeType || 'B.Tech',
+      durationSemesters: Number(durationSemesters) || 8,
+      totalCredits: Number(totalCredits) || 160
     });
+
+    await course.populate('department', 'name code');
 
     return sendSuccess(res, {
       statusCode: HTTP_STATUS.CREATED,
@@ -64,9 +70,78 @@ async function createCourse(req, res, next) {
   }
 }
 
+async function updateCourse(req, res, next) {
+  try {
+    const { name, code, department, degreeType, durationSemesters, totalCredits, isActive } = req.body;
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        message: 'Course not found',
+        code: 'NOT_FOUND'
+      });
+    }
+
+    if (code && code.toUpperCase().trim() !== course.code) {
+      const cleanCode = code.toUpperCase().trim();
+      const existing = await Course.findOne({ code: cleanCode, _id: { $ne: course._id } });
+      if (existing) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.CONFLICT,
+          message: 'Another course already uses this code',
+          code: 'DUPLICATE_RESOURCE'
+        });
+      }
+      course.code = cleanCode;
+    }
+
+    if (name) course.name = name.trim();
+    if (department) course.department = department;
+    if (degreeType) course.degreeType = degreeType;
+    if (durationSemesters !== undefined) course.durationSemesters = Number(durationSemesters);
+    if (totalCredits !== undefined) course.totalCredits = Number(totalCredits);
+    if (isActive !== undefined) course.isActive = isActive;
+
+    await course.save();
+    await course.populate('department', 'name code');
+
+    return sendSuccess(res, {
+      message: 'Course updated successfully',
+      data: course
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function deleteCourse(req, res, next) {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        message: 'Course not found',
+        code: 'NOT_FOUND'
+      });
+    }
+
+    // Soft archive rather than hard delete to preserve historical integrity
+    course.isActive = false;
+    await course.save();
+
+    return sendSuccess(res, {
+      message: 'Course archived successfully',
+      data: course
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   listCourses,
   getCourseById,
-  createCourse
+  createCourse,
+  updateCourse,
+  deleteCourse
 };
-

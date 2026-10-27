@@ -1,5 +1,11 @@
 const express = require('express');
-const { listExams, createExam } = require('./exam.controller');
+const {
+  listExams,
+  getExamById,
+  createExam,
+  updateExam,
+  deleteExam
+} = require('./exam.controller');
 const { validateExamInput } = require('./exam.validator');
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
@@ -11,6 +17,7 @@ const router = express.Router();
 router.use(authenticate);
 
 router.get('/', listExams);
+router.get('/:id', getExamById);
 
 router.post(
   '/',
@@ -19,5 +26,16 @@ router.post(
   createExam
 );
 
-module.exports = router;
+router.put(
+  '/:id',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  updateExam
+);
 
+router.delete(
+  '/:id',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  deleteExam
+);
+
+module.exports = router;

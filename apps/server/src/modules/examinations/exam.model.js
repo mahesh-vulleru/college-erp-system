@@ -24,6 +24,19 @@ const examSchema = new mongoose.Schema(
       min: 1,
       max: 8
     },
+    department: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Department'
+    },
+    course: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Course'
+    },
+    venue: {
+      type: String,
+      trim: true,
+      default: 'Main Examination Hall'
+    },
     startDate: {
       type: Date,
       required: true
@@ -35,6 +48,11 @@ const examSchema = new mongoose.Schema(
     isPublished: {
       type: Boolean,
       default: false
+    },
+    status: {
+      type: String,
+      enum: ['scheduled', 'ongoing', 'completed', 'cancelled'],
+      default: 'scheduled'
     }
   },
   { timestamps: true }
@@ -43,4 +61,3 @@ const examSchema = new mongoose.Schema(
 const Examination = mongoose.model('Examination', examSchema);
 
 module.exports = Examination;
-
