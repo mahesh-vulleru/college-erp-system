@@ -49,7 +49,8 @@ export const DepartmentsPage = () => {
     hod: '',
     intakeCapacity: 60,
     description: '',
-    isActive: true
+    isActive: true,
+    reassignHod: false
   });
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
@@ -128,7 +129,8 @@ export const DepartmentsPage = () => {
         code: formData.code.toUpperCase().trim(),
         hod: formData.hod || null,
         intakeCapacity: Number(formData.intakeCapacity) || 60,
-        description: formData.description.trim()
+        description: formData.description.trim(),
+        reassignHod: !!formData.reassignHod
       });
       addToast('Department created successfully', 'success');
       setIsCreateModalOpen(false);
@@ -155,7 +157,8 @@ export const DepartmentsPage = () => {
         hod: formData.hod || null,
         intakeCapacity: Number(formData.intakeCapacity) || 60,
         description: formData.description.trim(),
-        isActive: formData.isActive
+        isActive: formData.isActive,
+        reassignHod: !!formData.reassignHod
       });
       addToast('Department updated successfully', 'success');
       setIsEditModalOpen(false);
@@ -395,16 +398,40 @@ export const DepartmentsPage = () => {
             </label>
             <select
               value={formData.hod}
-              onChange={(e) => setFormData({ ...formData, hod: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, hod: e.target.value, reassignHod: false })}
               className="w-full text-sm border border-navy-200 rounded-lg p-2.5 focus:ring-2 focus:ring-teal-500 bg-white"
             >
               <option value="">-- Leave Unassigned for Now --</option>
-              {hodUsers.map((h) => (
-                <option key={h._id} value={h._id}>
-                  {h.name} ({h.email})
-                </option>
-              ))}
+              {hodUsers.map((h) => {
+                const assigned = departments.find((d) => (d.hod?._id === h._id || d.hod === h._id));
+                return (
+                  <option key={h._id} value={h._id}>
+                    {h.name} ({h.email}){assigned ? ` [Assigned to: ${assigned.code}]` : ''}
+                  </option>
+                );
+              })}
             </select>
+            {(() => {
+              const assigned = departments.find((d) => formData.hod && (d.hod?._id === formData.hod || d.hod === formData.hod));
+              if (!assigned) return null;
+              return (
+                <div className="mt-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900">
+                  <p className="font-semibold flex items-center">
+                    <AlertCircle className="w-3.5 h-3.5 mr-1 text-amber-600 inline" />
+                    Notice: Currently assigned to {assigned.name} ({assigned.code})
+                  </p>
+                  <label className="flex items-center space-x-2 mt-1.5 cursor-pointer font-medium text-amber-950">
+                    <input
+                      type="checkbox"
+                      checked={formData.reassignHod || false}
+                      onChange={(e) => setFormData({ ...formData, reassignHod: e.target.checked })}
+                      className="rounded text-teal-600 focus:ring-teal-500"
+                    />
+                    <span>Reassign and transfer HOD to this department</span>
+                  </label>
+                </div>
+              );
+            })()}
           </div>
           <div>
             <label className="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-1">
@@ -466,16 +493,44 @@ export const DepartmentsPage = () => {
             </label>
             <select
               value={formData.hod}
-              onChange={(e) => setFormData({ ...formData, hod: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, hod: e.target.value, reassignHod: false })}
               className="w-full text-sm border border-navy-200 rounded-lg p-2.5 focus:ring-2 focus:ring-teal-500 bg-white"
             >
               <option value="">-- No HOD Assigned --</option>
-              {hodUsers.map((h) => (
-                <option key={h._id} value={h._id}>
-                  {h.name} ({h.email})
-                </option>
-              ))}
+              {hodUsers.map((h) => {
+                const assigned = departments.find(
+                  (d) => (d.hod?._id === h._id || d.hod === h._id) && d._id !== selectedDept?._id
+                );
+                return (
+                  <option key={h._id} value={h._id}>
+                    {h.name} ({h.email}){assigned ? ` [Assigned to: ${assigned.code}]` : ''}
+                  </option>
+                );
+              })}
             </select>
+            {(() => {
+              const assigned = departments.find(
+                (d) => formData.hod && (d.hod?._id === formData.hod || d.hod === formData.hod) && d._id !== selectedDept?._id
+              );
+              if (!assigned) return null;
+              return (
+                <div className="mt-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900">
+                  <p className="font-semibold flex items-center">
+                    <AlertCircle className="w-3.5 h-3.5 mr-1 text-amber-600 inline" />
+                    Notice: Currently assigned to {assigned.name} ({assigned.code})
+                  </p>
+                  <label className="flex items-center space-x-2 mt-1.5 cursor-pointer font-medium text-amber-950">
+                    <input
+                      type="checkbox"
+                      checked={formData.reassignHod || false}
+                      onChange={(e) => setFormData({ ...formData, reassignHod: e.target.checked })}
+                      className="rounded text-teal-600 focus:ring-teal-500"
+                    />
+                    <span>Reassign and transfer HOD to this department</span>
+                  </label>
+                </div>
+              );
+            })()}
           </div>
           <div>
             <label className="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-1">

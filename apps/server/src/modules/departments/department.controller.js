@@ -34,28 +34,49 @@ async function getDepartmentById(req, res, next) {
 
 async function createDepartment(req, res, next) {
   try {
-    const { name, code, hod, intakeCapacity, description } = req.body;
-    const existing = await Department.findOne({ $or: [{ code }, { name }] });
+    const { name, code, hod, intakeCapacity, description, reassignHod } = req.body;
+    const trimmedName = name ? name.trim() : '';
+    const formattedCode = code ? code.toUpperCase().trim() : '';
+
+    const existing = await Department.findOne({
+      $or: [
+        { code: formattedCode },
+        { name: { $regex: new RegExp(`^${trimmedName}$`, 'i') } }
+      ]
+    });
     if (existing) {
       return sendError(res, {
         statusCode: HTTP_STATUS.CONFLICT,
-        message: 'Department with this code or name already exists',
+        message: existing.code === formattedCode
+          ? `Department with code '${formattedCode}' already exists`
+          : `Department with name '${trimmedName}' already exists`,
         code: 'DUPLICATE_RESOURCE'
       });
     }
 
-    if (hod) {
-      const existingHod = await Department.findOne({ hod });
+    const targetHodId = (hod && typeof hod === 'object') ? hod._id : hod;
+    if (targetHodId && targetHodId !== 'null' && targetHodId !== 'unassigned' && targetHodId !== '') {
+      const existingHod = await Department.findOne({ hod: targetHodId });
       if (existingHod) {
-        return sendError(res, {
-          statusCode: HTTP_STATUS.CONFLICT,
-          message: `This HOD is already assigned to the '${existingHod.name}' department.`,
-          code: 'HOD_ASSIGNMENT_CONFLICT'
-        });
+        if (reassignHod) {
+          await Department.updateOne({ _id: existingHod._id }, { $set: { hod: null } });
+        } else {
+          return sendError(res, {
+            statusCode: HTTP_STATUS.CONFLICT,
+            message: `This HOD is already assigned to the '${existingHod.name}' department. Reassign them first.`,
+            code: 'HOD_ASSIGNMENT_CONFLICT'
+          });
+        }
       }
     }
 
-    const dept = await Department.create({ name, code, hod, intakeCapacity, description });
+    const dept = await Department.create({
+      name: trimmedName,
+      code: formattedCode,
+      hod: targetHodId || null,
+      intakeCapacity: intakeCapacity || 60,
+      description: description ? description.trim() : ''
+    });
 
     await recordAuditLog({
       req,
@@ -77,7 +98,7 @@ async function createDepartment(req, res, next) {
 
 async function updateDepartment(req, res, next) {
   try {
-    const { name, code, hod, intakeCapacity, description, isActive } = req.body;
+    const { name, code, hod, intakeCapacity, description, isActive, reassignHod } = req.body;
     const dept = await Department.findById(req.params.id);
     if (!dept) {
       return sendError(res, {
@@ -87,23 +108,69 @@ async function updateDepartment(req, res, next) {
       });
     }
 
-    if (hod) {
-      // Check for conflict: ensure HOD is not assigned to another department
-      const existingHodDept = await Department.findOne({ hod, _id: { $ne: req.params.id } });
-      if (existingHodDept) {
-        return sendError(res, {
-          statusCode: HTTP_STATUS.CONFLICT,
-          message: `This HOD is already assigned to the '${existingHodDept.name}' department. Reassign them first.`,
-          code: 'HOD_ASSIGNMENT_CONFLICT'
+    if (name) {
+      const trimmedName = name.trim();
+      if (trimmedName.toLowerCase() !== dept.name.toLowerCase()) {
+        const existingName = await Department.findOne({
+          name: { $regex: new RegExp(`^${trimmedName}$`, 'i') },
+          _id: { $ne: dept._id }
         });
+        if (existingName) {
+          return sendError(res, {
+            statusCode: HTTP_STATUS.CONFLICT,
+            message: `Department with name '${trimmedName}' already exists`,
+            code: 'DUPLICATE_RESOURCE'
+          });
+        }
       }
-      dept.hod = hod;
-    } else if (hod === null || hod === '') {
-      dept.hod = null;
+      dept.name = trimmedName;
     }
 
-    if (name) dept.name = name.trim();
-    if (code) dept.code = code.toUpperCase().trim();
+    if (code) {
+      const formattedCode = code.toUpperCase().trim();
+      if (formattedCode !== dept.code) {
+        const existingCode = await Department.findOne({
+          code: formattedCode,
+          _id: { $ne: dept._id }
+        });
+        if (existingCode) {
+          return sendError(res, {
+            statusCode: HTTP_STATUS.CONFLICT,
+            message: `Department with code '${formattedCode}' already exists`,
+            code: 'DUPLICATE_RESOURCE'
+          });
+        }
+      }
+      dept.code = formattedCode;
+    }
+
+    if (hod !== undefined) {
+      const targetHodId = (hod && typeof hod === 'object') ? hod._id : hod;
+      if (targetHodId && targetHodId !== 'null' && targetHodId !== 'unassigned' && targetHodId !== '') {
+        // Check for conflict: ensure HOD is not assigned to another department
+        const existingHodDept = await Department.findOne({
+          hod: targetHodId,
+          _id: { $ne: dept._id }
+        });
+        if (existingHodDept) {
+          if (reassignHod) {
+            await Department.updateOne({ _id: existingHodDept._id }, { $set: { hod: null } });
+            dept.hod = targetHodId;
+          } else {
+            return sendError(res, {
+              statusCode: HTTP_STATUS.CONFLICT,
+              message: `This HOD is already assigned to the '${existingHodDept.name}' department. Reassign them first.`,
+              code: 'HOD_ASSIGNMENT_CONFLICT'
+            });
+          }
+        } else {
+          dept.hod = targetHodId;
+        }
+      } else {
+        dept.hod = null;
+      }
+    }
+
     if (intakeCapacity !== undefined) dept.intakeCapacity = intakeCapacity;
     if (description !== undefined) dept.description = description ? description.trim() : '';
     if (isActive !== undefined) dept.isActive = isActive;
