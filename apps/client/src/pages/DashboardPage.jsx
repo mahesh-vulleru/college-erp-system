@@ -161,7 +161,7 @@ export const DashboardPage = () => {
       records: overviewData?.academic?.subjects ? `${overviewData.academic.subjects} Courses` : 'Live',
       status: 'Active',
       security: 'Semester & Credit Bounds',
-      route: '/hod'
+      route: '/subjects'
     },
     {
       module: 'Faculty Workplace Profiles',
@@ -185,7 +185,7 @@ export const DashboardPage = () => {
       records: overviewData?.finance?.feeStructures ? `${overviewData.finance.feeStructures} Plans` : 'Live',
       status: 'Active',
       security: 'Department & Category Locked',
-      route: '/accounts'
+      route: '/fees'
     },
     {
       module: 'Verified Payment Ledger',
@@ -193,7 +193,7 @@ export const DashboardPage = () => {
       records: overviewData?.finance?.completedTransactions ? `${overviewData.finance.completedTransactions} Verified` : 'Live',
       status: 'Active',
       security: 'Strict Idempotent Verification',
-      route: '/accounts'
+      route: '/payments'
     },
     {
       module: 'Security & Action Audit Trail',
@@ -201,7 +201,7 @@ export const DashboardPage = () => {
       records: overviewData?.audit?.totalLogs ? `${overviewData.audit.totalLogs} Events` : 'Live',
       status: 'Active & Persistent',
       security: 'Immutable Audit History',
-      route: '/admin'
+      route: '/audit-logs'
     }
   ];
 
@@ -352,7 +352,13 @@ export const DashboardPage = () => {
       </div>
 
       {/* Real MongoDB Metrics Overview */}
-      {overviewData && (
+      {isLoading && !overviewData ? (
+        <div className="p-6 text-center bg-white rounded-2xl border border-navy-100 shadow-2xs">
+          <RefreshCw className="w-5 h-5 text-teal-600 animate-spin mx-auto mb-2" />
+          <p className="text-sm font-semibold text-navy-800">Synchronizing Institutional Overview & Metrics...</p>
+          <p className="text-xs text-navy-400 mt-0.5">Connecting to live MongoDB collections & system telemetry</p>
+        </div>
+      ) : overviewData ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <StatWidget
             title="Total Accounts"
@@ -390,7 +396,7 @@ export const DashboardPage = () => {
             variant="navy"
           />
         </div>
-      )}
+      ) : null}
 
       {/* Live System, Database & Infrastructure Diagnostic */}
       <Card
@@ -423,7 +429,7 @@ export const DashboardPage = () => {
                   {healthData?.status || 'Operational'}
                 </span>
                 <span className="text-[10px] text-navy-500 mt-1 block font-mono">
-                  v{healthData?.version || '1.0.0'} • Node {overviewData?.system?.nodeVersion || process.version || 'v20'}
+                  v{healthData?.version || '1.0.0'} • Node {overviewData?.system?.nodeVersion || 'v20'}
                 </span>
               </div>
 
