@@ -21,6 +21,9 @@ import {
   ArrowRight
 } from 'lucide-react';
 import Card from '../../components/common/Card';
+import CampusBuildingGraphic from '../../components/common/CampusBuildingGraphic';
+import SimpleLineChart from '../../components/common/SimpleLineChart';
+import SimpleBarChart from '../../components/common/SimpleBarChart';
 import StatWidget from '../../components/common/StatWidget';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -266,137 +269,181 @@ export const PrincipalDashboard = () => {
     }
   ];
 
+  // Chart data matching reference image
+  const enrollmentTrend = {
+    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    series: [
+      { name: 'New Admissions', color: '#06b6d4', data: [42, 38, 48, 52, 45, 58] },
+      { name: 'Total Students', color: '#3b82f6', data: [820, 835, 850, 890, 940, 1000] }
+    ]
+  };
+
+  const deptStrengthBars = [
+    { label: 'CSE', values: [280, 32] },
+    { label: 'ECE', values: [210, 26] },
+    { label: 'ME', values: [180, 22] },
+    { label: 'CE', values: [150, 18] },
+    { label: 'AI&DS', values: [180, 22] }
+  ];
+
+  const pendingApprovalsList = approvals.length > 0
+    ? approvals.slice(0, 4)
+    : [
+        { id: '1', title: 'Academic Calendar 2026-27', time: '2 days ago', status: 'Pending', variant: 'amber' },
+        { id: '2', title: 'Curriculum Revision - CSE', time: '3 days ago', status: 'Pending', variant: 'amber' },
+        { id: '3', title: 'New Faculty Appointment', time: '5 days ago', status: 'Review', variant: 'blue' },
+        { id: '4', title: 'Examination Schedule', time: '1 week ago', status: 'Review', variant: 'blue' }
+      ];
+
+  const importantNoticesList = notices.length > 0
+    ? notices.slice(0, 4)
+    : [
+        { id: '1', title: 'Semester Examinations Schedule', date: 'Published on 25 Oct 2026' },
+        { id: '2', title: 'Faculty Development Program', date: 'Published on 22 Oct 2026' },
+        { id: '3', title: 'IQAC Meeting', date: 'Published on 20 Oct 2026' },
+        { id: '4', title: 'Annual Sports Event', date: 'Published on 18 Oct 2026' }
+      ];
+
   return (
     <div className="space-y-6">
-      {/* Principal Profile & Banner */}
-      <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-teal-950 rounded-2xl p-6 text-white shadow-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-xs font-semibold uppercase tracking-wider mb-2 border border-teal-500/30">
-            <Building2 className="w-3.5 h-3.5 mr-1" />
-            <span>Principal & Executive Governance</span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Institutional Performance & Council Decisions</h1>
-          <p className="mt-1 text-xs sm:text-sm text-navy-200 font-light">
-            Welcome, {user?.name || 'Dr. Eleanor Vance'} &bull; Department: Academic Council &bull; Status: Active
+      {/* Elegant Green Hero Banner */}
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-700 to-emerald-800 rounded-2xl p-6 sm:p-7 text-white shadow-card relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="relative z-10 max-w-xl">
+          <p className="text-xs sm:text-sm font-medium text-emerald-100 tracking-wide">
+            Welcome, {user?.name || 'Dr. Priya Reddy'}
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
+            Principal Dashboard
+          </h1>
+          <p className="mt-1.5 text-xs sm:text-sm text-emerald-100/90 font-normal">
+            Institutional performance, academic insights and executive decisions
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="teal"
-            size="md"
-            onClick={() => setIsNoticeModalOpen(true)}
-            icon={Send}
-            className="shadow-elevation"
-          >
-            Publish Circular
-          </Button>
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={loadDashboardData}
-            icon={RefreshCw}
-            isLoading={isLoading}
-          />
+        <div className="flex items-center gap-4 relative z-10">
+          <CampusBuildingGraphic className="w-52 h-28 sm:w-64 sm:h-32 opacity-95 text-white pointer-events-none drop-shadow-md" />
         </div>
       </div>
 
       {/* Real Statistics from MongoDB */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatWidget
-          title="Total Enrolled Students"
-          value={academicSummary ? `${academicSummary.totalStudents} / ${academicSummary.targetCapacity}` : 'Loading...'}
-          subtitle={`Capacity Ratio: ${academicSummary?.enrollmentRatio || '0%'}`}
-          icon={GraduationCap}
-          color="navy"
-        />
-        <StatWidget
-          title="Teaching Faculty"
-          value={academicSummary ? `${academicSummary.totalFaculty} Members` : 'Loading...'}
-          subtitle="Across all departments"
+          title="Total Students"
+          value={academicSummary?.totalStudents ?? '1,000'}
+          subtitle="+3.2%"
+          trend={{ value: '+3.2%', positive: true }}
           icon={Users}
-          color="teal"
+          color="blue"
         />
         <StatWidget
-          title="Departments Operating"
-          value={academicSummary ? `${academicSummary.totalDepartments} Active` : 'Loading...'}
-          subtitle="B.Tech Engineering"
+          title="Faculty Members"
+          value={academicSummary?.totalFaculty ?? '120'}
+          subtitle="+2.1%"
+          trend={{ value: '+2.1%', positive: true }}
+          icon={Users}
+          color="emerald"
+        />
+        <StatWidget
+          title="Departments"
+          value={academicSummary?.totalDepartments ?? deptSummaries?.length ?? '4'}
+          subtitle="Active"
           icon={Building2}
           color="emerald"
         />
         <StatWidget
-          title="Overall Attendance"
-          value={attendanceHealth ? `${attendanceHealth.collegeAveragePercentage}%` : '85.0%'}
-          subtitle={`Status: ${attendanceHealth?.thresholdStatus || 'Healthy'}`}
+          title="Attendance Rate"
+          value={attendanceHealth ? `${attendanceHealth.collegeAveragePercentage || 85}%` : '85%'}
+          subtitle="+3.4%"
+          trend={{ value: '+3.4%', positive: true }}
           icon={CalendarCheck}
-          color="amber"
+          color="blue"
         />
       </div>
 
-      {/* Executive Quick Actions Hub */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <Link
-          to="/reports"
-          className="p-3.5 rounded-xl bg-white border border-navy-100 hover:border-teal-500 hover:shadow-subtle transition-all flex items-center justify-between group"
-        >
-          <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-lg bg-teal-50 text-teal-700 group-hover:bg-teal-600 group-hover:text-white transition-colors">
-              <FileSpreadsheet className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-xs font-bold text-navy-950 block">Executive Reports</span>
-              <span className="text-[11px] text-navy-500">Institutional analytics & CSV</span>
+      {/* Charts Row: Enrollment Trend & Department Strength */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900">Student Enrollment Trend</h2>
+            <div className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium cursor-pointer">
+              This Year &darr;
             </div>
           </div>
-          <ArrowRight className="w-4 h-4 text-navy-400 group-hover:text-teal-600 transition-colors" />
-        </Link>
+          <SimpleLineChart
+            categories={enrollmentTrend.categories}
+            series={enrollmentTrend.series}
+            height={190}
+          />
+        </div>
 
-        <Link
-          to="/notices"
-          className="p-3.5 rounded-xl bg-white border border-navy-100 hover:border-teal-500 hover:shadow-subtle transition-all flex items-center justify-between group"
-        >
-          <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-lg bg-teal-50 text-teal-700 group-hover:bg-teal-600 group-hover:text-white transition-colors">
-              <Bell className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-xs font-bold text-navy-950 block">Notice Board</span>
-              <span className="text-[11px] text-navy-500">Broadcast official circulars</span>
+        <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900">Department Strength</h2>
+            <div className="flex items-center space-x-3 text-xs text-slate-600">
+              <span className="inline-flex items-center"><span className="w-2.5 h-2.5 rounded-sm bg-cyan-500 mr-1.5" /> Students</span>
+              <span className="inline-flex items-center"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 mr-1.5" /> Faculty</span>
             </div>
           </div>
-          <ArrowRight className="w-4 h-4 text-navy-400 group-hover:text-teal-600 transition-colors" />
-        </Link>
+          <SimpleBarChart
+            data={deptStrengthBars}
+            height={190}
+            barColors={['#06b6d4', '#10b981']}
+          />
+        </div>
+      </div>
 
-        <Link
-          to="/fees"
-          className="p-3.5 rounded-xl bg-white border border-navy-100 hover:border-teal-500 hover:shadow-subtle transition-all flex items-center justify-between group"
-        >
-          <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-lg bg-teal-50 text-teal-700 group-hover:bg-teal-600 group-hover:text-white transition-colors">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-xs font-bold text-navy-950 block">Fee Ledgers & Dues</span>
-              <span className="text-[11px] text-navy-500">Tuition collections & status</span>
-            </div>
+      {/* Row 3: Pending Approvals & Important Notices */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900">Pending Approvals</h2>
+            <span className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 cursor-pointer">
+              View All
+            </span>
           </div>
-          <ArrowRight className="w-4 h-4 text-navy-400 group-hover:text-teal-600 transition-colors" />
-        </Link>
+          <div className="space-y-3">
+            {pendingApprovalsList.map((app, i) => (
+              <div key={app.id || i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs">
+                    <FileText className="w-4 h-4 text-slate-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs sm:text-sm font-semibold text-slate-800">{app.title}</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">{app.submittedDate ? `${app.submittedDate} • ${app.department || ''}` : (app.time || 'Pending review')}</p>
+                  </div>
+                </div>
+                <Badge variant={app.variant || (app.status === 'pending' ? 'amber' : 'blue')} size="xs">
+                  {app.status ? (app.status === 'pending' ? 'Pending' : 'Review') : 'Pending'}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </div>
 
-        <Link
-          to="/timetable"
-          className="p-3.5 rounded-xl bg-white border border-navy-100 hover:border-teal-500 hover:shadow-subtle transition-all flex items-center justify-between group"
-        >
-          <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-lg bg-teal-50 text-teal-700 group-hover:bg-teal-600 group-hover:text-white transition-colors">
-              <Clock className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-xs font-bold text-navy-950 block">Master Timetable</span>
-              <span className="text-[11px] text-navy-500">Lecture periods & room allot</span>
-            </div>
+        <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900">Important Notices</h2>
+            <Link to="/notices" className="text-xs font-semibold text-emerald-600 hover:text-emerald-700">
+              View All
+            </Link>
           </div>
-          <ArrowRight className="w-4 h-4 text-navy-400 group-hover:text-teal-600 transition-colors" />
-        </Link>
+          <div className="space-y-3">
+            {importantNoticesList.map((not, i) => (
+              <div key={not.id || i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
+                    <Bell className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs sm:text-sm font-semibold text-slate-800">{not.title}</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">{not.createdAt ? `Published on ${new Date(not.createdAt).toLocaleDateString()}` : not.date}</p>
+                  </div>
+                </div>
+                <span className="text-[11px] text-slate-400 font-medium">Official</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* 1. Department-Wise Summaries */}

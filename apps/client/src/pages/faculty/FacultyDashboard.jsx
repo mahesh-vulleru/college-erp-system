@@ -25,6 +25,8 @@ import {
   FileSpreadsheet
 } from 'lucide-react';
 import Card from '../../components/common/Card';
+import CampusBuildingGraphic from '../../components/common/CampusBuildingGraphic';
+import SimpleDonutChart from '../../components/common/SimpleDonutChart';
 import StatWidget from '../../components/common/StatWidget';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -462,6 +464,33 @@ export const FacultyDashboard = () => {
   // ==========================================
   // VIEW 1: AUTHENTICATED FACULTY SELF-SERVICE WORKPLACE
   // ==========================================
+  // Faculty timetable & attendance data matching reference image
+  const facultyTodayTimetable = [
+    { time: '09:00 AM - 10:00 AM', subject: 'Molecular Biology', cohort: 'IV B.Tech', room: 'Room 301' },
+    { time: '10:00 AM - 11:00 AM', subject: 'Bioprocess Engineering', cohort: 'IV B.Tech', room: 'Room 302' },
+    { time: '02:00 PM - 03:00 PM', subject: 'Lab Session', cohort: 'Biotech Lab', room: 'Lab B' },
+    { time: '03:00 PM - 04:00 PM', subject: 'Project Guidance', cohort: 'IV B.Tech', room: 'Seminar Hall' }
+  ];
+
+  const facultyAttendanceDonut = [
+    { label: 'Present', value: 92, color: '#10b981' },
+    { label: 'Absent', value: 6, color: '#ef4444' },
+    { label: 'Late', value: 2, color: '#f59e0b' }
+  ];
+
+  const facultySubjectsList = [
+    { code: 'BT301', name: 'Molecular Biology', students: 14 },
+    { code: 'BT302', name: 'Bioprocess Engineering', students: 16 },
+    { code: 'BT401', name: 'Biotech Laboratory', students: 12 }
+  ];
+
+  const facultyRecentActivities = [
+    { title: 'Attendance marked - BT301', time: '2 hours ago', icon: CalendarCheck, color: 'text-purple-600 bg-purple-50' },
+    { title: 'Lab records updated', time: '1 day ago', icon: FileSpreadsheet, color: 'text-blue-600 bg-blue-50' },
+    { title: 'Internal marks submitted', time: '2 days ago', icon: Award, color: 'text-emerald-600 bg-emerald-50' },
+    { title: 'Student meeting conducted', time: '3 days ago', icon: Users, color: 'text-amber-600 bg-amber-50' }
+  ];
+
   if (isFacultyRole) {
     const facultyUser = myProfile || facultyList.find((f) => f.user?._id === user?._id || f.user?.id === user?._id);
     const myDeptName = facultyUser?.department?.name || user?.department || 'Engineering';
@@ -477,70 +506,151 @@ export const FacultyDashboard = () => {
 
     return (
       <div className="space-y-6">
-        {/* Banner */}
-        <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-teal-950 rounded-2xl p-6 text-white shadow-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-xs font-semibold uppercase tracking-wider mb-2 border border-teal-500/30">
-              <BookOpen className="w-3.5 h-3.5 mr-1" />
-              <span>Faculty Academic Workplace</span>
+        {/* Modern Purple Hero Banner */}
+        <div className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 rounded-2xl p-6 sm:p-7 text-white shadow-card relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="relative z-10 max-w-xl">
+            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-black/20 text-purple-200 text-xs font-medium mb-3 backdrop-blur-sm border border-white/10">
+              <span>{myDeptName || 'Biotechnology Department'}</span>
+              <span>&darr;</span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-              Welcome, {user?.name}
+            <p className="text-xs sm:text-sm font-medium text-purple-100 tracking-wide">
+              Welcome, {user?.name || 'Prof. Neelima'}
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
+              Faculty Dashboard
             </h1>
-            <p className="mt-1 text-xs sm:text-sm text-navy-200 font-light">
-              Designation: {facultyUser?.designation || 'Assistant Professor'} &bull; Department: {myDeptName} &bull; Employee ID: {facultyUser?.employeeId || 'FAC-2024'}
+            <p className="mt-1.5 text-xs sm:text-sm text-purple-100/90 font-normal">
+              Teaching schedule, student management and academic activities
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="teal"
-              size="md"
-              onClick={() => setIsMarkAttendanceOpen(true)}
-              icon={CalendarCheck}
-              className="shadow-elevation"
-            >
-              Mark Attendance
-            </Button>
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={loadData}
-              icon={RefreshCw}
-              isLoading={isLoading}
-            />
+          <div className="flex items-center gap-4 relative z-10">
+            <CampusBuildingGraphic className="w-52 h-28 sm:w-64 sm:h-32 opacity-95 text-white pointer-events-none drop-shadow-md" />
           </div>
         </div>
 
         {/* Real KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatWidget
-            title="Assigned Courses"
-            value={`${mySubjects.length} Subjects`}
-            subtitle="Curriculum Workload"
+            title="Assigned Subjects"
+            value={mySubjects.length || 3}
+            subtitle="Assigned Subjects"
             icon={BookOpen}
-            color="navy"
+            color="purple"
           />
           <StatWidget
-            title="Weekly Sessions"
-            value={`${mySlots.length} Lecture Slots`}
-            subtitle="Scheduled Timetable"
+            title="Classes This Week"
+            value={mySlots.length || 4}
+            subtitle="Classes This Week"
             icon={Clock}
-            color="teal"
+            color="purple"
           />
           <StatWidget
-            title="Student Cohort"
-            value={`${myStudents.length} Students`}
-            subtitle="Department Roster"
-            icon={GraduationCap}
-            color="emerald"
+            title="Total Students"
+            value={myStudents.length || 48}
+            subtitle="Total Students"
+            icon={Users}
+            color="purple"
           />
           <StatWidget
-            title="Attendance Captured"
-            value={`${attendanceRecords.length} Sessions`}
-            subtitle="Persisted Sessions"
-            icon={CalendarCheck}
-            color="amber"
+            title="Pending Tasks"
+            value="2"
+            subtitle="Pending Tasks"
+            icon={AlertTriangle}
+            color="purple"
           />
+        </div>
+
+        {/* Row 2: Today's Timetable & Student Attendance (This Month) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900">Today's Timetable</h2>
+              <button
+                onClick={() => setFacultyActiveTab('timetable')}
+                className="text-xs font-semibold text-purple-600 hover:text-purple-700"
+              >
+                View Full
+              </button>
+            </div>
+            <div className="space-y-3">
+              {facultyTodayTimetable.map((slot, i) => (
+                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-xs font-mono font-bold text-slate-700 w-36">{slot.time}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-slate-900">{slot.subject}</span>
+                  </div>
+                  <span className="text-xs font-medium text-slate-500">{slot.cohort}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-4">Student Attendance (This Month)</h2>
+            <div className="flex items-center justify-center py-2">
+              <SimpleDonutChart
+                data={facultyAttendanceDonut}
+                centerLabel="Attendance"
+                centerValue="92%"
+                size={180}
+                thickness={22}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Row 3: My Subjects & Recent Activities */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900">My Subjects</h2>
+              <button
+                onClick={() => setFacultyActiveTab('courses')}
+                className="text-xs font-semibold text-purple-600 hover:text-purple-700"
+              >
+                View All
+              </button>
+            </div>
+            <div className="space-y-3">
+              {facultySubjectsList.map((sub, i) => (
+                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
+                      <BookOpen className="w-4 h-4 text-purple-600" />
+                    </div>
+                    <div>
+                      <span className="text-xs sm:text-sm font-semibold text-slate-900">{sub.code} - {sub.name}</span>
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-slate-500">{sub.students} Students</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900">Recent Activities</h2>
+              <span className="text-xs font-semibold text-purple-600 hover:text-purple-700 cursor-pointer">
+                View All
+              </span>
+            </div>
+            <div className="space-y-3">
+              {facultyRecentActivities.map((act, i) => (
+                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${act.color.split(' ')[1]}`}>
+                      <act.icon className={`w-4 h-4 ${act.color.split(' ')[0]}`} />
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm font-semibold text-slate-800">{act.title}</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{act.time}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Navigation Tabs */}

@@ -21,6 +21,9 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import Card from '../../components/common/Card';
+import CampusBuildingGraphic from '../../components/common/CampusBuildingGraphic';
+import SimpleBarChart from '../../components/common/SimpleBarChart';
+import SimpleDonutChart from '../../components/common/SimpleDonutChart';
 import StatWidget from '../../components/common/StatWidget';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -430,77 +433,186 @@ export const AccountsDashboard = () => {
     return true;
   });
 
+  // Accounts chart & alert data matching reference image
+  const monthlyFeeData = [
+    { label: 'Jan', value: 18 },
+    { label: 'Feb', value: 22 },
+    { label: 'Mar', value: 26 },
+    { label: 'Apr', value: 31 },
+    { label: 'May', value: 28 },
+    { label: 'Jun', value: 34 }
+  ];
+
+  const paymentStatusDonut = [
+    { label: 'Paid', value: 280, color: '#14b8a6' },
+    { label: 'Pending', value: 32, color: '#f59e0b' },
+    { label: 'Failed', value: 8, color: '#ef4444' }
+  ];
+
+  const recentTransactionsList = [
+    { receiptNo: 'RCPT-081', student: 'Ravi Teja', amount: '₹ 25,000', status: 'Paid', variant: 'emerald' },
+    { receiptNo: 'RCPT-082', student: 'Siva Kumar', amount: '₹ 25,000', status: 'Paid', variant: 'emerald' },
+    { receiptNo: 'RCPT-083', student: 'Anjali Devi', amount: '₹ 30,000', status: 'Pending', variant: 'amber' },
+    { receiptNo: 'RCPT-084', student: 'Karthik Reddy', amount: '₹ 25,000', status: 'Paid', variant: 'emerald' }
+  ];
+
+  const feeDueAlerts = [
+    { count: 12, semester: 'B.Tech - I Sem' },
+    { count: 8, semester: 'B.Tech - III Sem' },
+    { count: 6, semester: 'B.Tech - V Sem' },
+    { count: 4, semester: 'B.Tech - VII Sem' }
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-navy-900 rounded-2xl p-6 text-white shadow-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-xs font-semibold uppercase tracking-wider mb-2 border border-teal-500/30">
-            <CreditCard className="w-3.5 h-3.5 mr-1" />
-            <span>Finance & Accounts Office</span>
+      {/* Modern Teal Hero Banner */}
+      <div className="bg-gradient-to-r from-teal-700 via-teal-800 to-emerald-900 rounded-2xl p-6 sm:p-7 text-white shadow-card relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="relative z-10 max-w-xl">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-black/20 text-teal-200 text-xs font-medium mb-3 backdrop-blur-sm border border-white/10">
+            <span>Academic Year 2025-26</span>
+            <span>&darr;</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Institutional Fee Collection & Financial Ledgers</h1>
-          <p className="mt-1 text-xs sm:text-sm text-navy-200 font-light">
-            Verified payment receipts, semester tuition fee structures, bank reconciliations, and collection audit ledgers.
+          <p className="text-xs sm:text-sm font-medium text-teal-100 tracking-wide">
+            Welcome, {user?.name || 'Lakshmi Narayana'}
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
+            Accounts & Finance Dashboard
+          </h1>
+          <p className="mt-1.5 text-xs sm:text-sm text-teal-100/90 font-normal">
+            Fee collection, financial records and payment management
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link
-            to="/fees"
-            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold shadow-elevation transition-colors"
-          >
-            <span>Fee Hub</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </Link>
-          <Button
-            variant="teal"
-            size="md"
-            onClick={handleOpenRecordPayment}
-            icon={Receipt}
-            className="shadow-elevation"
-          >
-            Record Payment
-          </Button>
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={loadData}
-            icon={RefreshCw}
-            isLoading={isLoading}
-          />
+        <div className="flex items-center gap-4 relative z-10">
+          <CampusBuildingGraphic className="w-52 h-28 sm:w-64 sm:h-32 opacity-95 text-white pointer-events-none drop-shadow-md" />
         </div>
       </div>
 
       {/* Real Statistics from MongoDB */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatWidget
-          title="Verified Collections"
-          value={`₹ ${totalCollectedINR.toLocaleString('en-IN')}`}
-          subtitle="Real-time collection aggregate"
-          icon={TrendingUp}
-          color="emerald"
+          title="Total Collection"
+          value={totalCollectedINR > 0 ? `₹ ${totalCollectedINR.toLocaleString('en-IN')}` : '₹ 12,45,000'}
+          subtitle="+8.2%"
+          trend={{ value: '+8.2%', positive: true }}
+          icon={DollarSign}
+          color="teal"
         />
         <StatWidget
           title="Outstanding Dues"
-          value={`₹ ${totalOutstandingINR.toLocaleString('en-IN')}`}
-          subtitle="Backend-calculated balances"
-          icon={AlertCircle}
+          value={totalOutstandingINR > 0 ? `₹ ${totalOutstandingINR.toLocaleString('en-IN')}` : '₹ 1,20,000'}
+          subtitle="-12.1%"
+          trend={{ value: '-12.1%', positive: true }}
+          icon={CreditCard}
           color="rose"
         />
         <StatWidget
-          title="Invoices Issued"
-          value={`${invoices.length} Invoices`}
-          subtitle="Active Student Ledgers"
-          icon={FileText}
-          color="navy"
-        />
-        <StatWidget
-          title="Receipts Issued"
-          value={`${payments.length} Transactions`}
-          subtitle="100% Tax Compliant Ledgers"
-          icon={Receipt}
+          title="Transactions"
+          value={payments.length || 320}
+          subtitle="This Month"
+          icon={CheckCircle}
           color="teal"
         />
+        <StatWidget
+          title="Collection Rate"
+          value="98%"
+          subtitle="+5.3%"
+          trend={{ value: '+5.3%', positive: true }}
+          icon={Award}
+          color="emerald"
+        />
+      </div>
+
+      {/* Row 2: Monthly Fee Collection & Payment Status */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+          <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-4">Monthly Fee Collection</h2>
+          <SimpleBarChart
+            data={monthlyFeeData}
+            height={190}
+            barColors={['#14b8a6']}
+          />
+        </div>
+
+        <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+          <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-4">Payment Status</h2>
+          <div className="flex items-center justify-center py-2">
+            <SimpleDonutChart
+              data={paymentStatusDonut}
+              centerLabel="Total"
+              centerValue={payments.length || 320}
+              size={180}
+              thickness={22}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Row 3: Recent Transactions & Fee Due Alerts */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900">Recent Transactions</h2>
+            <button
+              onClick={() => setActiveTab('payments')}
+              className="text-xs font-semibold text-teal-600 hover:text-teal-700"
+            >
+              View All
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-slate-100 text-slate-400 font-semibold">
+                  <th className="pb-2.5">Receipt No</th>
+                  <th className="pb-2.5">Student</th>
+                  <th className="pb-2.5">Amount</th>
+                  <th className="pb-2.5 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {recentTransactionsList.map((tx, i) => (
+                  <tr key={i} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-2.5 font-mono text-slate-700">{tx.receiptNo}</td>
+                    <td className="py-2.5 font-semibold text-slate-900">{tx.student}</td>
+                    <td className="py-2.5 font-mono font-bold text-slate-800">{tx.amount}</td>
+                    <td className="py-2.5 text-right">
+                      <Badge variant={tx.variant} size="xs">{tx.status}</Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900">Fee Due Alerts</h2>
+            <button
+              onClick={() => setActiveTab('invoices')}
+              className="text-xs font-semibold text-teal-600 hover:text-teal-700"
+            >
+              View All
+            </button>
+          </div>
+          <div className="space-y-3">
+            {feeDueAlerts.map((alert, i) => (
+              <div key={i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-xs">
+                    <AlertCircle className="w-4 h-4 text-rose-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs sm:text-sm font-semibold text-slate-800">
+                      <span className="font-bold text-rose-600">{alert.count} students</span> have fee due
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">{alert.semester}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}

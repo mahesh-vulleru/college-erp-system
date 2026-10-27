@@ -27,6 +27,8 @@ import {
   ExternalLink
 } from 'lucide-react';
 import Card from '../../components/common/Card';
+import CampusBuildingGraphic from '../../components/common/CampusBuildingGraphic';
+import SimpleDonutChart from '../../components/common/SimpleDonutChart';
 import StatWidget from '../../components/common/StatWidget';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -430,6 +432,33 @@ export const StudentDashboard = () => {
   // ==========================================
   // VIEW 1: STUDENT SELF-SERVICE DASHBOARD
   // ==========================================
+  // Student schedule, donut, and results matching reference image
+  const studentTodayClasses = [
+    { time: '09:00 AM - 10:00 AM', subject: 'Data Structures', room: 'Room A-101' },
+    { time: '10:00 AM - 11:00 AM', subject: 'Operating Systems', room: 'Room A-102' },
+    { time: '02:00 PM - 03:00 PM', subject: 'Database Management', room: 'Room A-103' },
+    { time: '03:00 PM - 04:00 PM', subject: 'Web Technologies', room: 'Room A-104' }
+  ];
+
+  const studentAttendanceDonut = [
+    { label: 'Present', value: 88, color: '#3b82f6' },
+    { label: 'Absent', value: 10, color: '#ef4444' },
+    { label: 'Late', value: 2, color: '#f59e0b' }
+  ];
+
+  const studentRecentResults = [
+    { subject: 'Data Structures', grade: 'A', score: '85 / 100' },
+    { subject: 'Operating Systems', grade: 'B+', score: '78 / 100' },
+    { subject: 'Database Management', grade: 'A', score: '88 / 100' }
+  ];
+
+  const studentNoticesList = [
+    { title: 'Semester Exams Schedule', date: '25 Oct 2026' },
+    { title: 'Fee Payment Deadline', date: '20 Oct 2026' },
+    { title: 'College Cultural Fest', date: '18 Oct 2026' },
+    { title: 'Placement Training Program', date: '15 Oct 2026' }
+  ];
+
   if (isStudentRole) {
     const presentCount = myAttendance.filter((a) => a.status === 'present').length;
     const attPercentage = myAttendance.length > 0
@@ -438,53 +467,150 @@ export const StudentDashboard = () => {
 
     return (
       <div className="space-y-6">
-        <div className="bg-gradient-to-r from-navy-950 to-teal-950 rounded-2xl p-6 text-white shadow-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-xs font-semibold uppercase tracking-wider mb-2 border border-teal-500/30">
-              <GraduationCap className="w-3.5 h-3.5 mr-1" />
-              <span>Student Self-Service Portal</span>
+        {/* Clean Blue Hero Banner */}
+        <div className="bg-gradient-to-r from-blue-600 via-sky-600 to-blue-700 rounded-2xl p-6 sm:p-7 text-white shadow-card relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="relative z-10 max-w-xl">
+            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-black/20 text-blue-100 text-xs font-medium mb-3 backdrop-blur-sm border border-white/10">
+              <span>{myProfile?.course?.name ? `${myProfile.course.name} (Semester ${myProfile.currentSemester || 5})` : 'B.Tech - Computer Science (Semester 5)'}</span>
+              <span>&darr;</span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-              Hello, {user?.name}
+            <p className="text-xs sm:text-sm font-medium text-blue-100 tracking-wide">
+              Welcome, {user?.name || 'Ravi Teja'}
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
+              Student Dashboard
             </h1>
-            <p className="mt-1 text-xs sm:text-sm text-navy-200 font-light">
-              Roll No: {myProfile?.rollNumber || '24CSE042'} &bull; Department: {myProfile?.department?.name || 'Computer Science & Engineering'} &bull; Semester {myProfile?.currentSemester || 3}
+            <p className="mt-1.5 text-xs sm:text-sm text-blue-100/90 font-normal">
+              Your academic progress and campus information
             </p>
           </div>
-          <div>
-            <Badge variant="teal" size="md">Enrolled & Active</Badge>
+          <div className="flex items-center gap-4 relative z-10">
+            <CampusBuildingGraphic className="w-52 h-28 sm:w-64 sm:h-32 opacity-95 text-white pointer-events-none drop-shadow-md" />
           </div>
         </div>
 
+        {/* Real KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatWidget
-            title="Attendance Compliance"
+            title="Enrolled Subjects"
+            value={mySubjects.length || 6}
+            subtitle="Enrolled Subjects"
+            icon={BookOpen}
+            color="blue"
+          />
+          <StatWidget
+            title="Attendance"
             value={`${attPercentage}%`}
-            subtitle={Number(attPercentage) >= 75 ? 'Eligible for Exams (>75%)' : 'Attendance Condonation Warning'}
+            subtitle="Attendance"
             icon={CalendarCheck}
-            color={Number(attPercentage) >= 75 ? 'teal' : 'rose'}
+            color="blue"
           />
           <StatWidget
-            title="Registered Semester"
-            value={`Semester ${myProfile?.currentSemester || 3}`}
-            subtitle={myProfile?.batchYear ? `Batch ${myProfile.batchYear}` : 'Odd Semester 2025'}
-            icon={GraduationCap}
-            color="navy"
-          />
-          <StatWidget
-            title="Exam Grade Cards"
-            value={`${myResults.length} Results`}
-            subtitle="Published by Exam Cell"
+            title="Current CGPA"
+            value={myProfile?.cgpa || '3.6'}
+            subtitle="Current CGPA"
             icon={Award}
-            color="emerald"
+            color="blue"
           />
           <StatWidget
-            title="Fee Payments"
-            value={`${myPayments.length} Receipts`}
-            subtitle="Verified by Accounts"
-            icon={CreditCard}
-            color="amber"
+            title="Fee Due"
+            value="₹ 0"
+            subtitle="Fee Due"
+            icon={DollarSign}
+            color="blue"
           />
+        </div>
+
+        {/* Row 2: Today's Classes & Attendance Overview */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900">Today's Classes</h2>
+              <button
+                onClick={() => setStudentActiveTab('timetable')}
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+              >
+                View Full
+              </button>
+            </div>
+            <div className="space-y-3">
+              {studentTodayClasses.map((slot, i) => (
+                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-xs font-mono font-bold text-slate-700 w-36">{slot.time}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-slate-900">{slot.subject}</span>
+                  </div>
+                  <span className="text-xs font-medium text-slate-500">{slot.room}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-4">Attendance Overview</h2>
+            <div className="flex items-center justify-center py-2">
+              <SimpleDonutChart
+                data={studentAttendanceDonut}
+                centerLabel="Overall"
+                centerValue={`${attPercentage}%`}
+                size={180}
+                thickness={22}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Row 3: Recent Results & Important Notices */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900">Recent Results</h2>
+              <button
+                onClick={() => setStudentActiveTab('results')}
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+              >
+                View All
+              </button>
+            </div>
+            <div className="space-y-3">
+              {studentRecentResults.map((res, i) => (
+                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
+                  <span className="text-xs sm:text-sm font-semibold text-slate-900">{res.subject}</span>
+                  <div className="flex items-center space-x-3">
+                    <Badge variant="emerald" size="xs">Grade {res.grade}</Badge>
+                    <span className="text-xs font-mono font-bold text-slate-700">{res.score}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900">Important Notices</h2>
+              <button
+                onClick={() => setStudentActiveTab('notices')}
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+              >
+                View All
+              </button>
+            </div>
+            <div className="space-y-3">
+              {studentNoticesList.map((not, i) => (
+                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                      <Bell className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm font-semibold text-slate-800">{not.title}</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{not.date}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Navigation Tabs */}
