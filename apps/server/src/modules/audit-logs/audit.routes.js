@@ -1,5 +1,5 @@
 const express = require('express');
-const { listAuditLogs } = require('./audit.controller');
+const { listAuditLogs, getAuditLogById, exportAuditLogsCsv } = require('./audit.controller');
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
 const { ROLES } = require('@college-erp/shared');
@@ -15,5 +15,16 @@ router.get(
   listAuditLogs
 );
 
-module.exports = router;
+router.get(
+  '/export',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL),
+  exportAuditLogsCsv
+);
 
+router.get(
+  '/:id',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL),
+  getAuditLogById
+);
+
+module.exports = router;

@@ -21,6 +21,15 @@ const auditLogSchema = new mongoose.Schema(
       type: String,
       default: null
     },
+    outcome: {
+      type: String,
+      enum: ['success', 'failure', 'pending'],
+      default: 'success'
+    },
+    requestId: {
+      type: String,
+      default: null
+    },
     details: {
       type: mongoose.Schema.Types.Mixed,
       default: {}
@@ -40,4 +49,3 @@ const auditLogSchema = new mongoose.Schema(
 const AuditLog = mongoose.model('AuditLog', auditLogSchema);
 
 module.exports = AuditLog;
-

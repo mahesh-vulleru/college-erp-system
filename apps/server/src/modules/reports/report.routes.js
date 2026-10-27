@@ -4,7 +4,15 @@ const {
   getAttendanceOverview,
   getFeeCollectionSummary,
   getAdminOverview,
-  getDepartmentSummaries
+  getDepartmentSummaries,
+  getEnrollmentReport,
+  getFacultyAllocationReport,
+  getAttendanceReport,
+  getExaminationsReport,
+  getResultsSummaryReport,
+  getFinancialReport,
+  getAdminActivityReport,
+  exportReportCsv
 } = require('./report.controller');
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
@@ -33,18 +41,65 @@ router.get(
   getFeeCollectionSummary
 );
 
-// High-level system-wide executive dashboard overview
 router.get(
   '/admin-overview',
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL),
   getAdminOverview
 );
 
-// Department-level metrics with enrollment and faculty tallies
 router.get(
   '/department-summaries',
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
   getDepartmentSummaries
+);
+
+// Phase 3 Data-backed Institutional Reports
+router.get(
+  '/enrollment',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getEnrollmentReport
+);
+
+router.get(
+  '/faculty-allocation',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getFacultyAllocationReport
+);
+
+router.get(
+  '/attendance',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getAttendanceReport
+);
+
+router.get(
+  '/examinations',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getExaminationsReport
+);
+
+router.get(
+  '/results',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getResultsSummaryReport
+);
+
+router.get(
+  '/financial',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS),
+  getFinancialReport
+);
+
+router.get(
+  '/admin-activity',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL),
+  getAdminActivityReport
+);
+
+router.get(
+  '/export',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS),
+  exportReportCsv
 );
 
 module.exports = router;
