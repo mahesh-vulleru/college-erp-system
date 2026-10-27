@@ -116,3 +116,4 @@ export const SimpleLineChart = ({
 };
 
 export default SimpleLineChart;
+

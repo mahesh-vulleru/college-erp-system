@@ -492,8 +492,18 @@ export const StudentDashboard = () => {
               Your academic progress and campus information
             </p>
           </div>
-          <div className="flex items-center gap-4 relative z-10">
-            <CampusBuildingGraphic className="w-52 h-28 sm:w-64 sm:h-32 opacity-95 text-white pointer-events-none drop-shadow-md" />
+          <div className="flex items-center gap-3 relative z-10">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={loadData}
+              icon={RefreshCw}
+              isLoading={isLoading}
+              className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
+            >
+              Refresh
+            </Button>
+            <CampusBuildingGraphic className="w-48 h-24 sm:w-56 sm:h-28 opacity-90 text-white pointer-events-none drop-shadow-md hidden md:block" />
           </div>
         </div>
 
@@ -882,6 +892,9 @@ export const StudentDashboard = () => {
                         <Badge variant={inv.paymentStatus === 'paid' ? 'success' : 'amber'} size="xs">
                           {inv.paymentStatus?.toUpperCase() || 'PENDING'}
                         </Badge>
+                        <Link to="/fees" className="text-[10px] font-semibold text-blue-600 hover:text-blue-800 block mt-1">
+                          Pay / Receipt &rarr;
+                        </Link>
                       </div>
                     </div>
                   ))}

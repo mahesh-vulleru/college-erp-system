@@ -119,3 +119,4 @@ export const CampusBuildingGraphic = ({ className = 'w-48 h-28 sm:w-60 sm:h-32' 
 };
 
 export default CampusBuildingGraphic;
+

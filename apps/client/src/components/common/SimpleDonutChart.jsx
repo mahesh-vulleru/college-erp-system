@@ -95,3 +95,4 @@ export const SimpleDonutChart = ({
 };
 
 export default SimpleDonutChart;
+

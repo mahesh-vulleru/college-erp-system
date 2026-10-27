@@ -64,27 +64,6 @@ export const StatWidget = ({
 
   const scheme = colors[color] || colors.blue;
 
-  // Safely extract trend label and positive/negative direction
-  const trendText =
-    typeof trend === 'object' && trend !== null
-      ? (trend.value != null ? String(trend.value) : '')
-      : (trend != null ? String(trend) : '');
-
-  const isPositive =
-    typeof trend === 'object' && trend !== null && 'positive' in trend
-      ? Boolean(trend.positive)
-      : trendDirection === 'up';
-
-  const displayValue =
-    typeof value === 'object' && value !== null
-      ? (value.value != null ? String(value.value) : JSON.stringify(value))
-      : value;
-
-  const displaySubtitle =
-    typeof subtitle === 'object' && subtitle !== null
-      ? (subtitle.value != null ? String(subtitle.value) : JSON.stringify(subtitle))
-      : subtitle;
-
   return (
     <div className={`bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between ${className}`}>
       <div className="flex-1 min-w-0 pr-3">
@@ -92,29 +71,29 @@ export const StatWidget = ({
           {title}
         </span>
         <div className="mt-1 text-xl sm:text-2xl font-bold tracking-tight text-slate-900 truncate">
-          {displayValue}
+          {value}
         </div>
-        {(displaySubtitle || trendText) && (
+        {(subtitle || trend) && (
           <div className="mt-1 flex items-center space-x-1.5 text-xs">
-            {trendText ? (
+            {trend && (
               <span
                 className={`inline-flex items-center text-[11px] font-bold ${
-                  isPositive ? 'text-emerald-600' : 'text-rose-600'
+                  trendDirection === 'up' ? 'text-emerald-600' : 'text-rose-600'
                 }`}
               >
-                {isPositive ? (
+                {trendDirection === 'up' ? (
                   <ArrowUpRight className="w-3 h-3 mr-0.5" />
                 ) : (
                   <ArrowDownRight className="w-3 h-3 mr-0.5" />
                 )}
-                {trendText}
+                {trend}
               </span>
-            ) : null}
-            {displaySubtitle ? (
+            )}
+            {subtitle && (
               <span className="text-[11px] text-slate-400 font-medium truncate">
-                {displaySubtitle}
+                {subtitle}
               </span>
-            ) : null}
+            )}
           </div>
         )}
       </div>
