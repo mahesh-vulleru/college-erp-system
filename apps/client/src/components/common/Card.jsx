@@ -10,19 +10,19 @@ export const Card = ({
   bodyClassName = ''
 }) => {
   return (
-    <div className={`bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden ${className}`}>
+    <div className={`bg-white rounded-2xl border border-navy-100 shadow-subtle hover:shadow-card transition-shadow duration-200 overflow-hidden ${className}`}>
       {(title || subtitle || headerAction) && (
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-          <div>
-            {title && <h3 className="text-base font-semibold text-gray-900">{title}</h3>}
-            {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
+        <div className="px-5 sm:px-6 py-4 border-b border-navy-100/80 flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            {title && <h3 className="text-sm sm:text-base font-bold text-navy-950 tracking-tight truncate">{title}</h3>}
+            {subtitle && <p className="text-xs text-navy-500 font-normal mt-0.5 truncate">{subtitle}</p>}
           </div>
-          {headerAction && <div>{headerAction}</div>}
+          {headerAction && <div className="flex-shrink-0 flex items-center space-x-2">{headerAction}</div>}
         </div>
       )}
-      <div className={`p-5 ${bodyClassName}`}>{children}</div>
+      <div className={`p-5 sm:p-6 ${bodyClassName}`}>{children}</div>
       {footer && (
-        <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-500">
+        <div className="px-5 sm:px-6 py-3 bg-navy-50/40 border-t border-navy-100/80 text-xs text-navy-600 font-medium">
           {footer}
         </div>
       )}

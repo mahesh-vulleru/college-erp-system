@@ -12,18 +12,18 @@ export const Pagination = ({
   if (totalPages <= 1 && !totalItems) return null;
 
   return (
-    <div className={`flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-white border-t border-navy-100 text-xs text-navy-600 ${className}`}>
+    <div className={`flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-5 py-3.5 bg-white border-t border-navy-100 text-xs text-navy-600 ${className}`}>
       <div>
         {totalItems !== undefined && (
           <span>
-            Total <strong className="font-semibold text-navy-900">{totalItems}</strong> records
+            Total <strong className="font-bold text-navy-950">{totalItems}</strong> records
           </span>
         )}
       </div>
 
       <div className="flex items-center space-x-2">
         <span className="text-navy-500 mr-2">
-          Page <strong className="text-navy-900">{currentPage}</strong> of <strong className="text-navy-900">{totalPages || 1}</strong>
+          Page <strong className="text-navy-900 font-bold">{currentPage}</strong> of <strong className="text-navy-900 font-bold">{totalPages || 1}</strong>
         </span>
 
         <Button
@@ -51,4 +51,3 @@ export const Pagination = ({
 };
 
 export default Pagination;
-

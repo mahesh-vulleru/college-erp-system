@@ -9,10 +9,11 @@ export const Breadcrumbs = () => {
   if (pathnames.length === 0) return null;
 
   return (
-    <nav className="flex items-center space-x-2 text-xs text-navy-500 mb-4" aria-label="Breadcrumb">
+    <nav className="flex items-center space-x-1.5 text-xs text-navy-500 mb-2" aria-label="Breadcrumb">
       <Link
-        to="/"
-        className="flex items-center text-navy-500 hover:text-navy-900 transition-colors"
+        to="/dashboard"
+        className="flex items-center text-navy-400 hover:text-teal-700 transition-colors p-1 rounded-md hover:bg-white/80"
+        title="Dashboard"
       >
         <Home className="w-3.5 h-3.5" />
       </Link>
@@ -26,15 +27,15 @@ export const Breadcrumbs = () => {
 
         return (
           <React.Fragment key={routeTo}>
-            <ChevronRight className="w-3.5 h-3.5 text-navy-300" />
+            <ChevronRight className="w-3.5 h-3.5 text-navy-300 flex-shrink-0" />
             {isLast ? (
-              <span className="font-semibold text-navy-800" aria-current="page">
+              <span className="font-bold text-navy-900 bg-white/90 px-2 py-0.5 rounded-md border border-navy-100 shadow-2xs" aria-current="page">
                 {formattedName}
               </span>
             ) : (
               <Link
                 to={routeTo}
-                className="hover:text-navy-900 transition-colors capitalize"
+                className="hover:text-teal-700 transition-colors capitalize font-medium text-navy-500 px-1 py-0.5"
               >
                 {formattedName}
               </Link>
@@ -47,4 +48,3 @@ export const Breadcrumbs = () => {
 };
 
 export default Breadcrumbs;
-

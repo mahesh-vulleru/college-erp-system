@@ -51,18 +51,23 @@ const DashboardRedirect = () => {
     return <Navigate to="/login" replace />;
   }
 
-  switch (user.role) {
-    case ROLES.SUPER_ADMIN:
+  const role = (user.role || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
+  switch (role) {
+    case 'super_admin':
+    case 'superadmin':
+    case 'super_administrator':
       return <Navigate to="/admin" replace />;
-    case ROLES.PRINCIPAL:
+    case 'principal':
       return <Navigate to="/principal" replace />;
-    case ROLES.HOD:
+    case 'hod':
       return <Navigate to="/hod" replace />;
-    case ROLES.FACULTY:
+    case 'faculty':
       return <Navigate to="/faculty" replace />;
-    case ROLES.STUDENT:
+    case 'student':
       return <Navigate to="/student" replace />;
-    case ROLES.ACCOUNTS:
+    case 'accounts':
+    case 'accountant':
+    case 'finance':
       return <Navigate to="/accounts" replace />;
     default:
       return <Navigate to="/" replace />;
@@ -128,7 +133,7 @@ export const App = () => {
               <Route
                 path="faculty"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY]}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.FACULTY]}>
                     <FacultyDashboard />
                   </ProtectedRoute>
                 }

@@ -1,12 +1,12 @@
 import React from 'react';
-import { ShieldAlert, ArrowLeft } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/common/Button';
 import { useAuth } from '../context/AuthContext';
 
 export const UnauthorizedPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4">
@@ -21,8 +21,13 @@ export const UnauthorizedPage = () => {
         <Button variant="secondary" size="sm" onClick={() => navigate(-1)} icon={ArrowLeft}>
           Go Back
         </Button>
-        <Button variant="primary" size="sm" onClick={() => navigate('/')}>
-          Institutional Hub
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => navigate(isAuthenticated ? '/dashboard' : '/login')}
+          icon={Home}
+        >
+          {isAuthenticated ? 'My Dashboard' : 'Institutional Login'}
         </Button>
       </div>
     </div>
@@ -30,4 +35,3 @@ export const UnauthorizedPage = () => {
 };
 
 export default UnauthorizedPage;
-

@@ -10,19 +10,19 @@ export const Table = ({
   className = ''
 }) => {
   return (
-    <div className={`w-full overflow-hidden rounded-xl border border-navy-200/80 shadow-subtle bg-white ${className}`}>
+    <div className={`w-full overflow-hidden rounded-2xl border border-navy-100 shadow-subtle bg-white ${className}`}>
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-navy-100 text-left text-sm">
-          <thead className="bg-navy-50/80 text-[11px] font-semibold uppercase tracking-wider text-navy-600">
+        <table className="min-w-full divide-y divide-navy-100/80 text-left text-sm">
+          <thead className="bg-navy-50/80 text-[11px] font-bold uppercase tracking-wider text-navy-700 border-b border-navy-100">
             <tr>
               {columns.map((col, idx) => (
-                <th key={idx} scope="col" className={`px-4 py-3.5 ${col.className || ''}`}>
+                <th key={idx} scope="col" className={`px-4 sm:px-5 py-3.5 ${col.className || ''}`}>
                   {col.header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-navy-50 bg-white">
+          <tbody className="divide-y divide-navy-50/80 bg-white">
             {isLoading ? (
               <tr>
                 <td colSpan={columns.length} className="px-4 py-12 text-center text-navy-500">
@@ -32,23 +32,33 @@ export const Table = ({
                       <div className="w-2.5 h-2.5 rounded-full bg-teal-600 animate-bounce [animation-delay:-.3s]" />
                       <div className="w-2.5 h-2.5 rounded-full bg-teal-600 animate-bounce [animation-delay:-.5s]" />
                     </div>
-                    <span className="text-xs text-navy-500 font-medium">Loading institutional data...</span>
+                    <span className="text-xs text-navy-600 font-semibold">Loading institutional records...</span>
                   </div>
                 </td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-10 text-center">
-                  <p className="text-xs text-navy-500 font-light">{emptyMessage}</p>
-                  {emptyAction && <div className="mt-3">{emptyAction}</div>}
+                <td colSpan={columns.length} className="px-4 py-12 text-center">
+                  <p className="text-xs sm:text-sm text-navy-500 font-normal">{emptyMessage}</p>
+                  {emptyAction && <div className="mt-3.5 flex justify-center">{emptyAction}</div>}
                 </td>
               </tr>
             ) : (
               data.map((row, rowIdx) => (
-                <tr key={row[keyField] || row._id || rowIdx} className="hover:bg-warm-100/60 transition-colors">
+                <tr
+                  key={row[keyField] || row._id || rowIdx}
+                  className="hover:bg-teal-50/20 transition-colors group"
+                >
                   {columns.map((col, colIdx) => (
-                    <td key={colIdx} className={`px-4 py-3 text-navy-800 text-xs sm:text-sm whitespace-nowrap ${col.cellClassName || ''}`}>
-                      {typeof col.accessor === 'function'
+                    <td
+                      key={colIdx}
+                      className={`px-4 sm:px-5 py-3.5 text-navy-800 text-xs sm:text-sm whitespace-nowrap ${
+                        col.cellClassName || ''
+                      }`}
+                    >
+                      {typeof col.cell === 'function'
+                        ? col.cell(row)
+                        : typeof col.accessor === 'function'
                         ? col.accessor(row)
                         : row[col.accessor]}
                     </td>

@@ -18,13 +18,13 @@ export const Input = ({
   return (
     <div className={`w-full ${className}`}>
       {label && (
-        <label htmlFor={id || name} className="block text-xs font-semibold text-navy-700 uppercase tracking-wider mb-1.5">
+        <label htmlFor={id || name} className="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-1.5">
           {label} {required && <span className="text-rose-500">*</span>}
         </label>
       )}
-      <div className="relative rounded-lg shadow-subtle">
+      <div className="relative rounded-xl shadow-2xs">
         {Icon && (
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-navy-400">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-navy-400">
             <Icon className="h-4 w-4" />
           </div>
         )}
@@ -37,12 +37,12 @@ export const Input = ({
           placeholder={placeholder}
           disabled={disabled}
           required={required}
-          className={`block w-full rounded-lg border bg-white text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-600 disabled:bg-warm-100 disabled:text-navy-400 ${
-            Icon ? 'pl-9 pr-3.5' : 'px-3.5'
+          className={`block w-full rounded-xl border bg-white text-xs sm:text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500/25 focus:border-teal-600 disabled:bg-navy-50 disabled:text-navy-400 ${
+            Icon ? 'pl-10 pr-3.5' : 'px-3.5'
           } py-2.5 ${
             error
               ? 'border-rose-300 text-rose-900 placeholder-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
-              : 'border-navy-200 text-navy-900 placeholder-navy-300 hover:border-navy-300'
+              : 'border-navy-200 text-navy-950 placeholder-navy-400 hover:border-navy-300'
           }`}
         />
       </div>

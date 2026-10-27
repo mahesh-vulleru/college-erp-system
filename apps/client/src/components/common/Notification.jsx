@@ -10,24 +10,24 @@ export const Notification = ({
 }) => {
   const configs = {
     info: {
-      bg: 'bg-blue-50 border-blue-200 text-blue-800',
+      bg: 'bg-sky-50 border-sky-200 text-sky-900',
       icon: Info,
-      iconColor: 'text-blue-500'
+      iconColor: 'text-sky-600'
     },
     success: {
-      bg: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+      bg: 'bg-emerald-50 border-emerald-200 text-emerald-900',
       icon: CheckCircle,
-      iconColor: 'text-emerald-500'
+      iconColor: 'text-emerald-600'
     },
     warning: {
-      bg: 'bg-amber-50 border-amber-200 text-amber-800',
+      bg: 'bg-amber-50 border-amber-200 text-amber-900',
       icon: AlertCircle,
-      iconColor: 'text-amber-500'
+      iconColor: 'text-amber-600'
     },
     error: {
-      bg: 'bg-red-50 border-red-200 text-red-800',
+      bg: 'bg-rose-50 border-rose-200 text-rose-900',
       icon: XCircle,
-      iconColor: 'text-red-500'
+      iconColor: 'text-rose-600'
     }
   };
 
@@ -35,16 +35,16 @@ export const Notification = ({
   const IconComponent = current.icon;
 
   return (
-    <div className={`p-4 rounded-xl border flex items-start space-x-3 text-xs sm:text-sm ${current.bg} ${className}`}>
+    <div className={`p-4 rounded-xl border flex items-start space-x-3 text-xs sm:text-sm shadow-2xs ${current.bg} ${className}`}>
       <IconComponent className={`w-5 h-5 flex-shrink-0 mt-0.5 ${current.iconColor}`} />
-      <div className="flex-1">
-        {title && <h4 className="font-semibold mb-0.5">{title}</h4>}
-        {message && <p className="leading-relaxed opacity-90">{message}</p>}
+      <div className="flex-1 min-w-0">
+        {title && <h4 className="font-bold tracking-tight mb-0.5">{title}</h4>}
+        {message && <p className="leading-relaxed opacity-95">{message}</p>}
       </div>
       {onClose && (
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+          className="text-navy-400 hover:text-navy-700 transition-colors p-1 rounded-lg"
           aria-label="Close notification"
         >
           <X className="w-4 h-4" />

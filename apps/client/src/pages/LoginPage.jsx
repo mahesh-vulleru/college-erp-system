@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   GraduationCap,
@@ -24,7 +24,14 @@ import { ROLES, ROLE_LABELS } from '@college-erp/shared';
 export const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { user, isAuthenticated, login } = useAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user?.role) {
+      navigate(getDashboardPath(user.role), { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
 
   // Selected role state - default to 'student'
   const [selectedRole, setSelectedRole] = useState(ROLES.STUDENT);
@@ -108,14 +115,26 @@ export const LoginPage = () => {
   };
 
   const getDashboardPath = (role) => {
-    switch (role) {
-      case ROLES.SUPER_ADMIN: return '/admin';
-      case ROLES.PRINCIPAL: return '/principal';
-      case ROLES.HOD: return '/hod';
-      case ROLES.FACULTY: return '/faculty';
-      case ROLES.STUDENT: return '/student';
-      case ROLES.ACCOUNTS: return '/accounts';
-      default: return '/';
+    const normalized = (role || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
+    switch (normalized) {
+      case 'super_admin':
+      case 'superadmin':
+      case 'super_administrator':
+        return '/admin';
+      case 'principal':
+        return '/principal';
+      case 'hod':
+        return '/hod';
+      case 'faculty':
+        return '/faculty';
+      case 'student':
+        return '/student';
+      case 'accounts':
+      case 'accountant':
+      case 'finance':
+        return '/accounts';
+      default:
+        return '/';
     }
   };
 
