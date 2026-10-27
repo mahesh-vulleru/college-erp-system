@@ -48,6 +48,8 @@ export const PrincipalDashboard = () => {
   const [examReports, setExamReports] = useState([]);
   const [resultsSummary, setResultsSummary] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedReviewApproval, setSelectedReviewApproval] = useState(null);
+  const [enrollmentPeriod, setEnrollmentPeriod] = useState('This Year');
 
   // Approval Workflow State
   const [approvals, setApprovals] = useState([
@@ -359,49 +361,6 @@ export const PrincipalDashboard = () => {
         />
       </div>
 
-      {/* 4 Quick Action Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Link
-          to="/departments"
-          className="bg-white hover:bg-slate-50 transition-all border border-slate-200/80 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-subtle hover:shadow-card group cursor-pointer"
-        >
-          <div className="w-11 h-11 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-            <Building2 className="w-5 h-5" />
-          </div>
-          <span className="text-xs sm:text-sm font-semibold text-slate-800">Departments</span>
-        </Link>
-
-        <Link
-          to="/examinations"
-          className="bg-white hover:bg-slate-50 transition-all border border-slate-200/80 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-subtle hover:shadow-card group cursor-pointer"
-        >
-          <div className="w-11 h-11 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-            <Award className="w-5 h-5" />
-          </div>
-          <span className="text-xs sm:text-sm font-semibold text-slate-800">Examinations</span>
-        </Link>
-
-        <Link
-          to="/notices"
-          className="bg-white hover:bg-slate-50 transition-all border border-slate-200/80 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-subtle hover:shadow-card group cursor-pointer"
-        >
-          <div className="w-11 h-11 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-            <Bell className="w-5 h-5" />
-          </div>
-          <span className="text-xs sm:text-sm font-semibold text-slate-800">Notice Board</span>
-        </Link>
-
-        <Link
-          to="/reports"
-          className="bg-white hover:bg-slate-50 transition-all border border-slate-200/80 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-subtle hover:shadow-card group cursor-pointer"
-        >
-          <div className="w-11 h-11 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-            <FileSpreadsheet className="w-5 h-5" />
-          </div>
-          <span className="text-xs sm:text-sm font-semibold text-slate-800">Executive Reports</span>
-        </Link>
-      </div>
-
       {/* Charts Row: Enrollment Trend & Department Strength */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
@@ -439,19 +398,30 @@ export const PrincipalDashboard = () => {
         <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm sm:text-base font-bold text-slate-900">Pending Approvals</h2>
-            <span className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 cursor-pointer">
+            <button
+              onClick={() => {
+                const el = document.getElementById('council-approvals-section');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 cursor-pointer"
+            >
               View All
-            </span>
+            </button>
           </div>
           <div className="space-y-3">
             {pendingApprovalsList.map((app, i) => (
-              <div key={app.id || i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
+              <div
+                key={app.id || i}
+                onClick={() => setSelectedReviewApproval(app)}
+                className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
+                title="Click to review and decide"
+              >
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs">
+                  <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs group-hover:bg-emerald-50 group-hover:text-emerald-700 transition-colors">
                     <FileText className="w-4 h-4 text-slate-500" />
                   </div>
                   <div>
-                    <p className="text-xs sm:text-sm font-semibold text-slate-800">{app.title}</p>
+                    <p className="text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-emerald-800 transition-colors">{app.title}</p>
                     <p className="text-[11px] text-slate-400 mt-0.5">{app.submittedDate ? `${app.submittedDate} • ${app.department || ''}` : (app.time || 'Pending review')}</p>
                   </div>
                 </div>
@@ -493,11 +463,6 @@ export const PrincipalDashboard = () => {
       <Card
         title="Department-Wise Enrollment & Faculty Distribution"
         subtitle="Live metrics computed directly from enrolled student profiles and department allocations in MongoDB"
-        headerAction={
-          <Link to="/departments" className="text-xs font-semibold text-teal-700 hover:text-teal-800 flex items-center">
-            Manage Departments <ArrowRight className="w-3.5 h-3.5 ml-1" />
-          </Link>
-        }
       >
         <Table
           columns={deptColumns}
@@ -743,6 +708,64 @@ export const PrincipalDashboard = () => {
           )}
         </Card>
       </div>
+
+
+      {/* Proposal Review & Executive Decision Modal */}
+      {selectedReviewApproval && (
+        <Modal
+          isOpen={!!selectedReviewApproval}
+          onClose={() => setSelectedReviewApproval(null)}
+          title="Executive Council Proposal Review"
+          subtitle="Principal review & administrative ratification"
+          maxWidth="max-w-md"
+        >
+          <div className="space-y-4 text-xs">
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+              <span className="font-bold text-sm text-slate-900 block">{selectedReviewApproval.title}</span>
+              <p className="text-slate-600 leading-relaxed">
+                {selectedReviewApproval.description || 'Proposal submitted for executive council ratification and administrative approval.'}
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-2 text-[11px] text-slate-400 font-mono border-t border-slate-200/50">
+                <span>Dept: {selectedReviewApproval.department || 'Academic Council'}</span>
+                <span>•</span>
+                <span>By: {selectedReviewApproval.submittedBy || 'Committee'}</span>
+                <span>•</span>
+                <span>Date: {selectedReviewApproval.submittedDate || selectedReviewApproval.time || 'Recent'}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setSelectedReviewApproval(null)}
+              >
+                Close
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => {
+                  handleApprovalAction(selectedReviewApproval.id, 'Rejected');
+                  setSelectedReviewApproval(null);
+                }}
+              >
+                Reject Proposal
+              </Button>
+              <Button
+                variant="teal"
+                size="sm"
+                onClick={() => {
+                  handleApprovalAction(selectedReviewApproval.id, 'Approved');
+                  setSelectedReviewApproval(null);
+                }}
+              >
+                Approve Proposal
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* Publish Notice Modal */}
       <Modal

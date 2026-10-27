@@ -128,3 +128,4 @@ export function getRoleTheme(role, pathname = '') {
 }
 
 export default ROLE_THEMES;
+

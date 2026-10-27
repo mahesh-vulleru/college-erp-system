@@ -531,8 +531,25 @@ export const FacultyDashboard = () => {
               Teaching schedule, student management and academic activities
             </p>
           </div>
-          <div className="flex items-center gap-4 relative z-10">
-            <CampusBuildingGraphic className="w-52 h-28 sm:w-64 sm:h-32 opacity-95 text-white pointer-events-none drop-shadow-md" />
+          <div className="flex items-center gap-3 relative z-10">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setIsMarkAttendanceOpen(true)}
+              icon={CalendarCheck}
+              className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
+            >
+              Mark Attendance
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={loadData}
+              icon={RefreshCw}
+              isLoading={isLoading}
+              className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
+            />
+            <CampusBuildingGraphic className="w-48 h-24 sm:w-56 sm:h-28 opacity-90 text-white pointer-events-none drop-shadow-md hidden md:block" />
           </div>
         </div>
 
@@ -639,9 +656,12 @@ export const FacultyDashboard = () => {
           <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm sm:text-base font-bold text-slate-900">Recent Activities</h2>
-              <span className="text-xs font-semibold text-purple-600 hover:text-purple-700 cursor-pointer">
-                View All
-              </span>
+              <button
+                onClick={() => setFacultyActiveTab('roster')}
+                className="text-xs font-semibold text-purple-600 hover:text-purple-700 cursor-pointer"
+              >
+                View Rosters
+              </button>
             </div>
             <div className="space-y-3">
               {facultyRecentActivities.map((act, i) => (
