@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   CalendarCheck,
   Award,
@@ -54,7 +54,15 @@ export const FacultyDashboard = () => {
   const [students, setStudents] = useState([]);
   const [exams, setExams] = useState([]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
-  const [facultyActiveTab, setFacultyActiveTab] = useState('timetable'); // 'timetable' | 'courses' | 'roster' | 'exams'
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryTab = searchParams.get('tab');
+  const [facultyActiveTab, setFacultyActiveTab] = useState(queryTab || 'timetable');
+
+  useEffect(() => {
+    if (queryTab) {
+      setFacultyActiveTab(queryTab);
+    }
+  }, [queryTab]);
   const [isMarkAttendanceOpen, setIsMarkAttendanceOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -631,9 +639,9 @@ export const FacultyDashboard = () => {
           <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm sm:text-base font-bold text-slate-900">Recent Activities</h2>
-              <Link to="/attendance" className="text-xs font-semibold text-purple-600 hover:text-purple-700">
+              <span className="text-xs font-semibold text-purple-600 hover:text-purple-700 cursor-pointer">
                 View All
-              </Link>
+              </span>
             </div>
             <div className="space-y-3">
               {facultyRecentActivities.map((act, i) => (

@@ -31,11 +31,13 @@ export const Topbar = ({ onToggleSidebar }) => {
     };
   }, []);
 
-  const getInitials = (name) => {
-    if (!name) return 'U';
-    const parts = name.replace(/^(Dr\.|Prof\.|Mr\.|Ms\.|Mrs\.)\s+/i, '').trim().split(' ');
-    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-    return name.slice(0, 2).toUpperCase();
+  const getTimetablePath = () => {
+    switch (user?.role) {
+      case 'student': return '/student?tab=timetable';
+      case 'faculty': return '/faculty?tab=timetable';
+      case 'hod': return '/hod?tab=timetable';
+      default: return '/timetable';
+    }
   };
 
   const getSearchPlaceholder = () => {
@@ -77,9 +79,9 @@ export const Topbar = ({ onToggleSidebar }) => {
 
       {/* Right: Notifications, status, and profile avatar */}
       <div className="flex items-center space-x-3 sm:space-x-4">
-        {/* Calendar / Schedule quick link */}
+        {/* Calendar / Schedule quick link - role-aware */}
         <Link
-          to="/timetable"
+          to={getTimetablePath()}
           className="p-2 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors hidden sm:inline-flex"
           title="Class Schedule"
         >

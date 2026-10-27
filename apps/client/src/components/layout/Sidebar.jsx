@@ -14,13 +14,306 @@ import {
   FileText,
   Clock,
   Users,
-  Globe,
   X,
-  Compass
+  Compass,
+  Layers,
+  TrendingUp,
+  UserCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '@college-erp/shared';
 import { getRoleTheme } from '../../theme/roleThemes';
+
+// Six Role-Specific Navigation Groups strictly matching application routes & architecture
+const ROLE_NAV_CONFIGS = {
+  // 1. Super Admin: Overview, Institution, Academics, Operations, Finance, Reports, Security
+  [ROLES.SUPER_ADMIN]: [
+    {
+      title: 'Overview',
+      items: [
+        { path: '/admin', label: 'Control Center', icon: LayoutDashboard },
+        { path: '/overview', label: 'System Overview Hub', icon: Compass }
+      ]
+    },
+    {
+      title: 'Institution',
+      items: [
+        { path: '/departments', label: 'Departments', icon: Building2 }
+      ]
+    },
+    {
+      title: 'Academics',
+      items: [
+        { path: '/courses', label: 'Programs & Courses', icon: BookOpen },
+        { path: '/subjects', label: 'Curriculum Subjects', icon: Layers }
+      ]
+    },
+    {
+      title: 'Operations',
+      items: [
+        { path: '/timetable', label: 'Class Timetables', icon: Clock },
+        { path: '/attendance', label: 'Daily Attendance', icon: CalendarCheck }
+      ]
+    },
+    {
+      title: 'Finance',
+      items: [
+        { path: '/fees', label: 'Fee Schedules & Dues', icon: CreditCard }
+      ]
+    },
+    {
+      title: 'Reports',
+      items: [
+        { path: '/reports', label: 'Executive Reports', icon: BarChart3 }
+      ]
+    },
+    {
+      title: 'Security',
+      items: [
+        { path: '/audit-logs', label: 'Security & Audit Logs', icon: ShieldCheck }
+      ]
+    }
+  ],
+
+  // 2. Principal: Executive Overview, Departments, Academic Performance, Examinations, Reports, Notices
+  [ROLES.PRINCIPAL]: [
+    {
+      title: 'Executive Overview',
+      items: [
+        { path: '/principal', label: 'Principal Dashboard', icon: LayoutDashboard },
+        { path: '/overview', label: 'Institutional Health', icon: Compass }
+      ]
+    },
+    {
+      title: 'Departments',
+      items: [
+        { path: '/departments', label: 'Academic Departments', icon: Building2 }
+      ]
+    },
+    {
+      title: 'Academic Performance',
+      items: [
+        { path: '/results', label: 'Results & Performance', icon: Award }
+      ]
+    },
+    {
+      title: 'Examinations',
+      items: [
+        { path: '/examinations', label: 'Examinations System', icon: FileText }
+      ]
+    },
+    {
+      title: 'Reports',
+      items: [
+        { path: '/reports', label: 'Executive Reports', icon: BarChart3 }
+      ]
+    },
+    {
+      title: 'Notices',
+      items: [
+        { path: '/notices', label: 'Notice Board', icon: Bell }
+      ]
+    }
+  ],
+
+  // 3. HOD: Department Overview, Faculty, Courses & Subjects, Timetable, Attendance, Examinations, Results
+  [ROLES.HOD]: [
+    {
+      title: 'Department Overview',
+      items: [
+        { path: '/hod', label: 'HOD Dashboard', icon: LayoutDashboard }
+      ]
+    },
+    {
+      title: 'Faculty',
+      items: [
+        { path: '/hod?tab=faculty', label: 'Department Faculty', icon: Users }
+      ]
+    },
+    {
+      title: 'Courses & Subjects',
+      items: [
+        { path: '/hod?tab=syllabus', label: 'Courses & Syllabus', icon: BookOpen }
+      ]
+    },
+    {
+      title: 'Timetable',
+      items: [
+        { path: '/hod?tab=timetable', label: 'Department Timetable', icon: Clock }
+      ]
+    },
+    {
+      title: 'Attendance',
+      items: [
+        { path: '/attendance', label: 'Attendance Register', icon: CalendarCheck }
+      ]
+    },
+    {
+      title: 'Examinations',
+      items: [
+        { path: '/examinations', label: 'Examinations Cell', icon: Award }
+      ]
+    },
+    {
+      title: 'Results',
+      items: [
+        { path: '/results', label: 'Results & Analysis', icon: FileText }
+      ]
+    },
+    {
+      title: 'Administration',
+      items: [
+        { path: '/reports', label: 'Department Reports', icon: BarChart3 },
+        { path: '/notices', label: 'Notice Board', icon: Bell }
+      ]
+    }
+  ],
+
+  // 4. Faculty: Dashboard, My Classes, Timetable, Attendance, Examinations & Marks, Notices
+  [ROLES.FACULTY]: [
+    {
+      title: 'Dashboard',
+      items: [
+        { path: '/faculty', label: 'Faculty Dashboard', icon: LayoutDashboard }
+      ]
+    },
+    {
+      title: 'My Classes',
+      items: [
+        { path: '/faculty?tab=courses', label: 'Assigned Courses', icon: BookOpen },
+        { path: '/faculty?tab=roster', label: 'Student Rosters', icon: Users }
+      ]
+    },
+    {
+      title: 'Timetable',
+      items: [
+        { path: '/faculty?tab=timetable', label: 'Teaching Schedule', icon: Clock }
+      ]
+    },
+    {
+      title: 'Attendance',
+      items: [
+        { path: '/attendance', label: 'Attendance Capture', icon: CalendarCheck }
+      ]
+    },
+    {
+      title: 'Examinations & Marks',
+      items: [
+        { path: '/faculty?tab=exams', label: 'Exam Duty & Marks', icon: Award }
+      ]
+    },
+    {
+      title: 'Notices',
+      items: [
+        { path: '/notices', label: 'Notice Board', icon: Bell }
+      ]
+    }
+  ],
+
+  // 5. Student: Dashboard, My Courses, Timetable, Attendance, Examinations, Published Results, Fees, Notices, Profile
+  [ROLES.STUDENT]: [
+    {
+      title: 'Dashboard',
+      items: [
+        { path: '/student', label: 'Student Dashboard', icon: LayoutDashboard }
+      ]
+    },
+    {
+      title: 'My Courses',
+      items: [
+        { path: '/student?tab=courses', label: 'Enrolled Courses', icon: BookOpen }
+      ]
+    },
+    {
+      title: 'Timetable',
+      items: [
+        { path: '/student?tab=timetable', label: 'Semester Timetable', icon: Clock }
+      ]
+    },
+    {
+      title: 'Attendance',
+      items: [
+        { path: '/student?tab=attendance', label: 'Attendance Register', icon: CalendarCheck }
+      ]
+    },
+    {
+      title: 'Examinations',
+      items: [
+        { path: '/examinations', label: 'Exam Schedules', icon: Award }
+      ]
+    },
+    {
+      title: 'Published Results',
+      items: [
+        { path: '/student?tab=results', label: 'Grade Cards & SGPA', icon: FileText }
+      ]
+    },
+    {
+      title: 'Fees',
+      items: [
+        { path: '/fees', label: 'Fee Dues & Receipts', icon: CreditCard }
+      ]
+    },
+    {
+      title: 'Notices',
+      items: [
+        { path: '/notices', label: 'Campus Circulars', icon: Bell }
+      ]
+    },
+    {
+      title: 'Profile',
+      items: [
+        { path: '/student?tab=profile', label: 'Student Profile', icon: GraduationCap }
+      ]
+    }
+  ],
+
+  // 6. Accounts: Finance Overview, Fee Schedules, Invoices, Payments, Outstanding Dues, Financial Reports, Notices
+  [ROLES.ACCOUNTS]: [
+    {
+      title: 'Finance Overview',
+      items: [
+        { path: '/accounts', label: 'Accounts Dashboard', icon: LayoutDashboard }
+      ]
+    },
+    {
+      title: 'Fee Schedules',
+      items: [
+        { path: '/fees?tab=structures', label: 'Fee Plans & Schedules', icon: Layers }
+      ]
+    },
+    {
+      title: 'Invoices',
+      items: [
+        { path: '/fees?tab=invoices', label: 'Billing Invoices', icon: FileText }
+      ]
+    },
+    {
+      title: 'Payments',
+      items: [
+        { path: '/fees?tab=payments', label: 'Payment Transactions', icon: CreditCard }
+      ]
+    },
+    {
+      title: 'Outstanding Dues',
+      items: [
+        { path: '/accounts?tab=invoices', label: 'Outstanding Ledgers', icon: TrendingUp }
+      ]
+    },
+    {
+      title: 'Financial Reports',
+      items: [
+        { path: '/reports', label: 'Financial Reports', icon: BarChart3 }
+      ]
+    },
+    {
+      title: 'Notices',
+      items: [
+        { path: '/notices', label: 'Notice Board', icon: Bell }
+      ]
+    }
+  ]
+};
 
 export const Sidebar = ({ isOpen, onClose }) => {
   const { user } = useAuth();
@@ -43,67 +336,50 @@ export const Sidebar = ({ isOpen, onClose }) => {
 
   const getInitials = (name) => {
     if (!name) return 'U';
-    const parts = name.replace(/^(Dr\.|Prof\.|Mr\.|Ms\.|Mrs\.)\s+/i, '').trim().split(' ');
+    const parts = name.replace(/^(Dr.|Prof.|Mr.|Ms.|Mrs.)s+/i, '').trim().split(' ');
     if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     return name.slice(0, 2).toUpperCase();
   };
 
-  // Navigation Items with role-based filtering
-  const navSections = [
+  // Select navigation groups for current role
+  const navSections = (role && ROLE_NAV_CONFIGS[role]) || [
     {
-      title: 'Institutional Portals',
+      title: 'Navigation',
       items: [
-        { path: '/admin', label: 'Dashboard', icon: LayoutDashboard, roles: [ROLES.SUPER_ADMIN] },
-        { path: '/principal', label: 'Dashboard', icon: LayoutDashboard, roles: [ROLES.PRINCIPAL] },
-        { path: '/hod', label: 'Dashboard', icon: LayoutDashboard, roles: [ROLES.HOD] },
-        { path: '/faculty', label: 'Dashboard', icon: LayoutDashboard, roles: [ROLES.FACULTY] },
-        { path: '/student', label: 'Dashboard', icon: LayoutDashboard, roles: [ROLES.STUDENT] },
-        { path: '/accounts', label: 'Dashboard', icon: LayoutDashboard, roles: [ROLES.ACCOUNTS] },
-
-        // Management links for oversight roles
-        { path: '/principal', label: 'Principal & Exec', icon: Building2, roles: [ROLES.SUPER_ADMIN] },
-        { path: '/hod', label: 'Department Head (HOD)', icon: Users, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL] },
-        { path: '/faculty', label: 'Faculty Workplace', icon: CalendarCheck, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD] },
-        { path: '/student', label: 'Student Self-Service', icon: GraduationCap, roles: [ROLES.SUPER_ADMIN] },
-        { path: '/accounts', label: 'Accounts & Finance', icon: CreditCard, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL] },
-        { path: '/overview', label: 'System Overview Hub', icon: Compass, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL] }
-      ]
-    },
-    {
-      title: 'Academic Modules',
-      items: [
-        { path: '/departments', label: 'Departments', icon: Building2, roles: ['*'] },
-        { path: '/courses', label: 'Programs & Courses', icon: BookOpen, roles: ['*'] },
-        { path: '/timetable', label: 'Class Timetable', icon: Clock, roles: ['*'] },
-        { path: '/attendance', label: 'Daily Attendance', icon: CalendarCheck, roles: ['*'] },
-        { path: '/examinations', label: 'Examinations', icon: Award, roles: ['*'] },
-        { path: '/results', label: 'Results & Grades', icon: FileText, roles: ['*'] }
-      ]
-    },
-    {
-      title: 'Administration',
-      items: [
-        { path: '/fees', label: 'Fee Schedules & Dues', icon: CreditCard, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT] },
-        { path: '/notices', label: 'Notice Board', icon: Bell, roles: ['*'] },
-        { path: '/reports', label: 'Executive Reports', icon: BarChart3, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS] },
-        { path: '/audit-logs', label: 'Security & Audit Logs', icon: ShieldCheck, roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL] }
+        { path: getMyPortalPath(), label: 'Dashboard', icon: LayoutDashboard }
       ]
     }
   ];
 
+  // Precision active state matching supporting query params & tab anchors
+  const isItemActive = (itemPath) => {
+    const currentFull = `${location.pathname}${location.search}`;
+    if (itemPath.includes('?')) {
+      return currentFull === itemPath;
+    }
+    // If current location has query params, do not match parent dashboard path
+    if (location.search && (itemPath === '/student' || itemPath === '/faculty' || itemPath === '/hod' || itemPath === '/accounts' || itemPath === '/fees')) {
+      return false;
+    }
+    return location.pathname === itemPath;
+  };
+
   return (
     <>
-      {/* Mobile backdrop */}
+      {/* Mobile backdrop with click-to-dismiss */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity"
           onClick={onClose}
+          aria-hidden="true"
         />
       )}
 
-      {/* Sidebar container with role-specific theme */}
+      {/* Sidebar container with role-specific theme & responsive drawer transform */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 ${theme.sidebarBg} ${theme.sidebarBorder} flex flex-col transition-all duration-300 ease-in-out border-r lg:static lg:translate-x-0 shadow-xl`}
+        className={`fixed inset-y-0 left-0 z-50 w-64 ${theme.sidebarBg} ${theme.sidebarBorder} flex flex-col transition-transform duration-300 ease-in-out border-r ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        } lg:static lg:translate-x-0 shadow-xl`}
       >
         {/* Brand header */}
         <div className={`h-16 px-5 border-b ${theme.sidebarBorder} flex items-center justify-between`}>
@@ -125,45 +401,37 @@ export const Sidebar = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Navigation list */}
-        <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
-          {navSections.map((section, sIdx) => {
-            const filteredItems = section.items.filter(
-              (item) => item.roles.includes('*') || (role && item.roles.includes(role))
-            );
+        {/* Role-specific Navigation List */}
+        <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto">
+          {navSections.map((section, sIdx) => (
+            <div key={sIdx} className="space-y-1">
+              <span className="px-3 text-[10px] font-bold tracking-wider text-white/40 uppercase block mb-1">
+                {section.title}
+              </span>
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                const active = isItemActive(item.path);
 
-            if (filteredItems.length === 0) return null;
-
-            return (
-              <div key={sIdx} className="space-y-1">
-                <span className="px-3 text-[10px] font-bold tracking-wider text-white/40 uppercase block mb-1">
-                  {section.title}
-                </span>
-                {filteredItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = location.pathname === item.path;
-
-                  return (
-                    <NavLink
-                      key={`${item.path}-${item.label}`}
-                      to={item.path}
-                      onClick={() => {
-                        if (window.innerWidth < 1024) onClose();
-                      }}
-                      className={`w-full flex items-center px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
-                        isActive
-                          ? theme.sidebarActive
-                          : `${theme.sidebarText} ${theme.sidebarHover}`
-                      }`}
-                    >
-                      <Icon className={`w-4 h-4 mr-3 ${isActive ? 'text-white' : 'text-white/60'}`} />
-                      <span className="truncate">{item.label}</span>
-                    </NavLink>
-                  );
-                })}
-              </div>
-            );
-          })}
+                return (
+                  <NavLink
+                    key={`${item.path}-${item.label}`}
+                    to={item.path}
+                    onClick={() => {
+                      if (window.innerWidth < 1024) onClose();
+                    }}
+                    className={`w-full flex items-center px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
+                      active
+                        ? theme.sidebarActive
+                        : `${theme.sidebarText} ${theme.sidebarHover}`
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 mr-3 ${active ? 'text-white' : 'text-white/60'}`} />
+                    <span className="truncate">{item.label}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* User Info Card at bottom with initials avatar */}
