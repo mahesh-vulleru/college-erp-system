@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   Users,
   BookOpen,
@@ -51,7 +51,15 @@ export const HodDashboard = () => {
   const [timetableSlots, setTimetableSlots] = useState([]);
   const [facultyList, setFacultyList] = useState([]);
   const [studentList, setStudentList] = useState([]);
-  const [hodActiveTab, setHodActiveTab] = useState('faculty'); // 'faculty' | 'students' | 'timetable' | 'syllabus'
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryTab = searchParams.get('tab');
+  const [hodActiveTab, setHodActiveTab] = useState(queryTab || 'faculty');
+
+  useEffect(() => {
+    if (queryTab) {
+      setHodActiveTab(queryTab);
+    }
+  }, [queryTab]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Modals state
@@ -592,9 +600,9 @@ export const HodDashboard = () => {
           <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm sm:text-base font-bold text-slate-900">Recent Department Activities</h2>
-              <Link to="/notices" className="text-xs font-semibold text-amber-600 hover:text-amber-700">
+              <span className="text-xs font-semibold text-amber-600 hover:text-amber-700 cursor-pointer">
                 View All
-              </Link>
+              </span>
             </div>
             <div className="space-y-3">
               {deptActivities.map((act, i) => (

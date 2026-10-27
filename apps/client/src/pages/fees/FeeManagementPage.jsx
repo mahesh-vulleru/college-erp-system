@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   CreditCard,
   DollarSign,
@@ -41,7 +42,15 @@ export const FeeManagementPage = () => {
   const isStaff = [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS].includes(user?.role);
   const isStudent = user?.role === ROLES.STUDENT;
 
-  const [activeTab, setActiveTab] = useState('invoices'); // 'invoices' | 'structures' | 'payments'
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryTab = searchParams.get('tab');
+  const queryStatus = searchParams.get('status');
+  const [activeTab, setActiveTab] = useState(queryTab || 'invoices'); // 'invoices' | 'structures' | 'payments'
+
+  useEffect(() => {
+    if (queryTab) setActiveTab(queryTab);
+    if (queryStatus) setStatusFilter(queryStatus);
+  }, [queryTab, queryStatus]);
   const [invoices, setInvoices] = useState([]);
   const [feeStructures, setFeeStructures] = useState([]);
   const [payments, setPayments] = useState([]);

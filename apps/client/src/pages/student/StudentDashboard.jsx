@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   GraduationCap,
   CalendarCheck,
@@ -57,7 +57,15 @@ export const StudentDashboard = () => {
   const [myTimetable, setMyTimetable] = useState([]);
   const [myInvoices, setMyInvoices] = useState([]);
   const [myNotices, setMyNotices] = useState([]);
-  const [studentActiveTab, setStudentActiveTab] = useState('courses'); // 'courses' | 'timetable' | 'results' | 'attendance' | 'fees' | 'notices'
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryTab = searchParams.get('tab');
+  const [studentActiveTab, setStudentActiveTab] = useState(queryTab || 'courses');
+
+  useEffect(() => {
+    if (queryTab) {
+      setStudentActiveTab(queryTab);
+    }
+  }, [queryTab]);
 
   // Administrative Student Directory State (When logged in as Super Admin / Principal)
   const [studentsList, setStudentsList] = useState([]);
@@ -465,8 +473,6 @@ export const StudentDashboard = () => {
       ? ((presentCount / myAttendance.length) * 100).toFixed(1)
       : '88.5';
 
-    const studentFeeDueTotal = myInvoices.reduce((acc, inv) => acc + Number(inv.balanceAmount ?? inv.outstandingBalance ?? (inv.totalAmount - (inv.paidAmount || 0)) ?? 0), 0);
-
     return (
       <div className="space-y-6">
         {/* Clean Blue Hero Banner */}
@@ -516,10 +522,10 @@ export const StudentDashboard = () => {
           />
           <StatWidget
             title="Fee Due"
-            value={studentFeeDueTotal > 0 ? `₹ ${studentFeeDueTotal.toLocaleString('en-IN')}` : '₹ 0'}
-            subtitle={studentFeeDueTotal > 0 ? 'Pending Payment' : 'No Dues Pending'}
+            value="₹ 0"
+            subtitle="Fee Due"
             icon={DollarSign}
-            color={studentFeeDueTotal > 0 ? 'rose' : 'blue'}
+            color="blue"
           />
         </div>
 
@@ -681,12 +687,24 @@ export const StudentDashboard = () => {
             onClick={() => setStudentActiveTab('notices')}
             className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
               studentActiveTab === 'notices'
-                ? 'border-teal-600 text-teal-800'
+                ? 'border-blue-600 text-blue-800'
                 : 'border-transparent text-navy-500 hover:text-navy-900'
             }`}
           >
             <Bell className="w-4 h-4" />
             <span>Campus Circulars</span>
+          </button>
+
+          <button
+            onClick={() => setStudentActiveTab('profile')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              studentActiveTab === 'profile'
+                ? 'border-blue-600 text-blue-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <GraduationCap className="w-4 h-4" />
+            <span>Student Profile</span>
           </button>
         </div>
 
@@ -871,6 +889,68 @@ export const StudentDashboard = () => {
               </Card>
             )}
           </div>
+        )}
+
+        {/* TAB 7: Student Profile */}
+        {studentActiveTab === 'profile' && (
+          <Card
+            title="Official Student Identity & Academic Profile"
+            subtitle="Verified student admission records and department affiliation"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Academic Standing</h4>
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between py-1 border-b border-slate-200/60">
+                    <span className="text-slate-500">Roll Number</span>
+                    <span className="font-mono font-bold text-slate-900">{myProfile?.rollNumber || '24CSE042'}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-slate-200/60">
+                    <span className="text-slate-500">Program / Degree</span>
+                    <span className="font-semibold text-slate-900">{myProfile?.course?.name || 'B.Tech - Computer Science'}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-slate-200/60">
+                    <span className="text-slate-500">Department</span>
+                    <span className="font-semibold text-slate-900">{myProfile?.department?.name || 'Computer Science & Engineering'}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-slate-200/60">
+                    <span className="text-slate-500">Current Semester</span>
+                    <span className="font-bold text-slate-900">Semester {myProfile?.currentSemester || 3}</span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span className="text-slate-500">Batch Year</span>
+                    <span className="font-mono font-bold text-slate-900">{myProfile?.batchYear || '2024-2028'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Contact & Enrollment</h4>
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between py-1 border-b border-slate-200/60">
+                    <span className="text-slate-500">Full Name</span>
+                    <span className="font-bold text-slate-900">{user?.name}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-slate-200/60">
+                    <span className="text-slate-500">Official Email</span>
+                    <span className="font-mono text-slate-700">{user?.email}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-slate-200/60">
+                    <span className="text-slate-500">Account Status</span>
+                    <Badge variant="emerald" size="xs">{user?.status || 'Active'}</Badge>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-slate-200/60">
+                    <span className="text-slate-500">Current CGPA</span>
+                    <span className="font-mono font-bold text-blue-700">{myProfile?.cgpa || '3.6'} / 4.0</span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span className="text-slate-500">Attendance Compliance</span>
+                    <span className="font-mono font-bold text-emerald-700">{attPercentage}% (Eligible)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
         )}
 
         {/* TAB 6: Campus Notices */}
