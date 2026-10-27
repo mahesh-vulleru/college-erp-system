@@ -1,5 +1,5 @@
 const express = require('express');
-const { getResults, recordResult } = require('./result.controller');
+const { getResults, recordResult, batchRecordResults } = require('./result.controller');
 const { validateResultInput } = require('./result.validator');
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
@@ -20,5 +20,10 @@ router.post(
   recordResult
 );
 
-module.exports = router;
+router.post(
+  '/batch',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY),
+  batchRecordResults
+);
 
+module.exports = router;

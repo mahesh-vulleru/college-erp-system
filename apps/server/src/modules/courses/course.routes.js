@@ -1,5 +1,11 @@
 const express = require('express');
-const { listCourses, getCourseById, createCourse } = require('./course.controller');
+const {
+  listCourses,
+  getCourseById,
+  createCourse,
+  updateCourse,
+  deleteCourse
+} = require('./course.controller');
 const { validateCourseInput } = require('./course.validator');
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
@@ -20,5 +26,16 @@ router.post(
   createCourse
 );
 
-module.exports = router;
+router.put(
+  '/:id',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  updateCourse
+);
 
+router.delete(
+  '/:id',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL),
+  deleteCourse
+);
+
+module.exports = router;

@@ -1,5 +1,10 @@
 const express = require('express');
-const { getTimetable, createTimetableSlot } = require('./timetable.controller');
+const {
+  getTimetable,
+  createTimetableSlot,
+  updateTimetableSlot,
+  deleteTimetableSlot
+} = require('./timetable.controller');
 const { validateTimetableInput } = require('./timetable.validator');
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
@@ -10,10 +15,10 @@ const router = express.Router();
 
 router.use(authenticate);
 
-// Viewable by all institutional members
+// Readable by all authenticated institutional users (Super Admin, Principal, HOD, Faculty, Student)
 router.get('/', getTimetable);
 
-// Slot allocation restricted to HOD, Principal, Super Admin
+// Management restricted to Super Admin, Principal, and HOD
 router.post(
   '/',
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
@@ -21,5 +26,16 @@ router.post(
   createTimetableSlot
 );
 
-module.exports = router;
+router.put(
+  '/:id',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  updateTimetableSlot
+);
 
+router.delete(
+  '/:id',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  deleteTimetableSlot
+);
+
+module.exports = router;

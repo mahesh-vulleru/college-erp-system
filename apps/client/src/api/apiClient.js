@@ -163,12 +163,41 @@ class ApiClient {
   }
 
   // Courses & Subjects
-  getCourses() {
-    return this.get('/v1/courses');
+  getCourses(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.department) searchParams.append('department', params.department);
+    if (params.isActive !== undefined) searchParams.append('isActive', params.isActive);
+    const qs = searchParams.toString();
+    return this.get(`/v1/courses${qs ? `?${qs}` : ''}`);
   }
 
-  getSubjects() {
-    return this.get('/v1/subjects');
+  getCourseById(id) {
+    return this.get(`/v1/courses/${id}`);
+  }
+
+  createCourse(data) {
+    return this.post('/v1/courses', data);
+  }
+
+  updateCourse(id, data) {
+    return this.put(`/v1/courses/${id}`, data);
+  }
+
+  deleteCourse(id) {
+    return this.delete(`/v1/courses/${id}`);
+  }
+
+  getSubjects(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.course) searchParams.append('course', params.course);
+    if (params.department) searchParams.append('department', params.department);
+    if (params.semester) searchParams.append('semester', params.semester);
+    const qs = searchParams.toString();
+    return this.get(`/v1/subjects${qs ? `?${qs}` : ''}`);
+  }
+
+  createSubject(data) {
+    return this.post('/v1/subjects', data);
   }
 
   // Faculty
@@ -266,11 +295,13 @@ class ApiClient {
     return this.get(`/v1/audit-logs${qs ? `?${qs}` : ''}`);
   }
 
-  // Timetable, Exams & Results
+  // Timetable
   getTimetable(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.department) searchParams.append('department', params.department);
+    if (params.course) searchParams.append('course', params.course);
     if (params.semester) searchParams.append('semester', params.semester);
+    if (params.section) searchParams.append('section', params.section);
     if (params.faculty) searchParams.append('faculty', params.faculty);
     if (params.dayOfWeek) searchParams.append('dayOfWeek', params.dayOfWeek);
     const qs = searchParams.toString();
@@ -281,28 +312,77 @@ class ApiClient {
     return this.post('/v1/timetable', data);
   }
 
+  updateTimetableSlot(id, data) {
+    return this.put(`/v1/timetable/${id}`, data);
+  }
+
+  deleteTimetableSlot(id) {
+    return this.delete(`/v1/timetable/${id}`);
+  }
+
+  // Examinations
   getExams(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.semester) searchParams.append('semester', params.semester);
     if (params.academicYear) searchParams.append('academicYear', params.academicYear);
+    if (params.department) searchParams.append('department', params.department);
+    if (params.examType) searchParams.append('examType', params.examType);
+    if (params.status) searchParams.append('status', params.status);
     const qs = searchParams.toString();
     return this.get(`/v1/examinations${qs ? `?${qs}` : ''}`);
   }
 
+  getExamById(id) {
+    return this.get(`/v1/examinations/${id}`);
+  }
+
+  createExam(data) {
+    return this.post('/v1/examinations', data);
+  }
+
+  updateExam(id, data) {
+    return this.put(`/v1/examinations/${id}`, data);
+  }
+
+  deleteExam(id) {
+    return this.delete(`/v1/examinations/${id}`);
+  }
+
+  // Results
   getResults(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.examination) searchParams.append('examination', params.examination);
     if (params.student) searchParams.append('student', params.student);
+    if (params.subject) searchParams.append('subject', params.subject);
     const qs = searchParams.toString();
     return this.get(`/v1/results${qs ? `?${qs}` : ''}`);
   }
 
+  recordResult(data) {
+    return this.post('/v1/results', data);
+  }
+
+  recordResultsBatch(data) {
+    return this.post('/v1/results/batch', data);
+  }
+
+  // Attendance
   getAttendance(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.student) searchParams.append('student', params.student);
     if (params.subject) searchParams.append('subject', params.subject);
+    if (params.date) searchParams.append('date', params.date);
     const qs = searchParams.toString();
     return this.get(`/v1/attendance${qs ? `?${qs}` : ''}`);
+  }
+
+  markAttendanceBatch(data) {
+    return this.post('/v1/attendance/batch', data);
+  }
+
+  getAttendanceSummary(studentId) {
+    const qs = studentId ? `?studentId=${studentId}` : '';
+    return this.get(`/v1/attendance/summary${qs}`);
   }
 }
 
