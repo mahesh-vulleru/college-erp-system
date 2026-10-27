@@ -25,5 +25,11 @@ router.post(
   markAttendanceBatch
 );
 
-module.exports = router;
+router.post(
+  '/batch',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY),
+  validateRequest(validateAttendanceBatchInput),
+  markAttendanceBatch
+);
 
+module.exports = router;
