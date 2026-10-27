@@ -23,14 +23,20 @@ import FacultyDashboard from './pages/faculty/FacultyDashboard';
 import StudentDashboard from './pages/student/StudentDashboard';
 import AccountsDashboard from './pages/accounts/AccountsDashboard';
 
+// Phase 2 Academic Subsystems
+import DepartmentsPage from './pages/academics/DepartmentsPage';
+import CoursesPage from './pages/academics/CoursesPage';
+import TimetablePage from './pages/academics/TimetablePage';
+import AttendancePage from './pages/academics/AttendancePage';
+import ExaminationsPage from './pages/academics/ExaminationsPage';
+import ResultsPage from './pages/academics/ResultsPage';
+
 // Phase 3 Institutional Administration Pages
 import FeeManagementPage from './pages/fees/FeeManagementPage';
 import NoticeBoardPage from './pages/notices/NoticeBoardPage';
 import ExecutiveReportsPage from './pages/reports/ExecutiveReportsPage';
 import AuditLogsPage from './pages/audit/AuditLogsPage';
 
-// Module Scaffolding Template (Phase 2 Academic Subsystems)
-import ModulePlaceholderPage from './pages/modules/ModulePlaceholderPage';
 import { ROLES } from '@college-erp/shared';
 
 // Smart redirector for /dashboard based on authenticated role
@@ -144,18 +150,12 @@ export const App = () => {
                 }
               />
 
-              {/* Modular Academic & Administrative Subsystems */}
+              {/* Phase 2: Six Fully Integrated Academic Subsystems */}
               <Route
                 path="departments"
                 element={
                   <ProtectedRoute>
-                    <ModulePlaceholderPage
-                      title="Department Management"
-                      description="Catalog of academic engineering departments, intake limits, assigned HODs, and faculty allotment."
-                      apiEndpoint="/v1/departments"
-                      assignedMember="M2 (Academic Backend)"
-                      branchName="feature/m2-academics-mongo"
-                    />
+                    <DepartmentsPage />
                   </ProtectedRoute>
                 }
               />
@@ -163,13 +163,7 @@ export const App = () => {
                 path="courses"
                 element={
                   <ProtectedRoute>
-                    <ModulePlaceholderPage
-                      title="Programs & Courses"
-                      description="Undergraduate B.Tech degree programs, curriculum duration, total credits, and semester mappings."
-                      apiEndpoint="/v1/courses"
-                      assignedMember="M2 (Academic Backend)"
-                      branchName="feature/m2-academics-mongo"
-                    />
+                    <CoursesPage />
                   </ProtectedRoute>
                 }
               />
@@ -177,13 +171,7 @@ export const App = () => {
                 path="subjects"
                 element={
                   <ProtectedRoute>
-                    <ModulePlaceholderPage
-                      title="Curriculum Subjects"
-                      description="Semester syllabus courses, theory lectures, laboratory practicals, and credit values."
-                      apiEndpoint="/v1/subjects"
-                      assignedMember="M2 (Academic Backend)"
-                      branchName="feature/m2-academics-mongo"
-                    />
+                    <CoursesPage />
                   </ProtectedRoute>
                 }
               />
@@ -191,13 +179,7 @@ export const App = () => {
                 path="timetable"
                 element={
                   <ProtectedRoute>
-                    <ModulePlaceholderPage
-                      title="Class Schedules & Timetable"
-                      description="Weekly master schedule, room numbers, lecture slots, faculty clash detection, and period timings."
-                      apiEndpoint="/v1/timetable"
-                      assignedMember="M2 (Academic Backend)"
-                      branchName="feature/m2-academics-mongo"
-                    />
+                    <TimetablePage />
                   </ProtectedRoute>
                 }
               />
@@ -205,13 +187,7 @@ export const App = () => {
                 path="attendance"
                 element={
                   <ProtectedRoute>
-                    <ModulePlaceholderPage
-                      title="Attendance Management"
-                      description="Daily period attendance capture, percentage computation, and condonation monitoring."
-                      apiEndpoint="/v1/attendance"
-                      assignedMember="M2 (Academic Backend)"
-                      branchName="feature/m2-academics-mongo"
-                    />
+                    <AttendancePage />
                   </ProtectedRoute>
                 }
               />
@@ -219,13 +195,7 @@ export const App = () => {
                 path="examinations"
                 element={
                   <ProtectedRoute>
-                    <ModulePlaceholderPage
-                      title="Examinations System"
-                      description="Mid-term evaluations, semester-end exam slots, invigilation duty registers, and hall schedules."
-                      apiEndpoint="/v1/examinations"
-                      assignedMember="M2 (Academic Backend)"
-                      branchName="feature/m2-academics-mongo"
-                    />
+                    <ExaminationsPage />
                   </ProtectedRoute>
                 }
               />
@@ -233,16 +203,11 @@ export const App = () => {
                 path="results"
                 element={
                   <ProtectedRoute>
-                    <ModulePlaceholderPage
-                      title="Marks & Grade Evaluation"
-                      description="Internal test marks entry, external exam scores, letter grades calculation, and semester GPA."
-                      apiEndpoint="/v1/results"
-                      assignedMember="M2 (Academic Backend)"
-                      branchName="feature/m2-academics-mongo"
-                    />
+                    <ResultsPage />
                   </ProtectedRoute>
                 }
               />
+
               {/* Phase 3 Institutional Administration Subsystems */}
               <Route
                 path="fees"

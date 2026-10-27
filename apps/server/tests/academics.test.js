@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const env = require('../src/config/env');
 const { ROLES } = require('@college-erp/shared');
 
+const User = require('../src/modules/auth/auth.model');
 const Department = require('../src/modules/departments/department.model');
 const Course = require('../src/modules/courses/course.model');
 const Timetable = require('../src/modules/timetable/timetable.model');
@@ -13,18 +14,55 @@ const Result = require('../src/modules/results/result.model');
 const Student = require('../src/modules/students/student.model');
 
 describe('Academic Modules (Phase 2) Test Suite', () => {
+  const adminUser = {
+    _id: '507f1f77bcf86cd799439001',
+    name: 'Dr. Arthur Mitchell',
+    email: 'admin@college.edu',
+    role: ROLES.SUPER_ADMIN,
+    status: 'active'
+  };
+
+  const facultyUser = {
+    _id: '507f1f77bcf86cd799439002',
+    name: 'Dr. Alan Turing',
+    email: 'faculty.turing@college.edu',
+    role: ROLES.FACULTY,
+    status: 'active'
+  };
+
+  const studentUser = {
+    _id: '507f1f77bcf86cd799439003',
+    name: 'Aarav Sharma',
+    email: 'student.aarav@college.edu',
+    role: ROLES.STUDENT,
+    status: 'active'
+  };
+
   const adminToken = jwt.sign(
-    { id: '507f1f77bcf86cd799439001', role: ROLES.SUPER_ADMIN },
-    env.JWT_SECRET
+    { id: adminUser._id, role: adminUser.role },
+    env.JWT_SECRET,
+    { expiresIn: '1h' }
   );
   const facultyToken = jwt.sign(
-    { id: '507f1f77bcf86cd799439002', role: ROLES.FACULTY },
-    env.JWT_SECRET
+    { id: facultyUser._id, role: facultyUser.role },
+    env.JWT_SECRET,
+    { expiresIn: '1h' }
   );
   const studentToken = jwt.sign(
-    { id: '507f1f77bcf86cd799439003', role: ROLES.STUDENT },
-    env.JWT_SECRET
+    { id: studentUser._id, role: studentUser.role },
+    env.JWT_SECRET,
+    { expiresIn: '1h' }
   );
+
+  beforeEach(() => {
+    jest.spyOn(User, 'findById').mockImplementation((id) => {
+      const idStr = id ? id.toString() : '';
+      if (idStr === adminUser._id) return { select: jest.fn().mockResolvedValue(adminUser) };
+      if (idStr === facultyUser._id) return { select: jest.fn().mockResolvedValue(facultyUser) };
+      if (idStr === studentUser._id) return { select: jest.fn().mockResolvedValue(studentUser) };
+      return { select: jest.fn().mockResolvedValue(null) };
+    });
+  });
 
   afterEach(() => {
     jest.restoreAllMocks();
@@ -97,7 +135,6 @@ describe('Academic Modules (Phase 2) Test Suite', () => {
   // C. Timetable Conflict Tests
   describe('C. Timetable Conflict Module', () => {
     it('POST /api/v1/timetable rejects scheduling on faculty conflict with 409 Conflict', async () => {
-      // Mock existing faculty clash
       jest.spyOn(Timetable, 'findOne').mockReturnValue({
         populate: jest.fn().mockResolvedValue({
           _id: '507f1f77bcf86cd799439033',
@@ -166,15 +203,16 @@ describe('Academic Modules (Phase 2) Test Suite', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           name: 'Invalid Date Exam',
+          examType: 'Semester End',
           academicYear: '2025-2026',
           semester: 3,
           startDate: '2026-12-10',
-          endDate: '2026-12-01' // earlier than start!
+          endDate: '2026-12-01'
         });
 
       expect(res.statusCode).toBe(400);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain('start date cannot be later than end date');
+      expect(res.body.errors).toContain('Exam start date cannot be later than end date');
     });
   });
 
@@ -188,13 +226,13 @@ describe('Academic Modules (Phase 2) Test Suite', () => {
           examination: '507f1f77bcf86cd799439051',
           student: '507f1f77bcf86cd799439041',
           subject: '507f1f77bcf86cd799439031',
-          internalMarks: 45, // Exceeds 40!
+          internalMarks: 45,
           externalMarks: 50
         });
 
       expect(res.statusCode).toBe(400);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain('Internal marks must be between 0 and 40');
+      expect(res.body.errors).toContain('Internal marks must be between 0 and 40');
     });
 
     it('POST /api/v1/results rejects negative external marks with 400 Bad Request', async () => {
@@ -206,22 +244,20 @@ describe('Academic Modules (Phase 2) Test Suite', () => {
           student: '507f1f77bcf86cd799439041',
           subject: '507f1f77bcf86cd799439031',
           internalMarks: 30,
-          externalMarks: -5 // Negative!
+          externalMarks: -5
         });
 
       expect(res.statusCode).toBe(400);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain('External marks must be between 0 and 60');
+      expect(res.body.errors).toContain('External marks must be between 0 and 60');
     });
 
     it('GET /api/v1/results filters out unpublished examinations for Student role', async () => {
-      // Mock student profile
       jest.spyOn(Student, 'findOne').mockResolvedValue({
         _id: '507f1f77bcf86cd799439041',
-        user: '507f1f77bcf86cd799439003'
+        user: studentUser._id
       });
 
-      // Mock finding published exams (only exam #1 is published)
       jest.spyOn(Examination, 'find').mockReturnValue({
         select: jest.fn().mockResolvedValue([{ _id: '507f1f77bcf86cd799439051' }])
       });
@@ -252,7 +288,6 @@ describe('Academic Modules (Phase 2) Test Suite', () => {
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
 
-      // Verify the query passed to Result.find strictly contained the published exam IDs
       expect(findSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           student: '507f1f77bcf86cd799439041',
@@ -262,4 +297,3 @@ describe('Academic Modules (Phase 2) Test Suite', () => {
     });
   });
 });
-
