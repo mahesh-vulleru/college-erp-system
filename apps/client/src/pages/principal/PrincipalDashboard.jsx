@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Building2,
   Users,
@@ -13,7 +14,11 @@ import {
   Bell,
   RefreshCw,
   Send,
-  FileText
+  FileText,
+  ExternalLink,
+  FileSpreadsheet,
+  Layers,
+  ArrowRight
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import StatWidget from '../../components/common/StatWidget';
@@ -37,6 +42,8 @@ export const PrincipalDashboard = () => {
   const [academicSummary, setAcademicSummary] = useState(null);
   const [attendanceHealth, setAttendanceHealth] = useState(null);
   const [notices, setNotices] = useState([]);
+  const [examReports, setExamReports] = useState([]);
+  const [resultsSummary, setResultsSummary] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Approval Workflow State
@@ -109,17 +116,21 @@ export const PrincipalDashboard = () => {
   const loadDashboardData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [deptRes, summaryRes, attRes, noticesRes] = await Promise.all([
+      const [deptRes, summaryRes, attRes, noticesRes, examRes, resultRes] = await Promise.all([
         api.getDepartmentSummaries().catch(() => ({ data: [] })),
         api.getAcademicSummary().catch(() => ({ data: null })),
         api.getAttendanceOverview().catch(() => ({ data: null })),
-        api.getNotices().catch(() => ({ data: [] }))
+        api.getNotices().catch(() => ({ data: [] })),
+        api.getExaminationsReport().catch(() => ({ data: [] })),
+        api.getResultsSummaryReport().catch(() => ({ data: null }))
       ]);
 
       if (deptRes?.data) setDeptSummaries(deptRes.data);
       if (summaryRes?.data) setAcademicSummary(summaryRes.data);
       if (attRes?.data) setAttendanceHealth(attRes.data);
       if (noticesRes?.data) setNotices(noticesRes.data);
+      if (examRes?.data) setExamReports(Array.isArray(examRes.data) ? examRes.data : []);
+      if (resultRes?.data) setResultsSummary(resultRes.data);
     } catch (err) {
       addToast({
         type: 'error',
@@ -321,6 +332,73 @@ export const PrincipalDashboard = () => {
         />
       </div>
 
+      {/* Executive Quick Actions Hub */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <Link
+          to="/reports"
+          className="p-3.5 rounded-xl bg-white border border-navy-100 hover:border-teal-500 hover:shadow-subtle transition-all flex items-center justify-between group"
+        >
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-teal-50 text-teal-700 group-hover:bg-teal-600 group-hover:text-white transition-colors">
+              <FileSpreadsheet className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-navy-950 block">Executive Reports</span>
+              <span className="text-[11px] text-navy-500">Institutional analytics & CSV</span>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-navy-400 group-hover:text-teal-600 transition-colors" />
+        </Link>
+
+        <Link
+          to="/notices"
+          className="p-3.5 rounded-xl bg-white border border-navy-100 hover:border-teal-500 hover:shadow-subtle transition-all flex items-center justify-between group"
+        >
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-teal-50 text-teal-700 group-hover:bg-teal-600 group-hover:text-white transition-colors">
+              <Bell className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-navy-950 block">Notice Board</span>
+              <span className="text-[11px] text-navy-500">Broadcast official circulars</span>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-navy-400 group-hover:text-teal-600 transition-colors" />
+        </Link>
+
+        <Link
+          to="/fees"
+          className="p-3.5 rounded-xl bg-white border border-navy-100 hover:border-teal-500 hover:shadow-subtle transition-all flex items-center justify-between group"
+        >
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-teal-50 text-teal-700 group-hover:bg-teal-600 group-hover:text-white transition-colors">
+              <TrendingUp className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-navy-950 block">Fee Ledgers & Dues</span>
+              <span className="text-[11px] text-navy-500">Tuition collections & status</span>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-navy-400 group-hover:text-teal-600 transition-colors" />
+        </Link>
+
+        <Link
+          to="/timetable"
+          className="p-3.5 rounded-xl bg-white border border-navy-100 hover:border-teal-500 hover:shadow-subtle transition-all flex items-center justify-between group"
+        >
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-teal-50 text-teal-700 group-hover:bg-teal-600 group-hover:text-white transition-colors">
+              <Clock className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-navy-950 block">Master Timetable</span>
+              <span className="text-[11px] text-navy-500">Lecture periods & room allot</span>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-navy-400 group-hover:text-teal-600 transition-colors" />
+        </Link>
+      </div>
+
       {/* 1. Department-Wise Summaries */}
       <Card
         title="Department-Wise Enrollment & Faculty Distribution"
@@ -334,6 +412,96 @@ export const PrincipalDashboard = () => {
           emptyMessage="No departments found."
         />
       </Card>
+
+      {/* 2. Institutional Examinations & Academic Results Overview */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card
+          title="Institutional Examination Status & Schedules"
+          subtitle="Real-time examination cycle tracking from Exam Cell"
+          headerAction={
+            <Link to="/examinations" className="text-xs font-semibold text-teal-700 hover:text-teal-800 flex items-center">
+              View All <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            </Link>
+          }
+        >
+          {examReports.length === 0 ? (
+            <p className="text-xs text-navy-400 py-6 text-center">No examination schedules currently registered in the database.</p>
+          ) : (
+            <div className="space-y-2.5">
+              {examReports.slice(0, 4).map((ex) => (
+                <div key={ex.id} className="p-3.5 rounded-xl bg-warm-50 border border-navy-100 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-bold text-navy-950 block">{ex.name}</span>
+                    <span className="text-[11px] text-navy-500 font-mono">
+                      {ex.examType?.toUpperCase()} &bull; Sem {ex.semester} ({ex.academicYear})
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <Badge
+                      variant={ex.timelineStatus === 'Completed' ? 'success' : ex.timelineStatus === 'In Progress' ? 'amber' : 'navy'}
+                      size="xs"
+                    >
+                      {ex.timelineStatus}
+                    </Badge>
+                    <span className="text-[10px] text-navy-500 block mt-1">
+                      {ex.isPublished ? 'Results Published' : 'Under Tabulation'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        <Card
+          title="Published Results & Academic Pass Performance"
+          subtitle="Governing exam pass percentage across verified published results"
+          headerAction={
+            <Link to="/results" className="text-xs font-semibold text-teal-700 hover:text-teal-800 flex items-center">
+              Grade Cell <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            </Link>
+          }
+        >
+          {resultsSummary ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="p-3 rounded-xl bg-teal-50 border border-teal-100">
+                  <span className="text-[10px] uppercase font-bold text-teal-600 block">Total Graded</span>
+                  <span className="text-lg font-bold text-teal-950 mt-0.5 block">{resultsSummary.totalGraded || 0}</span>
+                </div>
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100">
+                  <span className="text-[10px] uppercase font-bold text-emerald-600 block">Pass Rate</span>
+                  <span className="text-lg font-bold text-emerald-700 mt-0.5 block">{resultsSummary.passPercentage || '0'}%</span>
+                </div>
+                <div className="p-3 rounded-xl bg-warm-50 border border-navy-100">
+                  <span className="text-[10px] uppercase font-bold text-navy-500 block">Passed / Failed</span>
+                  <span className="text-xs font-mono font-bold text-navy-900 mt-1 block">
+                    {resultsSummary.passedCount || 0} / {resultsSummary.failedCount || 0}
+                  </span>
+                </div>
+              </div>
+
+              {resultsSummary.gradeDistribution && (
+                <div>
+                  <span className="text-[11px] font-semibold text-navy-500 uppercase tracking-wider block mb-2">
+                    Grade Distribution
+                  </span>
+                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5 text-center text-xs">
+                    {Object.entries(resultsSummary.gradeDistribution).map(([grd, count]) => (
+                      <div key={grd} className="p-2 rounded-lg bg-warm-50 border border-navy-100">
+                        <span className="font-bold text-navy-900 block">{grd}</span>
+                        <span className="text-[11px] text-navy-500 font-mono mt-0.5 block">{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-xs text-navy-400 py-6 text-center">No examination results currently published for academic council review.</p>
+          )}
+        </Card>
+      </div>
 
       {/* 2. Pending Approvals & Decision History */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

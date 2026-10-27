@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Users,
   BookOpen,
@@ -16,7 +17,11 @@ import {
   UserCheck,
   UserX,
   Mail,
-  ShieldAlert
+  ShieldAlert,
+  GraduationCap,
+  ExternalLink,
+  ArrowRight,
+  CheckCircle2
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import StatWidget from '../../components/common/StatWidget';
@@ -41,6 +46,9 @@ export const HodDashboard = () => {
   const [hodUsers, setHodUsers] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [timetableSlots, setTimetableSlots] = useState([]);
+  const [facultyList, setFacultyList] = useState([]);
+  const [studentList, setStudentList] = useState([]);
+  const [hodActiveTab, setHodActiveTab] = useState('faculty'); // 'faculty' | 'students' | 'timetable' | 'syllabus'
   const [isLoading, setIsLoading] = useState(true);
 
   // Modals state
@@ -66,17 +74,21 @@ export const HodDashboard = () => {
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [deptRes, usersRes, subjRes, timeRes] = await Promise.all([
+      const [deptRes, usersRes, subjRes, timeRes, facRes, studRes] = await Promise.all([
         api.getDepartmentSummaries().catch(() => ({ data: [] })),
         api.getUsers({ role: ROLES.HOD, limit: 50 }).catch(() => ({ data: [] })),
         api.getSubjects().catch(() => ({ data: [] })),
-        api.getTimetable().catch(() => ({ data: [] }))
+        api.getTimetable().catch(() => ({ data: [] })),
+        api.getFaculty().catch(() => ({ data: [] })),
+        api.getStudents({ limit: 100 }).catch(() => ({ data: [] }))
       ]);
 
       if (deptRes?.data) setDepartments(deptRes.data);
       if (usersRes?.data) setHodUsers(usersRes.data);
       if (subjRes?.data) setSubjects(subjRes.data);
       if (timeRes?.data) setTimetableSlots(timeRes.data);
+      if (facRes?.data) setFacultyList(facRes.data);
+      if (studRes?.data) setStudentList(studRes.data);
     } catch (err) {
       addToast({
         type: 'error',
@@ -361,6 +373,331 @@ export const HodDashboard = () => {
     }
   ];
 
+  const isHodRole = user?.role === ROLES.HOD;
+  const myDept = departments.find(
+    (d) =>
+      (d.hod?._id && (d.hod._id === user?._id || d.hod._id === user?.id)) ||
+      (d.hod?.id && (d.hod.id === user?._id || d.hod.id === user?.id)) ||
+      (d.hod?.email && d.hod.email === user?.email) ||
+      (d.name && user?.department && d.name.toLowerCase() === user.department.toLowerCase())
+  );
+
+  const deptFaculty = myDept
+    ? facultyList.filter(
+        (f) =>
+          f.department?._id === myDept.id ||
+          f.department?._id === myDept._id ||
+          f.department?.name === myDept.name ||
+          f.department?.code === myDept.code
+      )
+    : [];
+
+  const deptStudents = myDept
+    ? studentList.filter(
+        (s) =>
+          s.department?._id === myDept.id ||
+          s.department?._id === myDept._id ||
+          s.department?.name === myDept.name
+      )
+    : [];
+
+  const deptSubjects = myDept
+    ? subjects.filter(
+        (s) =>
+          s.department?._id === myDept.id ||
+          s.department?._id === myDept._id ||
+          s.department === myDept.id ||
+          s.department === myDept._id ||
+          !s.department
+      )
+    : [];
+
+  const deptTimetable = myDept
+    ? timetableSlots.filter(
+        (t) =>
+          t.department?._id === myDept.id ||
+          t.department?._id === myDept._id ||
+          t.department === myDept.id ||
+          t.department === myDept._id
+      )
+    : [];
+
+  // ==========================================
+  // VIEW 1: AUTHENTICATED HOD ROLE PORTAL
+  // ==========================================
+  if (isHodRole) {
+    if (!myDept) {
+      return (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-navy-950 to-teal-950 rounded-2xl p-6 text-white shadow-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold uppercase tracking-wider mb-2 border border-amber-500/30">
+                <AlertTriangle className="w-3.5 h-3.5 mr-1" />
+                <span>Department Leadership Notice</span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">HOD Account Not Yet Assigned to a Department</h1>
+              <p className="mt-1 text-xs sm:text-sm text-navy-200 font-light">
+                Logged in as: {user?.name} ({user?.email}) &bull; Status: Active HOD Account
+              </p>
+            </div>
+            <Button variant="secondary" size="md" onClick={loadData} icon={RefreshCw} isLoading={isLoading}>
+              Refresh Status
+            </Button>
+          </div>
+
+          <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 shadow-subtle flex items-start space-x-3.5 text-xs sm:text-sm">
+            <AlertTriangle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <h3 className="font-bold text-amber-900">Action Required: Awaiting Department Designation</h3>
+              <p className="text-amber-800 text-xs font-light leading-relaxed">
+                Your user profile holds HOD privileges, but your account has not yet been designated as the Head of Department for any specific engineering branch in the system registry. Please contact the Principal or Super Administrator to ratify your department allotment.
+              </p>
+            </div>
+          </div>
+
+          <Card title="Institutional Departments & Leadership State" subtitle="Current HOD designations across college branches">
+            <Table
+              columns={deptColumns}
+              data={departments}
+              keyField="id"
+              isLoading={isLoading}
+              emptyMessage="No departments configured."
+            />
+          </Card>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {/* HOD Department Header */}
+        <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-teal-950 rounded-2xl p-6 text-white shadow-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-xs font-semibold uppercase tracking-wider mb-2 border border-teal-500/30">
+              <Building2 className="w-3.5 h-3.5 mr-1" />
+              <span>Department Leadership & Curriculum</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+              Department of {myDept.name} ({myDept.code})
+            </h1>
+            <p className="mt-1 text-xs sm:text-sm text-navy-200 font-light">
+              Head of Department: {user?.name} &bull; Email: {user?.email} &bull; Status: Active HOD
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="secondary" size="md" onClick={loadData} icon={RefreshCw} isLoading={isLoading}>
+              Refresh
+            </Button>
+          </div>
+        </div>
+
+        {/* Real KPI Cards Scoped to Department */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatWidget
+            title="Enrolled Students"
+            value={`${myDept.studentCount || deptStudents.length} / ${myDept.intakeCapacity || 120}`}
+            subtitle="Department Strength"
+            icon={GraduationCap}
+            color="navy"
+          />
+          <StatWidget
+            title="Faculty Members"
+            value={`${myDept.facultyCount || deptFaculty.length} Staff`}
+            subtitle="Teaching Workload"
+            icon={Users}
+            color="teal"
+          />
+          <StatWidget
+            title="Curriculum Subjects"
+            value={`${deptSubjects.length} Courses`}
+            subtitle="Undergraduate Syllabus"
+            icon={BookOpen}
+            color="emerald"
+          />
+          <StatWidget
+            title="Timetable Slots"
+            value={`${deptTimetable.length} Sessions`}
+            subtitle="Weekly Master Schedule"
+            icon={Clock}
+            color="amber"
+          />
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex border-b border-navy-200 bg-white px-4 rounded-xl shadow-subtle overflow-x-auto">
+          <button
+            onClick={() => setHodActiveTab('faculty')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              hodActiveTab === 'faculty'
+                ? 'border-teal-600 text-teal-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            <span>Department Faculty ({deptFaculty.length})</span>
+          </button>
+
+          <button
+            onClick={() => setHodActiveTab('students')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              hodActiveTab === 'students'
+                ? 'border-teal-600 text-teal-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <GraduationCap className="w-4 h-4" />
+            <span>Enrolled Students ({deptStudents.length})</span>
+          </button>
+
+          <button
+            onClick={() => setHodActiveTab('timetable')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              hodActiveTab === 'timetable'
+                ? 'border-teal-600 text-teal-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <Clock className="w-4 h-4" />
+            <span>Department Timetable ({deptTimetable.length})</span>
+          </button>
+
+          <button
+            onClick={() => setHodActiveTab('syllabus')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              hodActiveTab === 'syllabus'
+                ? 'border-teal-600 text-teal-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Syllabus Subjects ({deptSubjects.length})</span>
+          </button>
+        </div>
+
+        {/* TAB 1: Department Faculty */}
+        {hodActiveTab === 'faculty' && (
+          <Card
+            title={`Department Faculty Allocation (${deptFaculty.length} Members)`}
+            subtitle={`Teaching staff allocated to Department of ${myDept.name}`}
+          >
+            {deptFaculty.length === 0 ? (
+              <p className="text-xs text-navy-400 py-6 text-center">No faculty members currently allocated to this department.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {deptFaculty.map((fac) => (
+                  <div key={fac._id || fac.id} className="p-4 rounded-xl bg-warm-50 border border-navy-100 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-bold text-navy-950 text-xs sm:text-sm">{fac.user?.name || 'Faculty Member'}</span>
+                        <Badge variant="teal" size="xs">{fac.designation || 'Faculty'}</Badge>
+                      </div>
+                      <span className="text-[11px] text-navy-500 font-mono block">{fac.user?.email}</span>
+                      <span className="text-xs text-navy-600 mt-2 block font-medium">Specialization: {fac.specialization || 'Engineering'}</span>
+                      <span className="text-[11px] text-navy-400 block mt-0.5">Qualification: {fac.qualification || 'M.Tech'}</span>
+                    </div>
+                    <div className="mt-3 pt-2 border-t border-navy-200/50 flex items-center justify-between text-[11px]">
+                      <span className="text-navy-500 font-mono">ID: {fac.employeeId}</span>
+                      <span className="text-emerald-700 font-semibold">{fac.user?.status || 'Active'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* TAB 2: Department Students */}
+        {hodActiveTab === 'students' && (
+          <Card
+            title={`Department Enrolled Students (${deptStudents.length})`}
+            subtitle={`Undergraduate cohorts in Department of ${myDept.name}`}
+          >
+            {deptStudents.length === 0 ? (
+              <p className="text-xs text-navy-400 py-6 text-center">No students registered in this department cohort yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {deptStudents.slice(0, 10).map((stud) => (
+                  <div key={stud._id || stud.id} className="p-3 rounded-xl bg-warm-50 border border-navy-100 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-mono font-bold text-teal-900 block">{stud.rollNumber}</span>
+                      <span className="font-semibold text-navy-950 block">{stud.user?.name || 'Student'}</span>
+                      <span className="text-[11px] text-navy-500 font-mono">{stud.user?.email}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs font-bold text-navy-800 block">Sem {stud.currentSemester}</span>
+                      <span className="text-[11px] text-navy-500 font-mono block">{stud.batchYear}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* TAB 3: Timetable */}
+        {hodActiveTab === 'timetable' && (
+          <Card
+            title={`Department Timetable Schedule (${deptTimetable.length} Slots)`}
+            subtitle={`Weekly master teaching sessions for ${myDept.name}`}
+          >
+            {deptTimetable.length === 0 ? (
+              <p className="text-xs text-navy-400 py-6 text-center">No timetable sessions recorded for this department.</p>
+            ) : (
+              <div className="space-y-2">
+                {deptTimetable.map((slot) => (
+                  <div key={slot._id || slot.id} className="p-3 rounded-xl bg-warm-50 border border-navy-100 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-navy-950 block">{slot.subject?.name || 'Subject Lecture'}</span>
+                      <span className="text-[11px] text-navy-500 font-mono">
+                        {slot.dayOfWeek?.toUpperCase()} &bull; Period {slot.periodNumber} ({slot.startTime} - {slot.endTime})
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <Badge variant="navy" size="xs">Room {slot.roomNumber || 'LH-101'}</Badge>
+                      <span className="text-[10px] text-navy-500 block mt-1">{slot.faculty?.name || 'Assigned Faculty'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* TAB 4: Syllabus */}
+        {hodActiveTab === 'syllabus' && (
+          <Card
+            title={`Department Curriculum Subjects (${deptSubjects.length})`}
+            subtitle="Approved subjects, semester syllabus, and credit requirements"
+          >
+            {deptSubjects.length === 0 ? (
+              <p className="text-xs text-navy-400 py-6 text-center">No syllabus courses found for this department.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {deptSubjects.map((sub) => (
+                  <div key={sub._id || sub.id} className="p-3.5 rounded-xl bg-warm-50 border border-navy-100 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-navy-950 block">{sub.name}</span>
+                      <span className="text-[11px] text-navy-500 font-mono">
+                        Code: {sub.code} &bull; Semester {sub.semester}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <Badge variant="teal" size="xs">{sub.credits} Credits</Badge>
+                      <span className="text-[10px] text-navy-500 uppercase block mt-1">{sub.type || 'Theory'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
+      </div>
+    );
+  }
+
+  // ==========================================
+  // VIEW 2: SUPER ADMIN / PRINCIPAL HOD ROSTER MANAGEMENT
+  // ==========================================
   return (
     <div className="space-y-6">
       {/* Header Banner */}

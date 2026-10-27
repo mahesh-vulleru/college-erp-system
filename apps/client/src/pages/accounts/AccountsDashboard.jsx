@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
   CreditCard,
   TrendingUp,
@@ -13,7 +14,11 @@ import {
   Building2,
   Calendar,
   Layers,
-  DollarSign
+  DollarSign,
+  FileText,
+  ArrowRight,
+  ExternalLink,
+  CheckCircle2
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import StatWidget from '../../components/common/StatWidget';
@@ -32,12 +37,15 @@ export const AccountsDashboard = () => {
   const { user } = useAuth();
   const { addToast } = useToast();
 
-  const [activeTab, setActiveTab] = useState('payments'); // 'payments' | 'structures' | 'reconciliation'
+  const [activeTab, setActiveTab] = useState('invoices'); // 'invoices' | 'payments' | 'structures' | 'reconciliation'
+  const [invoices, setInvoices] = useState([]);
   const [payments, setPayments] = useState([]);
   const [feeStructures, setFeeStructures] = useState([]);
   const [feeSummary, setFeeSummary] = useState(null);
   const [students, setStudents] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [invoiceSearchQuery, setInvoiceSearchQuery] = useState('');
+  const [invoiceStatusFilter, setInvoiceStatusFilter] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   // Modals state
@@ -73,7 +81,8 @@ export const AccountsDashboard = () => {
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [payRes, structRes, sumRes, studRes, deptRes] = await Promise.all([
+      const [invRes, payRes, structRes, sumRes, studRes, deptRes] = await Promise.all([
+        api.getFeeInvoices().catch(() => ({ data: [] })),
         api.getPayments().catch(() => ({ data: [] })),
         api.getFeeStructures().catch(() => ({ data: [] })),
         api.getFeeCollectionSummary().catch(() => ({ data: null })),
@@ -81,6 +90,7 @@ export const AccountsDashboard = () => {
         api.getDepartments().catch(() => ({ data: [] }))
       ]);
 
+      if (invRes?.data) setInvoices(Array.isArray(invRes.data) ? invRes.data : []);
       if (payRes?.data) setPayments(payRes.data);
       if (structRes?.data) setFeeStructures(structRes.data);
       if (sumRes?.data) setFeeSummary(sumRes.data);
@@ -203,7 +213,7 @@ export const AccountsDashboard = () => {
       addToast({
         type: 'success',
         title: 'Fee Plan Created',
-        message: `Registered fee schedule with total ₹ ${total.toLocaleString('en-IN')}`
+        message: `Registered fee schedule with total â‚¹ ${total.toLocaleString('en-IN')}`
       });
       setIsCreateStructureOpen(false);
       loadData();
@@ -213,6 +223,89 @@ export const AccountsDashboard = () => {
       setIsSubmitting(false);
     }
   };
+
+  // Invoice Columns
+  const invoiceColumns = [
+    {
+      header: 'Invoice Reference',
+      cell: (row) => (
+        <span className="font-mono font-bold text-xs text-navy-950 block">
+          {row.invoiceNumber}
+        </span>
+      )
+    },
+    {
+      header: 'Student & Roll No',
+      cell: (row) => (
+        <div>
+          <span className="font-mono font-bold text-xs text-teal-900 block">
+            {row.student?.rollNumber || 'Student'}
+          </span>
+          <span className="text-[11px] text-navy-500 block">
+            {row.student?.user?.name || row.student?.user?.email}
+          </span>
+        </div>
+      )
+    },
+    {
+      header: 'Fee Category',
+      cell: (row) => (
+        <span className="text-xs text-navy-800">
+          {row.feeStructure?.title || row.feeCategory || 'Tuition Fee'}
+        </span>
+      )
+    },
+    {
+      header: 'Amount Due',
+      cell: (row) => (
+        <span className="font-mono text-xs text-navy-900 font-semibold">
+          ₹ {Number(row.amountDue || row.totalAmount || 0).toLocaleString('en-IN')}
+        </span>
+      )
+    },
+    {
+      header: 'Verified Paid',
+      cell: (row) => (
+        <span className="font-mono text-xs text-emerald-700 font-bold">
+          ₹ {Number(row.paidAmount || 0).toLocaleString('en-IN')}
+        </span>
+      )
+    },
+    {
+      header: 'Outstanding Balance',
+      cell: (row) => {
+        const bal = Number(row.outstandingBalance ?? row.balance ?? 0);
+        return (
+          <span className={`font-mono font-bold text-xs ${bal > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>
+            ₹ {bal.toLocaleString('en-IN')}
+          </span>
+        );
+      }
+    },
+    {
+      header: 'Due Date',
+      cell: (row) => (
+        <span className="text-xs text-navy-500 font-mono">
+          {row.dueDate ? new Date(row.dueDate).toLocaleDateString() : 'N/A'}
+        </span>
+      )
+    },
+    {
+      header: 'Status',
+      cell: (row) => {
+        const isPaid = row.paymentStatus === 'paid';
+        const isPartial = row.paymentStatus === 'partially_paid';
+        return (
+          <Badge
+            variant={isPaid ? 'success' : isPartial ? 'teal' : 'amber'}
+            size="xs"
+          >
+            {row.paymentStatus ? row.paymentStatus.toUpperCase().replace('_', ' ') : 'UNPAID'}
+          </Badge>
+        );
+      }
+    }
+  ];
 
   // Payment Table Columns
   const paymentColumns = [
@@ -244,7 +337,7 @@ export const AccountsDashboard = () => {
       header: 'Amount Paid (INR)',
       cell: (row) => (
         <span className="font-mono font-bold text-sm text-navy-950">
-          ₹ {row.amountPaid ? Number(row.amountPaid).toLocaleString('en-IN') : '0'}
+          â‚¹ {row.amountPaid ? Number(row.amountPaid).toLocaleString('en-IN') : '0'}
         </span>
       )
     },
@@ -300,7 +393,7 @@ export const AccountsDashboard = () => {
       header: 'Tuition Fee',
       cell: (row) => (
         <span className="text-xs text-navy-700 font-mono">
-          ₹ {Number(row.tuitionFee || 0).toLocaleString('en-IN')}
+          â‚¹ {Number(row.tuitionFee || 0).toLocaleString('en-IN')}
         </span>
       )
     },
@@ -308,7 +401,7 @@ export const AccountsDashboard = () => {
       header: 'Lab & Library',
       cell: (row) => (
         <span className="text-xs text-navy-600 font-mono">
-          ₹ {(Number(row.labFee || 0) + Number(row.libraryFee || 0)).toLocaleString('en-IN')}
+          â‚¹ {(Number(row.labFee || 0) + Number(row.libraryFee || 0)).toLocaleString('en-IN')}
         </span>
       )
     },
@@ -316,13 +409,26 @@ export const AccountsDashboard = () => {
       header: 'Total Scheduled Fee',
       cell: (row) => (
         <span className="font-mono font-bold text-sm text-teal-950 block">
-          ₹ {Number(row.totalAmount || 0).toLocaleString('en-IN')}
+          â‚¹ {Number(row.totalAmount || 0).toLocaleString('en-IN')}
         </span>
       )
     }
   ];
 
   const totalCollectedINR = feeSummary?.totalCollectedAmount || payments.reduce((acc, curr) => acc + (curr.amountPaid || 0), 0);
+  const totalOutstandingINR = invoices.reduce((acc, curr) => acc + Number(curr.outstandingBalance ?? curr.balance ?? 0), 0);
+
+  const filteredInvoices = invoices.filter((inv) => {
+    if (invoiceStatusFilter && inv.paymentStatus !== invoiceStatusFilter) return false;
+    if (invoiceSearchQuery.trim()) {
+      const q = invoiceSearchQuery.toLowerCase();
+      const invNum = inv.invoiceNumber?.toLowerCase() || '';
+      const roll = inv.student?.rollNumber?.toLowerCase() || '';
+      const name = inv.student?.user?.name?.toLowerCase() || '';
+      if (!invNum.includes(q) && !roll.includes(q) && !name.includes(q)) return false;
+    }
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -339,6 +445,13 @@ export const AccountsDashboard = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <Link
+            to="/fees"
+            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold shadow-elevation transition-colors"
+          >
+            <span>Fee Hub</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
           <Button
             variant="teal"
             size="md"
@@ -368,57 +481,69 @@ export const AccountsDashboard = () => {
           color="emerald"
         />
         <StatWidget
+          title="Outstanding Dues"
+          value={`₹ ${totalOutstandingINR.toLocaleString('en-IN')}`}
+          subtitle="Backend-calculated balances"
+          icon={AlertCircle}
+          color="rose"
+        />
+        <StatWidget
+          title="Invoices Issued"
+          value={`${invoices.length} Invoices`}
+          subtitle="Active Student Ledgers"
+          icon={FileText}
+          color="navy"
+        />
+        <StatWidget
           title="Receipts Issued"
           value={`${payments.length} Transactions`}
           subtitle="100% Tax Compliant Ledgers"
           icon={Receipt}
           color="teal"
         />
-        <StatWidget
-          title="Configured Fee Plans"
-          value={`${feeStructures.length} Schedules`}
-          subtitle="Odd & Even Terms 2025-26"
-          icon={Layers}
-          color="navy"
-        />
-        <StatWidget
-          title="Reconciliation State"
-          value="Synchronized"
-          subtitle="Daily Gateway Settlement"
-          icon={CheckCircle}
-          color="amber"
-        />
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-navy-200 bg-white px-4 rounded-xl shadow-subtle">
+      <div className="flex border-b border-navy-200 bg-white px-4 rounded-xl shadow-subtle overflow-x-auto">
+        <button
+          onClick={() => setActiveTab('invoices')}
+          className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+            activeTab === 'invoices'
+              ? 'border-teal-600 text-teal-800'
+              : 'border-transparent text-navy-500 hover:text-navy-900'
+          }`}
+        >
+          <FileText className="w-4 h-4" />
+          <span>Invoices & Outstanding Dues ({invoices.length})</span>
+        </button>
+
         <button
           onClick={() => setActiveTab('payments')}
-          className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 ${
+          className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
             activeTab === 'payments'
               ? 'border-teal-600 text-teal-800'
               : 'border-transparent text-navy-500 hover:text-navy-900'
           }`}
         >
           <Receipt className="w-4 h-4" />
-          <span>Verified Payments & Receipts</span>
+          <span>Verified Payments & Receipts ({payments.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('structures')}
-          className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 ${
+          className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
             activeTab === 'structures'
               ? 'border-teal-600 text-teal-800'
               : 'border-transparent text-navy-500 hover:text-navy-900'
           }`}
         >
           <Layers className="w-4 h-4" />
-          <span>Institutional Fee Schedules</span>
+          <span>Institutional Fee Schedules ({feeStructures.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('reconciliation')}
-          className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 ${
+          className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
             activeTab === 'reconciliation'
               ? 'border-teal-600 text-teal-800'
               : 'border-transparent text-navy-500 hover:text-navy-900'
@@ -428,6 +553,49 @@ export const AccountsDashboard = () => {
           <span>Financial Audit & Reconciliation</span>
         </button>
       </div>
+
+      {/* TAB 0: Invoices & Outstanding Dues */}
+      {activeTab === 'invoices' && (
+        <Card
+          title="Student Fee Invoices & Outstanding Dues Ledger"
+          subtitle="All balances computed on the server from persisted invoices, verified payments, and authorized adjustments"
+          headerAction={
+            <Link to="/fees" className="text-xs font-semibold text-teal-700 hover:text-teal-800 flex items-center">
+              Fee Management Hub <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            </Link>
+          }
+        >
+          <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              id="search-invoices"
+              placeholder="Search by invoice number or roll number..."
+              value={invoiceSearchQuery}
+              onChange={(e) => setInvoiceSearchQuery(e.target.value)}
+              icon={Search}
+            />
+            <Select
+              id="filter-invoice-status"
+              value={invoiceStatusFilter}
+              onChange={(e) => setInvoiceStatusFilter(e.target.value)}
+              options={[
+                { value: '', label: 'All Payment Statuses' },
+                { value: 'unpaid', label: 'Unpaid' },
+                { value: 'partially_paid', label: 'Partially Paid' },
+                { value: 'paid', label: 'Fully Paid' },
+                { value: 'overdue', label: 'Overdue' }
+              ]}
+            />
+          </div>
+
+          <Table
+            columns={invoiceColumns}
+            data={filteredInvoices}
+            keyField="_id"
+            isLoading={isLoading}
+            emptyMessage="No fee invoices recorded in database yet."
+          />
+        </Card>
+      )}
 
       {/* TAB 1: Verified Payments */}
       {activeTab === 'payments' && (
@@ -500,7 +668,7 @@ export const AccountsDashboard = () => {
                       <span className="text-[11px] text-navy-500 font-mono">{count} Transaction(s) &bull; {pct}% Share</span>
                     </div>
                     <span className="font-mono font-bold text-sm text-navy-900">
-                      ₹ {totalMethodAmount.toLocaleString('en-IN')}
+                      â‚¹ {totalMethodAmount.toLocaleString('en-IN')}
                     </span>
                   </div>
                 );
@@ -576,7 +744,7 @@ export const AccountsDashboard = () => {
               }}
               options={feeStructures.map((f) => ({
                 value: f._id,
-                label: `${f.title} (₹ ${Number(f.totalAmount || 0).toLocaleString('en-IN')})`
+                label: `${f.title} (â‚¹ ${Number(f.totalAmount || 0).toLocaleString('en-IN')})`
               }))}
             />
           </div>

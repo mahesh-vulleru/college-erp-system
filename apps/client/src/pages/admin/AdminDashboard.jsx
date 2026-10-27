@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
   ShieldAlert,
   Users,
@@ -21,7 +22,16 @@ import {
   EyeOff,
   CheckCircle2,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  GraduationCap,
+  CreditCard,
+  Clock,
+  CalendarCheck,
+  Award,
+  DollarSign,
+  Bell,
+  ExternalLink,
+  BookOpen
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import StatWidget from '../../components/common/StatWidget';
@@ -46,9 +56,30 @@ import {
 export const AdminDashboard = () => {
   const { addToast } = useToast();
 
-  const [activeTab, setActiveTab] = useState('users'); // 'users' | 'audit' | 'roles' | 'settings'
+  const [activeTab, setActiveTab] = useState('users'); // 'users' | 'audit' | 'roles' | 'settings' | 'modules'
   const [overview, setOverview] = useState(null);
   const [isOverviewLoading, setIsOverviewLoading] = useState(true);
+
+  // 17 Institutional Modules
+  const allModules = [
+    { id: 1, name: 'System Diagnostics & Overview', path: '/overview', role: 'Super Admin, Principal', desc: 'Cluster health, diagnostics & cross-role metric telemetry', icon: Activity, badge: 'Overview' },
+    { id: 2, name: 'Super Admin Control Center', path: '/admin', role: 'Super Admin', desc: 'Institutional user provisioning, RBAC matrix & security audit log', icon: ShieldAlert, badge: 'Governance' },
+    { id: 3, name: 'Principal Executive Portal', path: '/principal', role: 'Principal, Super Admin', desc: 'Academic performance, department health & council approvals', icon: Building2, badge: 'Executive' },
+    { id: 4, name: 'Head of Department (HOD)', path: '/hod', role: 'HOD, Principal, Super Admin', desc: 'Department governance, syllabus progression & faculty allocation', icon: Users, badge: 'Department' },
+    { id: 5, name: 'Faculty Academic Workplace', path: '/faculty', role: 'Faculty, HOD, Super Admin', desc: 'Weekly teaching schedules, student rosters & attendance capture', icon: BookOpen, badge: 'Academic' },
+    { id: 6, name: 'Student Self-Service Portal', path: '/student', role: 'Student, Super Admin', desc: 'Course enrollment, semester timetables, attendance & grade cards', icon: GraduationCap, badge: 'Self-Service' },
+    { id: 7, name: 'Finance & Accounts Office', path: '/accounts', role: 'Accounts, Principal, Super Admin', desc: 'Fee schedules, payment receipts & reconciliation ledgers', icon: CreditCard, badge: 'Finance' },
+    { id: 8, name: 'Department Management', path: '/departments', role: 'All Permitted Roles', desc: 'Academic engineering departments, intake limits & faculty allotment', icon: Building2, badge: 'Academic' },
+    { id: 9, name: 'Degree Programs & Courses', path: '/courses', role: 'All Permitted Roles', desc: 'Undergraduate B.Tech degree programs & credit requirements', icon: Layers, badge: 'Programs' },
+    { id: 10, name: 'Curriculum Subjects', path: '/subjects', role: 'All Permitted Roles', desc: 'Semester syllabus courses, theory lectures & lab practicals', icon: BookOpen, badge: 'Curriculum' },
+    { id: 11, name: 'Class Timetables & Schedules', path: '/timetable', role: 'All Permitted Roles', desc: 'Weekly master schedules, room allotment & lecture timings', icon: Clock, badge: 'Schedule' },
+    { id: 12, name: 'Attendance Register', path: '/attendance', role: 'All Permitted Roles', desc: 'Daily period attendance capture & condonation compliance', icon: CalendarCheck, badge: 'Operations' },
+    { id: 13, name: 'Examinations System', path: '/examinations', role: 'All Permitted Roles', desc: 'Mid-term evaluations, semester-end exam slots & hall schedules', icon: Award, badge: 'Exam Cell' },
+    { id: 14, name: 'Marks & Grade Evaluation', path: '/results', role: 'All Permitted Roles', desc: 'Internal test marks, external exam scores & letter grade cards', icon: Award, badge: 'Evaluation' },
+    { id: 15, name: 'Fee Schedules & Dues', path: '/fees', role: 'Accounts, Admin, Student', desc: 'Invoices, outstanding dues, payment gateways & fee waivers', icon: DollarSign, badge: 'Finance' },
+    { id: 16, name: 'Institutional Notice Board', path: '/notices', role: 'All Roles (Audience Scoped)', desc: 'Campus circulars, executive decrees & emergency broadcasts', icon: Bell, badge: 'Notices' },
+    { id: 17, name: 'Security & Audit Logs', path: '/audit-logs', role: 'Super Admin, Principal', desc: 'Cryptographically recorded immutable institutional audit events', icon: Lock, badge: 'Security' }
+  ];
 
   // User Management State
   const [users, setUsers] = useState([]);
@@ -568,6 +599,18 @@ export const AdminDashboard = () => {
           <Settings className="w-4 h-4" />
           <span>Institution Profile</span>
         </button>
+
+        <button
+          onClick={() => setActiveTab('modules')}
+          className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 ${
+            activeTab === 'modules'
+              ? 'border-teal-600 text-teal-800'
+              : 'border-transparent text-navy-500 hover:text-navy-900'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          <span>All 17 ERP Modules</span>
+        </button>
       </div>
 
       {/* TAB 1: User Directory & Accounts */}
@@ -758,6 +801,50 @@ export const AdminDashboard = () => {
             </div>
           </Card>
         </div>
+      )}
+
+      {/* TAB 5: All 17 Institutional Modules */}
+      {activeTab === 'modules' && (
+        <Card
+          title="Institutional Modules & Subsystems Directory"
+          subtitle="Direct quick access to all 17 college operational portals, academic engines, and financial ledgers"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {allModules.map((mod) => {
+              const ModIcon = mod.icon;
+              return (
+                <Link
+                  key={mod.id}
+                  to={mod.path}
+                  className="group p-4 rounded-xl bg-warm-50 border border-navy-100 hover:border-teal-500 hover:bg-white hover:shadow-subtle transition-all duration-200 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="p-2 rounded-lg bg-teal-500/10 text-teal-700 group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                        <ModIcon className="w-5 h-5" />
+                      </div>
+                      <Badge variant="teal" size="xs">
+                        {mod.badge}
+                      </Badge>
+                    </div>
+                    <h3 className="font-bold text-navy-900 group-hover:text-teal-700 text-sm mb-1 transition-colors">
+                      {mod.name}
+                    </h3>
+                    <p className="text-xs text-navy-600 line-clamp-2 mb-3">
+                      {mod.desc}
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-navy-100/60 flex items-center justify-between text-[11px] text-navy-400">
+                    <span className="font-mono text-teal-800 font-semibold">{mod.path}</span>
+                    <span className="inline-flex items-center font-medium text-teal-700 group-hover:translate-x-0.5 transition-transform">
+                      Open <ExternalLink className="w-3 h-3 ml-1" />
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </Card>
       )}
 
       {/* 1. Modal: Create Account */}

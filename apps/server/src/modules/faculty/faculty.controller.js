@@ -8,6 +8,7 @@ async function listFaculty(req, res, next) {
     const query = {};
     if (req.query.department) query.department = req.query.department;
     if (req.query.designation) query.designation = req.query.designation;
+    if (req.query.user) query.user = req.query.user;
 
     const facultyList = await Faculty.find(query)
       .populate('user', 'name email status role lastLogin')
@@ -18,6 +19,26 @@ async function listFaculty(req, res, next) {
       data: facultyList,
       meta: { count: facultyList.length }
     });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getMyFacultyProfile(req, res, next) {
+  try {
+    const faculty = await Faculty.findOne({ user: req.user._id })
+      .populate('user', 'name email status role lastLogin')
+      .populate('department', 'name code');
+
+    if (!faculty) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        message: 'No faculty profile associated with this account',
+        code: 'PROFILE_NOT_FOUND'
+      });
+    }
+
+    return sendSuccess(res, { data: faculty });
   } catch (error) {
     next(error);
   }
@@ -124,6 +145,7 @@ async function updateFacultyProfile(req, res, next) {
 module.exports = {
   listFaculty,
   getFacultyById,
+  getMyFacultyProfile,
   createFacultyProfile,
   updateFacultyProfile
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
   GraduationCap,
   CalendarCheck,
@@ -18,7 +19,12 @@ import {
   Building2,
   Eye,
   FileText,
-  Phone
+  Phone,
+  BookOpen,
+  DollarSign,
+  Bell,
+  ArrowRight,
+  ExternalLink
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import StatWidget from '../../components/common/StatWidget';
@@ -45,6 +51,11 @@ export const StudentDashboard = () => {
   const [myAttendance, setMyAttendance] = useState([]);
   const [myResults, setMyResults] = useState([]);
   const [myPayments, setMyPayments] = useState([]);
+  const [mySubjects, setMySubjects] = useState([]);
+  const [myTimetable, setMyTimetable] = useState([]);
+  const [myInvoices, setMyInvoices] = useState([]);
+  const [myNotices, setMyNotices] = useState([]);
+  const [studentActiveTab, setStudentActiveTab] = useState('courses'); // 'courses' | 'timetable' | 'results' | 'attendance' | 'fees' | 'notices'
 
   // Administrative Student Directory State (When logged in as Super Admin / Principal)
   const [studentsList, setStudentsList] = useState([]);
@@ -97,17 +108,25 @@ export const StudentDashboard = () => {
     try {
       if (isStudentRole) {
         // Load student self data
-        const [profRes, attRes, resRes, payRes] = await Promise.all([
+        const [profRes, attRes, resRes, payRes, subjRes, timeRes, invRes, notRes] = await Promise.all([
           api.getMyStudentProfile().catch(() => ({ data: null })),
           api.getAttendance().catch(() => ({ data: [] })),
           api.getResults().catch(() => ({ data: [] })),
-          api.getPayments().catch(() => ({ data: [] }))
+          api.getPayments().catch(() => ({ data: [] })),
+          api.getSubjects().catch(() => ({ data: [] })),
+          api.getTimetable().catch(() => ({ data: [] })),
+          api.getFeeInvoices().catch(() => ({ data: [] })),
+          api.getNotices().catch(() => ({ data: [] }))
         ]);
 
         if (profRes?.data) setMyProfile(profRes.data);
         if (attRes?.data) setMyAttendance(attRes.data);
         if (resRes?.data) setMyResults(resRes.data);
         if (payRes?.data) setMyPayments(payRes.data);
+        if (subjRes?.data) setMySubjects(subjRes.data);
+        if (timeRes?.data) setMyTimetable(timeRes.data);
+        if (invRes?.data) setMyInvoices(invRes.data);
+        if (notRes?.data) setMyNotices(notRes.data);
       } else {
         // Load administrative directory
         const [studRes, deptRes] = await Promise.all([
@@ -468,26 +487,302 @@ export const StudentDashboard = () => {
           />
         </div>
 
-        {/* Attendance Summary */}
-        <Card title="Subject Attendance Register" subtitle="Real-time period attendance records">
-          {myAttendance.length === 0 ? (
-            <p className="text-xs text-navy-400 py-6 text-center">No attendance sessions recorded yet for your roll number.</p>
-          ) : (
-            <div className="space-y-2">
-              {myAttendance.slice(0, 5).map((att) => (
-                <div key={att._id} className="p-3 rounded-xl bg-warm-50 border border-navy-100 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="font-bold text-navy-900 block">{att.subject?.name || 'Class Session'}</span>
-                    <span className="text-navy-500 text-[11px] font-mono">Date: {new Date(att.date).toLocaleDateString()}</span>
+        {/* Navigation Tabs */}
+        <div className="flex border-b border-navy-200 bg-white px-4 rounded-xl shadow-subtle overflow-x-auto">
+          <button
+            onClick={() => setStudentActiveTab('courses')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              studentActiveTab === 'courses'
+                ? 'border-teal-600 text-teal-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Enrolled Courses</span>
+          </button>
+
+          <button
+            onClick={() => setStudentActiveTab('timetable')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              studentActiveTab === 'timetable'
+                ? 'border-teal-600 text-teal-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <Clock className="w-4 h-4" />
+            <span>Semester Timetable</span>
+          </button>
+
+          <button
+            onClick={() => setStudentActiveTab('attendance')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              studentActiveTab === 'attendance'
+                ? 'border-teal-600 text-teal-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <CalendarCheck className="w-4 h-4" />
+            <span>Attendance Register</span>
+          </button>
+
+          <button
+            onClick={() => setStudentActiveTab('results')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              studentActiveTab === 'results'
+                ? 'border-teal-600 text-teal-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <Award className="w-4 h-4" />
+            <span>Published Results</span>
+          </button>
+
+          <button
+            onClick={() => setStudentActiveTab('fees')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              studentActiveTab === 'fees'
+                ? 'border-teal-600 text-teal-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <CreditCard className="w-4 h-4" />
+            <span>Fee Invoices & Dues</span>
+          </button>
+
+          <button
+            onClick={() => setStudentActiveTab('notices')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              studentActiveTab === 'notices'
+                ? 'border-teal-600 text-teal-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <Bell className="w-4 h-4" />
+            <span>Campus Circulars</span>
+          </button>
+        </div>
+
+        {/* TAB 1: Enrolled Courses */}
+        {studentActiveTab === 'courses' && (
+          <Card
+            title="Enrolled Program Curriculum & Courses"
+            subtitle={`${myProfile?.department?.name || 'Computer Science & Engineering'} &bull; Semester ${myProfile?.currentSemester || 3}`}
+          >
+            {mySubjects.length === 0 ? (
+              <p className="text-xs text-navy-400 py-6 text-center">No enrolled syllabus subjects registered for current term.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {mySubjects.map((sub) => (
+                  <div key={sub._id || sub.id} className="p-3.5 rounded-xl bg-warm-50 border border-navy-100 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-navy-950 block">{sub.name}</span>
+                      <span className="text-[11px] text-navy-500 font-mono">
+                        Code: {sub.code} &bull; Semester {sub.semester}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <Badge variant="teal" size="xs">{sub.credits} Credits</Badge>
+                      <span className="text-[10px] text-navy-500 uppercase block mt-1">{sub.type || 'Theory'}</span>
+                    </div>
                   </div>
-                  <Badge variant={att.status === 'present' ? 'success' : 'danger'} size="xs">
-                    {att.status.toUpperCase()}
-                  </Badge>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* TAB 2: Personal Semester Timetable */}
+        {studentActiveTab === 'timetable' && (
+          <Card
+            title="Weekly Class Schedule & Timetable"
+            subtitle="Lectures and laboratory timings for your semester"
+          >
+            {myTimetable.length === 0 ? (
+              <p className="text-xs text-navy-400 py-6 text-center">No class timetable slots scheduled yet for your section.</p>
+            ) : (
+              <div className="space-y-2">
+                {myTimetable.map((slot) => (
+                  <div key={slot._id || slot.id} className="p-3 rounded-xl bg-warm-50 border border-navy-100 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-navy-950 block">{slot.subject?.name || 'Lecture Session'}</span>
+                      <span className="text-[11px] text-navy-500 font-mono">
+                        {slot.dayOfWeek?.toUpperCase()} &bull; Period {slot.periodNumber} ({slot.startTime} - {slot.endTime})
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <Badge variant="navy" size="xs">Room {slot.roomNumber || 'LH-101'}</Badge>
+                      <span className="text-[10px] text-navy-500 block mt-1">{slot.faculty?.name || 'Faculty'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* TAB 3: Attendance Summary */}
+        {studentActiveTab === 'attendance' && (
+          <Card title="Subject Attendance Register" subtitle="Real-time period attendance records">
+            {myAttendance.length === 0 ? (
+              <p className="text-xs text-navy-400 py-6 text-center">No attendance sessions recorded yet for your roll number.</p>
+            ) : (
+              <div className="space-y-2">
+                {myAttendance.slice(0, 10).map((att) => (
+                  <div key={att._id} className="p-3 rounded-xl bg-warm-50 border border-navy-100 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-navy-900 block">{att.subject?.name || 'Class Session'}</span>
+                      <span className="text-navy-500 text-[11px] font-mono">Date: {new Date(att.date).toLocaleDateString()}</span>
+                    </div>
+                    <Badge variant={att.status === 'present' ? 'success' : 'danger'} size="xs">
+                      {att.status.toUpperCase()}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* TAB 4: Published Results Only */}
+        {studentActiveTab === 'results' && (
+          <Card
+            title="Published Examination Results & Grade Cards"
+            subtitle="Verified scores ratified and officially published by the Exam Cell (never exposes unpublished results)"
+          >
+            {myResults.filter((r) => r.examination?.isPublished || r.isPublished).length === 0 ? (
+              <div className="py-8 text-center text-navy-500 text-xs">
+                <Award className="w-8 h-8 text-navy-300 mx-auto mb-2" />
+                No official results have been published yet for your current term.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {myResults
+                  .filter((r) => r.examination?.isPublished || r.isPublished)
+                  .map((res) => (
+                    <div key={res._id || res.id} className="p-3.5 rounded-xl bg-warm-50 border border-navy-100 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-bold text-navy-950 block">{res.subject?.name || 'Curriculum Subject'}</span>
+                        <span className="text-[11px] text-navy-500 font-mono">
+                          {res.examination?.name || 'Mid-Term Exam'} &bull; Code: {res.subject?.code}
+                        </span>
+                      </div>
+                      <div className="text-right flex items-center space-x-3">
+                        <div>
+                          <span className="font-mono font-bold text-sm text-teal-900 block">Grade {res.grade || 'A'}</span>
+                          <span className="text-[10px] text-navy-500 block">Marks: {res.marksObtained} / {res.maxMarks || 100}</span>
+                        </div>
+                        <Badge variant={res.status === 'passed' ? 'success' : 'danger'} size="xs">
+                          {res.status ? res.status.toUpperCase() : 'PASSED'}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* TAB 5: Fee Invoices & Receipts */}
+        {studentActiveTab === 'fees' && (
+          <div className="space-y-4">
+            <Card
+              title="Verified Fee Receipts & Payments"
+              subtitle="Official fee transaction records verified by Accounts Office"
+              headerAction={
+                <Link to="/fees" className="text-xs font-semibold text-teal-700 hover:text-teal-800 flex items-center">
+                  Fee Portal <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                </Link>
+              }
+            >
+              {myPayments.length === 0 ? (
+                <p className="text-xs text-navy-400 py-6 text-center">No payment receipts issued yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {myPayments.map((pay) => (
+                    <div key={pay._id || pay.id} className="p-3.5 rounded-xl bg-warm-50 border border-navy-100 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-mono font-bold text-teal-900 block">{pay.receiptNumber}</span>
+                        <span className="text-[11px] text-navy-500">
+                          {pay.feeStructure?.title || 'Academic Tuition Fee'} &bull; {pay.paymentMethod || 'UPI'}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-mono font-bold text-sm text-navy-950 block">
+                          ₹ {Number(pay.amountPaid || 0).toLocaleString('en-IN')}
+                        </span>
+                        <Badge variant="success" size="xs">VERIFIED</Badge>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-        </Card>
+              )}
+            </Card>
+
+            {myInvoices.length > 0 && (
+              <Card title="Outstanding Dues & Invoices" subtitle="Institutional fee billing statements">
+                <div className="space-y-2">
+                  {myInvoices.map((inv) => (
+                    <div key={inv._id || inv.id} className="p-3.5 rounded-xl bg-warm-50 border border-navy-100 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-mono font-bold text-navy-950 block">{inv.invoiceNumber}</span>
+                        <span className="text-[11px] text-navy-500">
+                          Due Date: {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : 'N/A'}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-mono font-bold text-sm text-amber-700 block">
+                          Due: ₹ {Number(inv.outstandingBalance || inv.balance || 0).toLocaleString('en-IN')}
+                        </span>
+                        <Badge variant={inv.paymentStatus === 'paid' ? 'success' : 'amber'} size="xs">
+                          {inv.paymentStatus?.toUpperCase() || 'PENDING'}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* TAB 6: Campus Notices */}
+        {studentActiveTab === 'notices' && (
+          <Card
+            title="Campus Announcements & Circulars"
+            subtitle="Official institutional circulars for the student community"
+            headerAction={
+              <Link to="/notices" className="text-xs font-semibold text-teal-700 hover:text-teal-800 flex items-center">
+                All Notices <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              </Link>
+            }
+          >
+            {myNotices.filter((n) => !n.targetRoles || n.targetRoles.includes('*') || n.targetRoles.includes('student')).length === 0 ? (
+              <p className="text-xs text-navy-400 py-6 text-center">No campus notices posted for your cohort.</p>
+            ) : (
+              <div className="space-y-3">
+                {myNotices
+                  .filter((n) => !n.targetRoles || n.targetRoles.includes('*') || n.targetRoles.includes('student'))
+                  .slice(0, 5)
+                  .map((notice) => (
+                    <div key={notice._id || notice.id} className="p-3.5 rounded-xl bg-warm-50 border border-navy-100">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-navy-950 text-xs sm:text-sm">{notice.title}</span>
+                        <Badge variant={notice.priority === 'urgent' ? 'danger' : 'teal'} size="xs">
+                          {notice.priority || 'Normal'}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-navy-600 line-clamp-2 leading-relaxed">
+                        {notice.content}
+                      </p>
+                      <div className="mt-2 text-[10px] text-navy-400 font-mono">
+                        Posted: {notice.publishedAt ? new Date(notice.publishedAt).toLocaleDateString() : 'Recent'} &bull; By: {notice.author?.name || 'Administration'}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </Card>
+        )}
       </div>
     );
   }
