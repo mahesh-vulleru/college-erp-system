@@ -184,6 +184,10 @@ class ApiClient {
     return this.get(`/v1/faculty/${id}`);
   }
 
+  getMyFacultyProfile() {
+    return this.get('/v1/faculty/me');
+  }
+
   createFaculty(data) {
     return this.post('/v1/faculty', data);
   }
@@ -447,6 +451,10 @@ class ApiClient {
     if (params.subject) searchParams.append('subject', params.subject);
     const qs = searchParams.toString();
     return this.get(`/v1/attendance${qs ? `?${qs}` : ''}`);
+  }
+
+  markAttendanceBatch(data) {
+    return this.post('/v1/attendance/mark', data);
   }
 }
 

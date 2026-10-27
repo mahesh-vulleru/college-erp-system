@@ -2,6 +2,7 @@ const express = require('express');
 const {
   listFaculty,
   getFacultyById,
+  getMyFacultyProfile,
   createFacultyProfile,
   updateFacultyProfile
 } = require('./faculty.controller');
@@ -15,6 +16,7 @@ const router = express.Router();
 
 router.use(authenticate);
 
+router.get('/me', authorizeRoles(ROLES.FACULTY, ROLES.HOD), getMyFacultyProfile);
 router.get('/', listFaculty);
 router.get('/:id', getFacultyById);
 
