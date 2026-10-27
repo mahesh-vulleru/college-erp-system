@@ -465,6 +465,8 @@ export const StudentDashboard = () => {
       ? ((presentCount / myAttendance.length) * 100).toFixed(1)
       : '88.5';
 
+    const studentFeeDueTotal = myInvoices.reduce((acc, inv) => acc + Number(inv.balanceAmount ?? inv.outstandingBalance ?? (inv.totalAmount - (inv.paidAmount || 0)) ?? 0), 0);
+
     return (
       <div className="space-y-6">
         {/* Clean Blue Hero Banner */}
@@ -514,10 +516,10 @@ export const StudentDashboard = () => {
           />
           <StatWidget
             title="Fee Due"
-            value="₹ 0"
-            subtitle="Fee Due"
+            value={studentFeeDueTotal > 0 ? `₹ ${studentFeeDueTotal.toLocaleString('en-IN')}` : '₹ 0'}
+            subtitle={studentFeeDueTotal > 0 ? 'Pending Payment' : 'No Dues Pending'}
             icon={DollarSign}
-            color="blue"
+            color={studentFeeDueTotal > 0 ? 'rose' : 'blue'}
           />
         </div>
 
