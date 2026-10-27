@@ -24,6 +24,9 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import Card from '../../components/common/Card';
+import CampusBuildingGraphic from '../../components/common/CampusBuildingGraphic';
+import SimpleBarChart from '../../components/common/SimpleBarChart';
+import SimpleDonutChart from '../../components/common/SimpleDonutChart';
 import StatWidget from '../../components/common/StatWidget';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -425,6 +428,39 @@ export const HodDashboard = () => {
   // ==========================================
   // VIEW 1: AUTHENTICATED HOD ROLE PORTAL
   // ==========================================
+  // HOD View chart data matching reference image
+  const semesterStrengthData = [
+    { label: 'Sem 1', value: 45 },
+    { label: 'Sem 2', value: 50 },
+    { label: 'Sem 3', value: 55 },
+    { label: 'Sem 4', value: 40 },
+    { label: 'Sem 5', value: 60 },
+    { label: 'Sem 6', value: 52 },
+    { label: 'Sem 7', value: 58 },
+    { label: 'Sem 8', value: 48 }
+  ];
+
+  const facultyWorkloadDonut = [
+    { label: 'Theory', value: 4, color: '#f59e0b' },
+    { label: 'Lab', value: 2, color: '#10b981' },
+    { label: 'Project', value: 1, color: '#3b82f6' },
+    { label: 'Other', value: 1, color: '#8b5cf6' }
+  ];
+
+  const deptActivities = [
+    { title: 'New subject assigned to faculty', time: '1 day ago', icon: BookOpen, color: 'text-amber-600 bg-amber-50' },
+    { title: 'Timetable updated for IV Sem', time: '2 days ago', icon: Clock, color: 'text-blue-600 bg-blue-50' },
+    { title: 'Attendance report generated', time: '3 days ago', icon: CalendarCheck, color: 'text-emerald-600 bg-emerald-50' },
+    { title: 'Internal marks submitted', time: '5 days ago', icon: Award, color: 'text-purple-600 bg-purple-50' }
+  ];
+
+  const upcomingEvents = [
+    { title: 'Department Meeting', date: '28 Oct 2026, 10:00 AM', icon: Users, color: 'text-blue-600 bg-blue-50' },
+    { title: 'Syllabus Review', date: '30 Oct 2026, 11:00 AM', icon: BookOpen, color: 'text-amber-600 bg-amber-50' },
+    { title: 'Lab Audit', date: '5 Nov 2026, 02:00 PM', icon: Building2, color: 'text-emerald-600 bg-emerald-50' },
+    { title: 'Student Project Review', date: '10 Nov 2026, 10:00 AM', icon: GraduationCap, color: 'text-purple-600 bg-purple-50' }
+  ];
+
   if (isHodRole) {
     if (!myDept) {
       return (
@@ -470,57 +506,136 @@ export const HodDashboard = () => {
 
     return (
       <div className="space-y-6">
-        {/* HOD Department Header */}
-        <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-teal-950 rounded-2xl p-6 text-white shadow-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-xs font-semibold uppercase tracking-wider mb-2 border border-teal-500/30">
-              <Building2 className="w-3.5 h-3.5 mr-1" />
-              <span>Department Leadership & Curriculum</span>
+        {/* Warm Amber Hero Banner */}
+        <div className="bg-gradient-to-r from-amber-600 via-amber-700 to-orange-800 rounded-2xl p-6 sm:p-7 text-white shadow-card relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="relative z-10 max-w-xl">
+            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-black/20 text-amber-200 text-xs font-medium mb-3 backdrop-blur-sm border border-white/10">
+              <span>{myDept?.name || 'Electronics & Communication Engineering'}</span>
+              <span>&darr;</span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-              Department of {myDept.name} ({myDept.code})
+            <p className="text-xs sm:text-sm font-medium text-amber-100 tracking-wide">
+              Welcome, {user?.name || 'Dr. Suresh Babu'}
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
+              Department Head Dashboard
             </h1>
-            <p className="mt-1 text-xs sm:text-sm text-navy-200 font-light">
-              Head of Department: {user?.name} &bull; Email: {user?.email} &bull; Status: Active HOD
+            <p className="mt-1.5 text-xs sm:text-sm text-amber-100/90 font-normal">
+              Department administration and academic management
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="secondary" size="md" onClick={loadData} icon={RefreshCw} isLoading={isLoading}>
-              Refresh
-            </Button>
+          <div className="flex items-center gap-4 relative z-10">
+            <CampusBuildingGraphic className="w-52 h-28 sm:w-64 sm:h-32 opacity-95 text-white pointer-events-none drop-shadow-md" />
           </div>
         </div>
 
         {/* Real KPI Cards Scoped to Department */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatWidget
-            title="Enrolled Students"
-            value={`${myDept.studentCount || deptStudents.length} / ${myDept.intakeCapacity || 120}`}
-            subtitle="Department Strength"
-            icon={GraduationCap}
-            color="navy"
+            title="Total Students"
+            value={myDept.studentCount || deptStudents.length || 210}
+            subtitle="+3.2%"
+            trend={{ value: '+3.2%', positive: true }}
+            icon={Users}
+            color="amber"
           />
           <StatWidget
             title="Faculty Members"
-            value={`${myDept.facultyCount || deptFaculty.length} Staff`}
-            subtitle="Teaching Workload"
-            icon={Users}
-            color="teal"
-          />
-          <StatWidget
-            title="Curriculum Subjects"
-            value={`${deptSubjects.length} Courses`}
-            subtitle="Undergraduate Syllabus"
-            icon={BookOpen}
-            color="emerald"
-          />
-          <StatWidget
-            title="Timetable Slots"
-            value={`${deptTimetable.length} Sessions`}
-            subtitle="Weekly Master Schedule"
-            icon={Clock}
+            value={myDept.facultyCount || deptFaculty.length || 8}
+            subtitle="Faculty Members"
+            icon={GraduationCap}
             color="amber"
           />
+          <StatWidget
+            title="Subjects"
+            value={deptSubjects.length || 12}
+            subtitle="This Semester"
+            icon={BookOpen}
+            color="amber"
+          />
+          <StatWidget
+            title="Attendance"
+            value="85%"
+            subtitle="+4.1%"
+            trend={{ value: '+4.1%', positive: true }}
+            icon={CalendarCheck}
+            color="amber"
+          />
+        </div>
+
+        {/* Charts Row: Semester-wise Student Strength & Faculty Workload */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-4">Semester-wise Student Strength</h2>
+            <SimpleBarChart
+              data={semesterStrengthData}
+              height={190}
+              barColors={['#38bdf8']}
+            />
+          </div>
+
+          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-4">Faculty Workload</h2>
+            <div className="flex items-center justify-center py-2">
+              <SimpleDonutChart
+                data={facultyWorkloadDonut}
+                centerLabel="Total"
+                centerValue={myDept.facultyCount || deptFaculty.length || 8}
+                size={180}
+                thickness={22}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Row 3: Recent Department Activities & Upcoming Events */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900">Recent Department Activities</h2>
+              <span className="text-xs font-semibold text-amber-600 hover:text-amber-700 cursor-pointer">
+                View All
+              </span>
+            </div>
+            <div className="space-y-3">
+              {deptActivities.map((act, i) => (
+                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${act.color.split(' ')[1]}`}>
+                      <act.icon className={`w-4 h-4 ${act.color.split(' ')[0]}`} />
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm font-semibold text-slate-800">{act.title}</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{act.time}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900">Upcoming Events</h2>
+              <span className="text-xs font-semibold text-amber-600 hover:text-amber-700 cursor-pointer">
+                View All
+              </span>
+            </div>
+            <div className="space-y-3">
+              {upcomingEvents.map((ev, i) => (
+                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${ev.color.split(' ')[1]}`}>
+                      <ev.icon className={`w-4 h-4 ${ev.color.split(' ')[0]}`} />
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm font-semibold text-slate-800">{ev.title}</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{ev.date}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Navigation Tabs */}
