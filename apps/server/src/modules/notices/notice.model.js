@@ -1,5 +1,29 @@
 const mongoose = require('mongoose');
 
+const noticeHistorySchema = new mongoose.Schema(
+  {
+    action: {
+      type: String,
+      enum: ['created', 'updated', 'published', 'archived'],
+      required: true
+    },
+    performedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
+    note: {
+      type: String,
+      trim: true
+    }
+  },
+  { _id: true }
+);
+
 const noticeSchema = new mongoose.Schema(
   {
     title: {
@@ -11,6 +35,11 @@ const noticeSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Notice content is required'],
       trim: true
+    },
+    category: {
+      type: String,
+      enum: ['General', 'Academic', 'Examination', 'Fees', 'Holiday', 'Emergency', 'Placement'],
+      default: 'General'
     },
     targetRoles: {
       type: [String],
@@ -26,6 +55,19 @@ const noticeSchema = new mongoose.Schema(
       enum: ['low', 'normal', 'urgent'],
       default: 'normal'
     },
+    status: {
+      type: String,
+      enum: ['draft', 'published', 'archived'],
+      default: 'published'
+    },
+    publicationDate: {
+      type: Date,
+      default: Date.now
+    },
+    expiryDate: {
+      type: Date,
+      default: null
+    },
     publishedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -34,7 +76,8 @@ const noticeSchema = new mongoose.Schema(
     isPinned: {
       type: Boolean,
       default: false
-    }
+    },
+    history: [noticeHistorySchema]
   },
   { timestamps: true }
 );
@@ -42,4 +85,3 @@ const noticeSchema = new mongoose.Schema(
 const Notice = mongoose.model('Notice', noticeSchema);
 
 module.exports = Notice;
-

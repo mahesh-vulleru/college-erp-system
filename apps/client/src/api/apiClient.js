@@ -163,41 +163,12 @@ class ApiClient {
   }
 
   // Courses & Subjects
-  getCourses(params = {}) {
-    const searchParams = new URLSearchParams();
-    if (params.department) searchParams.append('department', params.department);
-    if (params.isActive !== undefined) searchParams.append('isActive', params.isActive);
-    const qs = searchParams.toString();
-    return this.get(`/v1/courses${qs ? `?${qs}` : ''}`);
+  getCourses() {
+    return this.get('/v1/courses');
   }
 
-  getCourseById(id) {
-    return this.get(`/v1/courses/${id}`);
-  }
-
-  createCourse(data) {
-    return this.post('/v1/courses', data);
-  }
-
-  updateCourse(id, data) {
-    return this.put(`/v1/courses/${id}`, data);
-  }
-
-  deleteCourse(id) {
-    return this.delete(`/v1/courses/${id}`);
-  }
-
-  getSubjects(params = {}) {
-    const searchParams = new URLSearchParams();
-    if (params.course) searchParams.append('course', params.course);
-    if (params.department) searchParams.append('department', params.department);
-    if (params.semester) searchParams.append('semester', params.semester);
-    const qs = searchParams.toString();
-    return this.get(`/v1/subjects${qs ? `?${qs}` : ''}`);
-  }
-
-  createSubject(data) {
-    return this.post('/v1/subjects', data);
+  getSubjects() {
+    return this.get('/v1/subjects');
   }
 
   // Faculty
@@ -258,17 +229,62 @@ class ApiClient {
     if (params.department) searchParams.append('department', params.department);
     if (params.semester) searchParams.append('semester', params.semester);
     if (params.academicYear) searchParams.append('academicYear', params.academicYear);
+    if (params.status) searchParams.append('status', params.status);
+    if (params.feeCategory) searchParams.append('feeCategory', params.feeCategory);
     const qs = searchParams.toString();
-    return this.get(`/v1/fees${qs ? `?${qs}` : ''}`);
+    return this.get(`/v1/fees/structures${qs ? `?${qs}` : ''}`);
+  }
+
+  getFeeStructureById(id) {
+    return this.get(`/v1/fees/structures/${id}`);
   }
 
   createFeeStructure(data) {
-    return this.post('/v1/fees', data);
+    return this.post('/v1/fees/structures', data);
+  }
+
+  updateFeeStructure(id, data) {
+    return this.put(`/v1/fees/structures/${id}`, data);
+  }
+
+  archiveFeeStructure(id) {
+    return this.patch(`/v1/fees/structures/${id}/archive`, {});
+  }
+
+  // Invoices & Dues
+  getInvoices(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.student) searchParams.append('student', params.student);
+    if (params.semester) searchParams.append('semester', params.semester);
+    if (params.academicYear) searchParams.append('academicYear', params.academicYear);
+    if (params.status) searchParams.append('status', params.status);
+    if (params.feeCategory) searchParams.append('feeCategory', params.feeCategory);
+    const qs = searchParams.toString();
+    return this.get(`/v1/fees/invoices${qs ? `?${qs}` : ''}`);
+  }
+
+  getInvoiceById(id) {
+    return this.get(`/v1/fees/invoices/${id}`);
+  }
+
+  createInvoice(data) {
+    return this.post('/v1/fees/invoices', data);
+  }
+
+  applyInvoiceAdjustment(id, data) {
+    return this.post(`/v1/fees/invoices/${id}/adjustments`, data);
+  }
+
+  // Payments & Receipts
+  getGatewayStatus() {
+    return this.get('/v1/payments/gateway-status');
   }
 
   getPayments(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.student) searchParams.append('student', params.student);
+    if (params.status) searchParams.append('status', params.status);
+    if (params.paymentMethod) searchParams.append('paymentMethod', params.paymentMethod);
     const qs = searchParams.toString();
     return this.get(`/v1/payments${qs ? `?${qs}` : ''}`);
   }
@@ -277,31 +293,128 @@ class ApiClient {
     return this.post('/v1/payments', data);
   }
 
+  getReceipt(paymentId) {
+    return this.get(`/v1/payments/${paymentId}/receipt`);
+  }
+
+  processRefund(paymentId, data) {
+    return this.post(`/v1/payments/${paymentId}/refund`, data);
+  }
+
   // Notices
-  getNotices() {
-    return this.get('/v1/notices');
+  getNotices(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.q) searchParams.append('q', params.q);
+    if (params.category) searchParams.append('category', params.category);
+    if (params.priority) searchParams.append('priority', params.priority);
+    if (params.status) searchParams.append('status', params.status);
+    if (params.department) searchParams.append('department', params.department);
+    const qs = searchParams.toString();
+    return this.get(`/v1/notices${qs ? `?${qs}` : ''}`);
+  }
+
+  getNoticeById(id) {
+    return this.get(`/v1/notices/${id}`);
   }
 
   createNotice(data) {
     return this.post('/v1/notices', data);
   }
 
-  // Audit Logs
+  updateNotice(id, data) {
+    return this.put(`/v1/notices/${id}`, data);
+  }
+
+  publishNotice(id) {
+    return this.patch(`/v1/notices/${id}/publish`, {});
+  }
+
+  archiveNotice(id) {
+    return this.patch(`/v1/notices/${id}/archive`, {});
+  }
+
+  // Security & Audit Logs
   getAuditLogs(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.page) searchParams.append('page', params.page);
     if (params.limit) searchParams.append('limit', params.limit);
+    if (params.action) searchParams.append('action', params.action);
+    if (params.entityType) searchParams.append('entityType', params.entityType);
+    if (params.outcome) searchParams.append('outcome', params.outcome);
+    if (params.actor) searchParams.append('actor', params.actor);
+    if (params.startDate) searchParams.append('startDate', params.startDate);
+    if (params.endDate) searchParams.append('endDate', params.endDate);
+    if (params.q) searchParams.append('q', params.q);
     const qs = searchParams.toString();
     return this.get(`/v1/audit-logs${qs ? `?${qs}` : ''}`);
   }
 
-  // Timetable
-  getTimetable(params = {}) {
+  getAuditLogById(id) {
+    return this.get(`/v1/audit-logs/${id}`);
+  }
+
+  // Data-backed Institutional Reports
+  getEnrollmentReport(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.department) searchParams.append('department', params.department);
     if (params.course) searchParams.append('course', params.course);
     if (params.semester) searchParams.append('semester', params.semester);
-    if (params.section) searchParams.append('section', params.section);
+    const qs = searchParams.toString();
+    return this.get(`/v1/reports/enrollment${qs ? `?${qs}` : ''}`);
+  }
+
+  getFacultyAllocationReport(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.department) searchParams.append('department', params.department);
+    const qs = searchParams.toString();
+    return this.get(`/v1/reports/faculty-allocation${qs ? `?${qs}` : ''}`);
+  }
+
+  getAttendanceReport(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.startDate) searchParams.append('startDate', params.startDate);
+    if (params.endDate) searchParams.append('endDate', params.endDate);
+    if (params.subject) searchParams.append('subject', params.subject);
+    const qs = searchParams.toString();
+    return this.get(`/v1/reports/attendance${qs ? `?${qs}` : ''}`);
+  }
+
+  getExaminationsReport(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.academicYear) searchParams.append('academicYear', params.academicYear);
+    if (params.semester) searchParams.append('semester', params.semester);
+    const qs = searchParams.toString();
+    return this.get(`/v1/reports/examinations${qs ? `?${qs}` : ''}`);
+  }
+
+  getResultsSummaryReport(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.examination) searchParams.append('examination', params.examination);
+    const qs = searchParams.toString();
+    return this.get(`/v1/reports/results${qs ? `?${qs}` : ''}`);
+  }
+
+  getFinancialReport(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.academicYear) searchParams.append('academicYear', params.academicYear);
+    if (params.semester) searchParams.append('semester', params.semester);
+    const qs = searchParams.toString();
+    return this.get(`/v1/reports/financial${qs ? `?${qs}` : ''}`);
+  }
+
+  getAdminActivityReport(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.startDate) searchParams.append('startDate', params.startDate);
+    if (params.endDate) searchParams.append('endDate', params.endDate);
+    const qs = searchParams.toString();
+    return this.get(`/v1/reports/admin-activity${qs ? `?${qs}` : ''}`);
+  }
+
+  // Timetable, Exams & Results
+  getTimetable(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.department) searchParams.append('department', params.department);
+    if (params.semester) searchParams.append('semester', params.semester);
     if (params.faculty) searchParams.append('faculty', params.faculty);
     if (params.dayOfWeek) searchParams.append('dayOfWeek', params.dayOfWeek);
     const qs = searchParams.toString();
@@ -312,77 +425,28 @@ class ApiClient {
     return this.post('/v1/timetable', data);
   }
 
-  updateTimetableSlot(id, data) {
-    return this.put(`/v1/timetable/${id}`, data);
-  }
-
-  deleteTimetableSlot(id) {
-    return this.delete(`/v1/timetable/${id}`);
-  }
-
-  // Examinations
   getExams(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.semester) searchParams.append('semester', params.semester);
     if (params.academicYear) searchParams.append('academicYear', params.academicYear);
-    if (params.department) searchParams.append('department', params.department);
-    if (params.examType) searchParams.append('examType', params.examType);
-    if (params.status) searchParams.append('status', params.status);
     const qs = searchParams.toString();
     return this.get(`/v1/examinations${qs ? `?${qs}` : ''}`);
   }
 
-  getExamById(id) {
-    return this.get(`/v1/examinations/${id}`);
-  }
-
-  createExam(data) {
-    return this.post('/v1/examinations', data);
-  }
-
-  updateExam(id, data) {
-    return this.put(`/v1/examinations/${id}`, data);
-  }
-
-  deleteExam(id) {
-    return this.delete(`/v1/examinations/${id}`);
-  }
-
-  // Results
   getResults(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.examination) searchParams.append('examination', params.examination);
     if (params.student) searchParams.append('student', params.student);
-    if (params.subject) searchParams.append('subject', params.subject);
     const qs = searchParams.toString();
     return this.get(`/v1/results${qs ? `?${qs}` : ''}`);
   }
 
-  recordResult(data) {
-    return this.post('/v1/results', data);
-  }
-
-  recordResultsBatch(data) {
-    return this.post('/v1/results/batch', data);
-  }
-
-  // Attendance
   getAttendance(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.student) searchParams.append('student', params.student);
     if (params.subject) searchParams.append('subject', params.subject);
-    if (params.date) searchParams.append('date', params.date);
     const qs = searchParams.toString();
     return this.get(`/v1/attendance${qs ? `?${qs}` : ''}`);
-  }
-
-  markAttendanceBatch(data) {
-    return this.post('/v1/attendance/batch', data);
-  }
-
-  getAttendanceSummary(studentId) {
-    const qs = studentId ? `?studentId=${studentId}` : '';
-    return this.get(`/v1/attendance/summary${qs}`);
   }
 }
 

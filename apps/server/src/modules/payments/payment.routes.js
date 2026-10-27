@@ -1,5 +1,11 @@
 const express = require('express');
-const { listPayments, recordPayment } = require('./payment.controller');
+const {
+  listPayments,
+  recordPayment,
+  getReceipt,
+  processRefund,
+  getGatewayStatus
+} = require('./payment.controller');
 const { validatePaymentInput } = require('./payment.validator');
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
@@ -10,9 +16,24 @@ const router = express.Router();
 
 router.use(authenticate);
 
-router.get('/', listPayments);
+// Gateway configuration status check
+router.get('/gateway-status', getGatewayStatus);
 
-// Payment entry restricted to Accounts Officer, Principal, and Super Admin
+// List payments
+router.get(
+  '/',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT),
+  listPayments
+);
+
+// Get official receipt
+router.get(
+  '/:id/receipt',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT),
+  getReceipt
+);
+
+// Record payment (Accounts, Super Admin, Principal, or Student initiating)
 router.post(
   '/',
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS),
@@ -20,5 +41,11 @@ router.post(
   recordPayment
 );
 
-module.exports = router;
+// Process refund (Strictly Accounts, Principal, Super Admin)
+router.post(
+  '/:id/refund',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS),
+  processRefund
+);
 
+module.exports = router;

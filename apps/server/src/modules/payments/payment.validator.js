@@ -1,11 +1,10 @@
 function validatePaymentInput(data = {}) {
   const errors = [];
-  const { student, feeStructure, amountPaid, receiptNumber } = data;
+  const { student, feeStructure, invoice, amountPaid } = data;
 
   if (!student) errors.push('Student ID is required');
-  if (!feeStructure) errors.push('Fee Structure ID is required');
-  if (!amountPaid || amountPaid <= 0) errors.push('Valid amount paid is required');
-  if (!receiptNumber) errors.push('Receipt number is required');
+  if (!feeStructure && !invoice) errors.push('Either Fee Structure or Invoice ID is required');
+  if (!amountPaid || Number(amountPaid) <= 0) errors.push('Valid positive amount paid is required');
 
   return {
     isValid: errors.length === 0,
@@ -16,4 +15,3 @@ function validatePaymentInput(data = {}) {
 module.exports = {
   validatePaymentInput
 };
-
