@@ -8,7 +8,7 @@ export const AppLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-warm-50 overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#f3f6fa] overflow-hidden font-sans">
       {/* Sidebar Navigation */}
       <Sidebar
         isOpen={sidebarOpen}
@@ -22,7 +22,7 @@ export const AppLayout = ({ children }) => {
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
             <Breadcrumbs />
             {children || <Outlet />}
           </div>

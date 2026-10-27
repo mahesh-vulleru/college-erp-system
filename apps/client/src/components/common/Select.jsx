@@ -17,11 +17,11 @@ export const Select = ({
   return (
     <div className={`w-full ${className}`}>
       {label && (
-        <label htmlFor={id || name} className="block text-xs font-semibold text-navy-700 uppercase tracking-wider mb-1.5">
+        <label htmlFor={id || name} className="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-1.5">
           {label} {required && <span className="text-rose-500">*</span>}
         </label>
       )}
-      <div className="relative rounded-lg shadow-subtle">
+      <div className="relative rounded-xl shadow-2xs">
         <select
           id={id || name}
           name={name}
@@ -29,10 +29,10 @@ export const Select = ({
           onChange={onChange}
           disabled={disabled}
           required={required}
-          className={`block w-full appearance-none rounded-lg border bg-white px-3.5 py-2.5 pr-10 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-600 disabled:bg-warm-100 disabled:text-navy-400 ${
+          className={`block w-full appearance-none rounded-xl border bg-white px-3.5 py-2.5 pr-10 text-xs sm:text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500/25 focus:border-teal-600 disabled:bg-navy-50 disabled:text-navy-400 ${
             error
               ? 'border-rose-300 text-rose-900 focus:border-rose-500 focus:ring-rose-500/20'
-              : 'border-navy-200 text-navy-900 hover:border-navy-300'
+              : 'border-navy-200 text-navy-950 hover:border-navy-300'
           }`}
         >
           {placeholder && <option value="">{placeholder}</option>}
@@ -46,7 +46,7 @@ export const Select = ({
             );
           })}
         </select>
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-navy-400">
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-navy-400">
           <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
             <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
           </svg>
@@ -59,4 +59,3 @@ export const Select = ({
 };
 
 export default Select;
-
