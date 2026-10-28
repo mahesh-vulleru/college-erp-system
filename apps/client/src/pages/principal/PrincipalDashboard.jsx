@@ -132,7 +132,7 @@ export const PrincipalDashboard = () => {
       if (summaryRes?.data) setAcademicSummary(summaryRes.data);
       if (attRes?.data) setAttendanceHealth(attRes.data);
       if (noticesRes?.data) setNotices(noticesRes.data);
-      if (examRes?.data) setExamReports(Array.isArray(examRes.data) ? examRes.data : []);
+      if (examRes?.data) setExamReports(Array.isArray(examRes.data) ? examRes.data : (examRes.data?.exams || []));
       if (resultRes?.data) setResultsSummary(resultRes.data);
     } catch (err) {
       addToast({

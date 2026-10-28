@@ -40,7 +40,10 @@ async function login(req, res, next) {
       });
     }
 
-    const isMatch = await user.comparePassword(password);
+    let isMatch = await user.comparePassword(password);
+    if (!isMatch && typeof password === 'string' && password.trim() !== password) {
+      isMatch = await user.comparePassword(password.trim());
+    }
     if (!isMatch) {
       logger.warn(`[AUTH_FAILURE] Category: AUTH_PASSWORD_MISMATCH | Email: ${normalizedEmail}`);
       await recordAuditLog({
@@ -72,7 +75,8 @@ async function login(req, res, next) {
       });
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
-        message: `Role mismatch: This account is registered as '${user.role.replace(/_/g, ' ')}', not '${role.replace(/_/g, ' ')}'. Please choose the correct role.`
+        message: `Role mismatch: This account is registered as '${user.role.replace(/_/g, ' ')}', not '${role.replace(/_/g, ' ')}'. Please choose the correct role.`,
+        registeredRole: user.role
       });
     }
 

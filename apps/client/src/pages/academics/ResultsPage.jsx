@@ -70,15 +70,16 @@ export const ResultsPage = () => {
       setSubjects(subList);
       setStudents(studentList);
 
-      if (examList.length > 0 && !selectedExam) {
-        setSelectedExam(examList[0]._id);
+      if (examList.length > 0) {
+        setSelectedExam((prev) => prev || examList[0]._id);
       }
     } catch {
       // Non-blocking
     }
-  }, [selectedExam]);
+  }, []);
 
   const fetchResults = useCallback(async () => {
+    if (!api.getToken()) return;
     setIsLoading(true);
     setError('');
     try {

@@ -6,51 +6,126 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000
 class ApiClient {
   constructor(baseUrl) {
     this.baseUrl = baseUrl;
+    this.pendingRequests = new Map();
+    this.lastUnauthorizedEvent = 0;
+  }
+
+  dispatchUnauthorized() {
+    const now = Date.now();
+    if (now - this.lastUnauthorizedEvent > 2000) {
+      this.lastUnauthorizedEvent = now;
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("auth:unauthorized"));
+      }
+    }
   }
 
   getToken() {
     return localStorage.getItem('college_erp_token');
   }
 
+  isTokenExpired(token) {
+    if (!token || typeof token !== 'string') return true;
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return false;
+      const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const json = typeof atob === 'function' ? atob(b64) : Buffer.from(b64, 'base64').toString('utf8');
+      const payload = JSON.parse(json);
+      if (!payload.exp) return false;
+      return payload.exp * 1000 < Date.now();
+    } catch {
+      return false;
+    }
+  }
+
   async request(endpoint, options = {}) {
-    const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
-    const token = this.getToken();
+    const method = (options.method || 'GET').toUpperCase();
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const url = `${this.baseUrl}${cleanEndpoint}`;
 
-    const headers = {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers
-    };
-
-    const config = {
-      ...options,
-      headers
-    };
-
-    if (config.body && typeof config.body === 'object') {
-      config.body = JSON.stringify(config.body);
+    // Deduplicate identical concurrent in-flight GET requests
+    const cacheKey = method === 'GET' ? `${cleanEndpoint}:${JSON.stringify(options.headers || {})}` : null;
+    if (cacheKey && this.pendingRequests.has(cacheKey)) {
+      return this.pendingRequests.get(cacheKey);
     }
 
-    try {
-      const response = await fetch(url, config);
-      const data = await response.json().catch(() => ({}));
+    const executeRequest = async () => {
+      const token = this.getToken();
 
-      if (!response.ok) {
-        const error = new Error(data.message || `Request failed with status ${response.status}`);
-        error.status = response.status;
-        error.data = data;
+      const isPublic =
+        cleanEndpoint === '/health' ||
+        cleanEndpoint.endsWith('/health') ||
+        cleanEndpoint.startsWith('/v1/auth/login') ||
+        cleanEndpoint.startsWith('/v1/auth/register') ||
+        cleanEndpoint.startsWith('/auth/login') ||
+        cleanEndpoint.startsWith('/auth/register');
+
+      if (!isPublic) {
+        if (!token) {
+          const error = new Error('No authentication token found. Please log in.');
+          error.status = 401;
+          error.code = 'NO_TOKEN';
+          throw error;
+        }
+
+        if (this.isTokenExpired(token)) {
+          localStorage.removeItem('college_erp_token');
+          localStorage.removeItem('college_erp_user');
+          this.dispatchUnauthorized();
+          const error = new Error('Session expired. Please log in again.');
+          error.status = 401;
+          error.code = 'TOKEN_EXPIRED';
+          throw error;
+        }
+      }
+
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options.headers
+      };
+
+      const config = {
+        ...options,
+        headers
+      };
+
+      if (config.body && typeof config.body === 'object') {
+        config.body = JSON.stringify(config.body);
+      }
+
+      try {
+        const response = await fetch(url, config);
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          const error = new Error(data.message || `Request failed with status ${response.status}`);
+          error.status = response.status;
+          error.data = data;
+          throw error;
+        }
+
+        return data;
+      } catch (error) {
+        if (error.status === 401 && error.code !== 'NO_TOKEN' && !cleanEndpoint.startsWith('/v1/auth/login')) {
+          localStorage.removeItem('college_erp_token');
+          localStorage.removeItem('college_erp_user');
+          this.dispatchUnauthorized();
+        }
         throw error;
       }
+    };
 
-      return data;
-    } catch (error) {
-      if (error.status === 401 && endpoint !== '/v1/auth/login') {
-        localStorage.removeItem('college_erp_token');
-        localStorage.removeItem('college_erp_user');
-        window.dispatchEvent(new Event('auth:unauthorized'));
-      }
-      throw error;
+    if (cacheKey) {
+      const promise = executeRequest().finally(() => {
+        this.pendingRequests.delete(cacheKey);
+      });
+      this.pendingRequests.set(cacheKey, promise);
+      return promise;
     }
+
+    return executeRequest();
   }
 
   get(endpoint, options = {}) {
@@ -96,7 +171,14 @@ class ApiClient {
     if (params.page) searchParams.append('page', params.page);
     if (params.limit) searchParams.append('limit', params.limit);
     if (params.role) searchParams.append('role', params.role);
-    if (params.department) searchParams.append('department', params.department);
+    if (params.department) {
+      const dept = typeof params.department === 'object' && params.department !== null
+        ? (params.department._id || params.department.id || '')
+        : String(params.department).trim();
+      if (dept && dept !== '[object Object]') {
+        searchParams.append('department', dept);
+      }
+    }
     if (params.status) searchParams.append('status', params.status);
     if (params.q) searchParams.append('q', params.q);
 

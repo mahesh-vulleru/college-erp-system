@@ -27,6 +27,19 @@ function errorHandler(err, req, res, next) {
     });
   }
 
+  // Handle Mongoose CastError (e.g. invalid ObjectId or parameter format)
+  if (err.name === 'CastError') {
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
+      success: false,
+      message: `Invalid identifier or parameter format for field '${err.path}'.`,
+      error: {
+        code: 'INVALID_ID_FORMAT',
+        field: err.path,
+        value: String(err.value)
+      }
+    });
+  }
+
   // Handle Mongoose Duplicate Key Error
   if (err.code === 11000) {
     const field = Object.keys(err.keyValue || {})[0] || 'field';

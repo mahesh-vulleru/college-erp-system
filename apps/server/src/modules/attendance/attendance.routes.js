@@ -4,6 +4,7 @@ const {
   markAttendanceBatch,
   getAttendanceSummary
 } = require('./attendance.controller');
+const { getAttendanceOverview } = require('../reports/report.controller');
 const { validateAttendanceBatchInput } = require('./attendance.validator');
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
@@ -16,6 +17,7 @@ router.use(authenticate);
 
 router.get('/', getAttendanceRecords);
 router.get('/summary', getAttendanceSummary);
+router.get('/overview', getAttendanceOverview);
 
 // Only faculty, HOD, and principal can mark attendance
 router.post(
