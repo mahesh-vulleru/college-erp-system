@@ -1,4 +1,6 @@
 const Notice = require('./notice.model');
+const Department = require('../departments/department.model');
+const mongoose = require('mongoose');
 const Student = require('../students/student.model');
 const Faculty = require('../faculty/faculty.model');
 const { sendSuccess, sendError } = require('../../utils/response');
@@ -32,11 +34,36 @@ async function listNotices(req, res, next) {
         query.status = req.query.status;
       }
       if (req.query.department) {
-        query.department = req.query.department;
+        const dVal = String(req.query.department).trim();
+        if (dVal && dVal !== '[object Object]') {
+          if (mongoose.Types.ObjectId.isValid(dVal)) {
+            query.department = dVal;
+          } else {
+            const foundDept = await Department.findOne({
+              $or: [{ code: dVal.toUpperCase() }, { name: dVal }]
+            });
+            if (foundDept) query.department = foundDept._id;
+          }
+        }
       }
     } else if (role === ROLES.HOD) {
       // HODs see notices for them or their department, plus anything they authored
-      const hodDepartment = req.user.department;
+      let hodDeptId = null;
+      if (req.user.department) {
+        if (mongoose.Types.ObjectId.isValid(req.user.department)) {
+          hodDeptId = req.user.department;
+        } else {
+          const deptDoc = await Department.findOne({
+            $or: [{ name: req.user.department }, { code: String(req.user.department).toUpperCase() }]
+          });
+          if (deptDoc) hodDeptId = deptDoc._id;
+        }
+      }
+      if (!hodDeptId) {
+        const deptDoc = await Department.findOne({ hod: req.user._id });
+        if (deptDoc) hodDeptId = deptDoc._id;
+      }
+
       const audienceFilter = {
         $or: [
           { publishedBy: req.user._id },
@@ -46,7 +73,7 @@ async function listNotices(req, res, next) {
             $and: [
               { $or: [{ expiryDate: null }, { expiryDate: { $gte: now } }] },
               { $or: [{ targetRoles: '*' }, { targetRoles: role }] },
-              { $or: [{ department: null }, ...(hodDepartment ? [{ department: hodDepartment }] : [])] }
+              { $or: [{ department: null }, ...(hodDeptId ? [{ department: hodDeptId }] : [])] }
             ]
           }
         ]
@@ -70,6 +97,13 @@ async function listNotices(req, res, next) {
       } else if (role === ROLES.FACULTY) {
         const facultyProfile = await Faculty.findOne({ user: req.user._id });
         userDept = facultyProfile?.department || null;
+      }
+
+      if (userDept && !mongoose.Types.ObjectId.isValid(userDept)) {
+        const deptDoc = await Department.findOne({
+          $or: [{ name: userDept }, { code: String(userDept).toUpperCase() }]
+        });
+        userDept = deptDoc ? deptDoc._id : null;
       }
 
       const roleFilter = [

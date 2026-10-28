@@ -89,15 +89,16 @@ export const TimetablePage = () => {
       setCourses(cRes.data || []);
       setSubjects(sRes.data || []);
       setFacultyList(fRes.data || []);
-      if (dRes.data?.[0]?._id && !selectedDept) {
-        setSelectedDept(dRes.data[0]._id);
+      if (dRes.data?.[0]?._id) {
+        setSelectedDept((prev) => prev || dRes.data[0]._id);
       }
     } catch {
       // Non-blocking
     }
-  }, [selectedDept]);
+  }, []);
 
   const fetchTimetable = useCallback(async () => {
+    if (!api.getToken()) return;
     setIsLoading(true);
     setError('');
     try {

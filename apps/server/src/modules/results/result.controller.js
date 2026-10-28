@@ -1,6 +1,8 @@
 const Result = require('./result.model');
 const Examination = require('../examinations/exam.model');
 const Student = require('../students/student.model');
+const Department = require('../departments/department.model');
+const mongoose = require('mongoose');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 
