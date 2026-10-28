@@ -1,6 +1,8 @@
 const User = require('../auth/auth.model');
+const Student = require('../students/student.model');
+const Department = require('../departments/department.model');
 const { sendSuccess, sendError } = require('../../utils/response');
-const { HTTP_STATUS, USER_STATUS } = require('@college-erp/shared');
+const { HTTP_STATUS, USER_STATUS, ROLES } = require('@college-erp/shared');
 const { recordAuditLog } = require('../../utils/auditLogger');
 
 /**
@@ -95,6 +97,36 @@ async function createUser(req, res, next) {
       status: status || USER_STATUS.ACTIVE,
       isTemporaryPassword: isTemporaryPassword !== undefined ? !!isTemporaryPassword : true
     });
+
+    if (role === ROLES.STUDENT) {
+      try {
+        let deptDoc = null;
+        if (department) {
+          deptDoc = await Department.findOne({
+            $or: [
+              { name: department },
+              { code: department }
+            ]
+          });
+        }
+        if (!deptDoc) {
+          deptDoc = await Department.findOne();
+        }
+        if (deptDoc) {
+          const count = await Student.countDocuments();
+          const rollNumber = `STU${new Date().getFullYear()}${String(count + 1).padStart(3, '0')}`;
+          await Student.create({
+            user: newUser._id,
+            rollNumber,
+            department: deptDoc._id,
+            batchYear: `${new Date().getFullYear()}-${new Date().getFullYear() + 4}`,
+            currentSemester: 1
+          });
+        }
+      } catch (profileErr) {
+        console.warn('Student profile auto-provisioning notice:', profileErr.message);
+      }
+    }
 
     await recordAuditLog({
       req,

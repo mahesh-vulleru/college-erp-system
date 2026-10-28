@@ -6,7 +6,7 @@ const { HTTP_STATUS, ROLE_PERMISSIONS } = require('@college-erp/shared');
  */
 function normalizeRole(role) {
   const str = String(role || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
-  if (str === 'super_administrator' || str === 'superadmin') return 'super_admin';
+  if (str === 'super_administrator' || str === 'superadmin' || str === 'admin') return 'super_admin';
   return str;
 }
 

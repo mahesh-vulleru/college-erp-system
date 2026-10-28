@@ -9,7 +9,9 @@ import {
   Users,
   Eye,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  GraduationCap,
+  BarChart3
 } from 'lucide-react';
 import api from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
@@ -41,6 +43,8 @@ export const DepartmentsPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDept, setSelectedDept] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [deptAttendance, setDeptAttendance] = useState(null);
+  const [isAttendanceLoading, setIsAttendanceLoading] = useState(false);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -96,6 +100,21 @@ export const DepartmentsPage = () => {
     setIsCreateModalOpen(true);
   };
 
+  const loadDeptAttendance = async (deptId) => {
+    setIsAttendanceLoading(true);
+    setDeptAttendance(null);
+    try {
+      const res = await api.getAttendanceSummary({ departmentId: deptId });
+      if (res?.data) {
+        setDeptAttendance(res.data);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch department attendance:', err);
+    } finally {
+      setIsAttendanceLoading(false);
+    }
+  };
+
   const handleOpenEdit = (dept) => {
     setSelectedDept(dept);
     setFormData({
@@ -108,6 +127,7 @@ export const DepartmentsPage = () => {
     });
     setFormError('');
     setIsEditModalOpen(true);
+    loadDeptAttendance(dept._id);
   };
 
   const handleOpenDetail = (dept) => {
@@ -460,10 +480,98 @@ export const DepartmentsPage = () => {
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        title="Edit Department"
+        title={`Edit Department: ${formData.name || selectedDept?.name || ''}`}
       >
         <form onSubmit={handleEditSubmit} className="space-y-4">
           {formError && <Notification type="error" message={formError} onClose={() => setFormError('')} />}
+
+          {/* Department Students Overall Attendance Metric */}
+          <div className="bg-gradient-to-br from-teal-50/70 via-navy-50/40 to-white rounded-xl p-4 border border-teal-200/80 shadow-subtle space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-teal-600/10 text-teal-700 flex items-center justify-center">
+                  <GraduationCap className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-navy-950 uppercase tracking-wide">
+                    Department Students Overall Attendance
+                  </h4>
+                  <p className="text-[11px] text-navy-500">
+                    Live cumulative attendance across all enrolled students
+                  </p>
+                </div>
+              </div>
+              {isAttendanceLoading ? (
+                <RefreshCw className="w-4 h-4 animate-spin text-teal-600" />
+              ) : (
+                <Badge
+                  variant={
+                    !deptAttendance?.hasRecords
+                      ? 'neutral'
+                      : deptAttendance.percentage >= 75
+                      ? 'success'
+                      : 'danger'
+                  }
+                  size="sm"
+                >
+                  {deptAttendance?.statusAlert || 'Good Standing'}
+                </Badge>
+              )}
+            </div>
+
+            {isAttendanceLoading ? (
+              <div className="py-2 text-center text-xs text-navy-500">
+                Calculating attendance metrics...
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-baseline justify-between">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-bold font-mono text-navy-950">
+                      {deptAttendance?.hasRecords ? `${deptAttendance.percentage}%` : '0.0%'}
+                    </span>
+                    <span className="text-xs text-navy-500 font-medium">overall rate</span>
+                  </div>
+                  <span className="text-xs text-navy-600 font-medium">
+                    {deptAttendance?.presentClasses || 0} of {deptAttendance?.totalClasses || 0} sessions attended
+                  </span>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="w-full bg-navy-100 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className={`h-2.5 rounded-full transition-all duration-500 ${
+                      !deptAttendance?.hasRecords
+                        ? 'bg-navy-300'
+                        : deptAttendance.percentage >= 75
+                        ? 'bg-teal-600'
+                        : deptAttendance.percentage >= 60
+                        ? 'bg-amber-500'
+                        : 'bg-rose-500'
+                    }`}
+                    style={{ width: `${Math.min(100, Math.max(0, deptAttendance?.percentage || 0))}%` }}
+                  />
+                </div>
+
+                {/* Sub-metrics */}
+                <div className="grid grid-cols-3 gap-2 pt-1 text-[11px]">
+                  <div className="bg-white/80 p-2 rounded-lg border border-navy-100">
+                    <span className="text-navy-400 block font-semibold text-[10px] uppercase">Enrolled Students</span>
+                    <span className="font-bold text-navy-900">{deptAttendance?.totalDepartmentStudents ?? 0}</span>
+                  </div>
+                  <div className="bg-white/80 p-2 rounded-lg border border-navy-100">
+                    <span className="text-navy-400 block font-semibold text-[10px] uppercase">Present Sessions</span>
+                    <span className="font-bold text-emerald-700">{deptAttendance?.presentClasses ?? 0}</span>
+                  </div>
+                  <div className="bg-white/80 p-2 rounded-lg border border-navy-100">
+                    <span className="text-navy-400 block font-semibold text-[10px] uppercase">Absent Sessions</span>
+                    <span className="font-bold text-rose-700">{deptAttendance?.absentClasses ?? 0}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           <Input
             label="Department Name *"
             value={formData.name}

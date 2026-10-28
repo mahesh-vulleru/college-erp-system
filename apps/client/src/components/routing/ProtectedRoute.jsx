@@ -20,9 +20,14 @@ export const ProtectedRoute = ({ allowedRoles, children }) => {
   }
 
   if (allowedRoles && allowedRoles.length > 0) {
-    const userRole = (user?.role || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
+    const normalizeRole = (r) => {
+      const s = (r || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
+      if (s === 'admin' || s === 'superadmin' || s === 'super_administrator') return 'super_admin';
+      return s;
+    };
+    const userRole = normalizeRole(user?.role);
     const hasRole = allowedRoles.some(
-      (role) => (role || '').toLowerCase().trim().replace(/[\s-]+/g, '_') === userRole
+      (role) => normalizeRole(role) === userRole
     );
     if (!hasRole) {
       return <Navigate to="/unauthorized" replace />;

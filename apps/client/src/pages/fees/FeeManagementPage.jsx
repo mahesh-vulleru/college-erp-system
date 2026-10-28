@@ -431,10 +431,11 @@ export const FeeManagementPage = () => {
           </div>
 
           <Table
+            keyField="_id"
             columns={[
               {
                 header: 'Invoice #',
-                render: (row) => (
+                cell: (row) => (
                   <div>
                     <span className="font-mono font-bold text-navy-950 block">{row.invoiceNumber}</span>
                     <span className="text-[10px] text-navy-500">{row.academicYear} • Sem {row.semester}</span>
@@ -443,7 +444,7 @@ export const FeeManagementPage = () => {
               },
               {
                 header: 'Student',
-                render: (row) => (
+                cell: (row) => (
                   <div>
                     <span className="font-semibold text-navy-900 block">{row.student?.user?.name || 'Student Account'}</span>
                     <span className="text-[10px] font-mono text-teal-700 bg-teal-50 px-1.5 py-0.5 rounded">
@@ -454,11 +455,11 @@ export const FeeManagementPage = () => {
               },
               {
                 header: 'Amount Due',
-                render: (row) => <span className="font-medium text-navy-900">₹{(row.amountDue || 0).toLocaleString('en-IN')}</span>
+                cell: (row) => <span className="font-medium text-navy-900">₹{(row.amountDue || 0).toLocaleString('en-IN')}</span>
               },
               {
                 header: 'Waivers',
-                render: (row) => (
+                cell: (row) => (
                   <span className={row.totalWaivers > 0 ? 'text-teal-700 font-semibold' : 'text-navy-400'}>
                     ₹{(row.totalWaivers || 0).toLocaleString('en-IN')}
                   </span>
@@ -466,7 +467,7 @@ export const FeeManagementPage = () => {
               },
               {
                 header: 'Paid',
-                render: (row) => (
+                cell: (row) => (
                   <span className={row.totalVerifiedPayments > 0 ? 'text-emerald-700 font-semibold' : 'text-navy-400'}>
                     ₹{(row.totalVerifiedPayments || 0).toLocaleString('en-IN')}
                   </span>
@@ -474,7 +475,7 @@ export const FeeManagementPage = () => {
               },
               {
                 header: 'Outstanding Balance',
-                render: (row) => (
+                cell: (row) => (
                   <span className={`font-bold ${row.outstandingBalance > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>
                     ₹{(row.outstandingBalance || 0).toLocaleString('en-IN')}
                   </span>
@@ -482,7 +483,7 @@ export const FeeManagementPage = () => {
               },
               {
                 header: 'Status',
-                render: (row) => {
+                cell: (row) => {
                   const s = row.derivedStatus;
                   if (s === 'paid') return <Badge variant="success">Fully Paid</Badge>;
                   if (s === 'waived') return <Badge variant="teal">Waived</Badge>;
@@ -492,7 +493,7 @@ export const FeeManagementPage = () => {
               },
               {
                 header: 'Actions',
-                render: (row) => (
+                cell: (row) => (
                   <div className="flex items-center space-x-1.5">
                     {isStaff && row.outstandingBalance > 0 && (
                       <>
@@ -553,27 +554,28 @@ export const FeeManagementPage = () => {
           </div>
 
           <Table
+            keyField="_id"
             columns={[
               {
                 header: 'Fee Plan Title',
-                render: (row) => (
+                cell: (row) => (
                   <div>
                     <span className="font-semibold text-navy-950 block">{row.title}</span>
                     <span className="text-[10px] text-navy-500">{row.department?.name || 'All Depts'} • Sem {row.semester}</span>
                   </div>
                 )
               },
-              { header: 'Academic Year', render: (row) => <span className="font-medium text-navy-700">{row.academicYear}</span> },
-              { header: 'Tuition Fee', render: (row) => <span>₹{(row.tuitionFee || 0).toLocaleString('en-IN')}</span> },
-              { header: 'Lab & Practicals', render: (row) => <span>₹{(row.labFee || 0).toLocaleString('en-IN')}</span> },
-              { header: 'Library & Exam', render: (row) => <span>₹{((row.libraryFee || 0) + (row.examFee || 0)).toLocaleString('en-IN')}</span> },
+              { header: 'Academic Year', cell: (row) => <span className="font-medium text-navy-700">{row.academicYear}</span> },
+              { header: 'Tuition Fee', cell: (row) => <span>₹{(row.tuitionFee || 0).toLocaleString('en-IN')}</span> },
+              { header: 'Lab & Practicals', cell: (row) => <span>₹{(row.labFee || 0).toLocaleString('en-IN')}</span> },
+              { header: 'Library & Exam', cell: (row) => <span>₹{((row.libraryFee || 0) + (row.examFee || 0)).toLocaleString('en-IN')}</span> },
               {
                 header: 'Total Plan Amount',
-                render: (row) => <span className="font-bold text-teal-800">₹{(row.totalAmount || 0).toLocaleString('en-IN')}</span>
+                cell: (row) => <span className="font-bold text-teal-800">₹{(row.totalAmount || 0).toLocaleString('en-IN')}</span>
               },
               {
                 header: 'Due Date',
-                render: (row) => (
+                cell: (row) => (
                   <span className="text-xs text-navy-600">
                     {row.dueDate ? new Date(row.dueDate).toLocaleDateString() : 'N/A'}
                   </span>
@@ -581,11 +583,11 @@ export const FeeManagementPage = () => {
               },
               {
                 header: 'Status',
-                render: (row) => (row.status === 'archived' ? <Badge variant="neutral">Archived</Badge> : <Badge variant="success">Active</Badge>)
+                cell: (row) => (row.status === 'archived' ? <Badge variant="neutral">Archived</Badge> : <Badge variant="success">Active</Badge>)
               },
               {
                 header: 'Actions',
-                render: (row) =>
+                cell: (row) =>
                   isStaff && row.status !== 'archived' && (
                     <button
                       onClick={() => handleArchivePlan(row._id)}
@@ -621,10 +623,11 @@ export const FeeManagementPage = () => {
           </div>
 
           <Table
+            keyField="_id"
             columns={[
               {
                 header: 'Receipt #',
-                render: (row) => (
+                cell: (row) => (
                   <div>
                     <span className="font-mono font-bold text-teal-700 block">{row.receiptNumber}</span>
                     <span className="text-[10px] text-navy-500">{new Date(row.paymentDate || row.createdAt).toLocaleString()}</span>
@@ -633,7 +636,7 @@ export const FeeManagementPage = () => {
               },
               {
                 header: 'Student',
-                render: (row) => (
+                cell: (row) => (
                   <div>
                     <span className="font-semibold text-navy-900 block">{row.student?.user?.name || 'Student Account'}</span>
                     <span className="text-[10px] font-mono text-navy-500">{row.student?.rollNumber || 'N/A'}</span>
@@ -642,19 +645,19 @@ export const FeeManagementPage = () => {
               },
               {
                 header: 'Amount Paid',
-                render: (row) => <span className="font-bold text-emerald-700">₹{(row.amountPaid || 0).toLocaleString('en-IN')}</span>
+                cell: (row) => <span className="font-bold text-emerald-700">₹{(row.amountPaid || 0).toLocaleString('en-IN')}</span>
               },
               {
                 header: 'Method',
-                render: (row) => <Badge variant="neutral">{row.paymentMethod || 'UPI'}</Badge>
+                cell: (row) => <Badge variant="neutral">{row.paymentMethod || 'UPI'}</Badge>
               },
               {
                 header: 'Reference',
-                render: (row) => <span className="text-xs font-mono text-navy-600 truncate max-w-xs">{row.transactionReference || 'N/A'}</span>
+                cell: (row) => <span className="text-xs font-mono text-navy-600 truncate max-w-xs">{row.transactionReference || 'N/A'}</span>
               },
               {
                 header: 'Verification',
-                render: (row) =>
+                cell: (row) =>
                   row.isVerified ? (
                     <Badge variant="success" dot>
                       Verified
@@ -665,7 +668,7 @@ export const FeeManagementPage = () => {
               },
               {
                 header: 'Receipt',
-                render: (row) => (
+                cell: (row) => (
                   <Button variant="ghost" size="xs" onClick={() => handleViewReceipt(row._id)}>
                     <Printer className="w-3.5 h-3.5 mr-1 text-teal-600" />
                     Receipt

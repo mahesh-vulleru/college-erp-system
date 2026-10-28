@@ -489,24 +489,49 @@ export const AdminDashboard = () => {
     }
   ];
 
-  const totalUsersCount = overview?.users?.total ?? totalUsers ?? 10;
+  const studentCount = overview?.users?.byRole?.[ROLES.STUDENT] ?? overview?.academic?.studentProfiles ?? 0;
+  const facultyCount = overview?.users?.byRole?.[ROLES.FACULTY] ?? overview?.academic?.facultyProfiles ?? 0;
+  const hodCount = overview?.users?.byRole?.[ROLES.HOD] ?? 0;
+  const principalCount = overview?.users?.byRole?.[ROLES.PRINCIPAL] ?? 0;
+  const accountsCount = overview?.users?.byRole?.[ROLES.ACCOUNTS] ?? 0;
+  const superAdminCount = overview?.users?.byRole?.[ROLES.SUPER_ADMIN] ?? 0;
+  const inactiveCount = overview?.users?.disabled ?? 0;
+
+  const totalUsersCount = overview?.users?.total ?? totalUsers ?? (studentCount + facultyCount + hodCount + principalCount + accountsCount + superAdminCount);
+
   const donutData = [
-    { label: 'Students', value: overview?.users?.byRole?.[ROLES.STUDENT] ?? 2, color: '#3b82f6' },
-    { label: 'Faculty', value: overview?.users?.byRole?.[ROLES.FACULTY] ?? 2, color: '#8b5cf6' },
-    { label: 'HOD', value: overview?.users?.byRole?.[ROLES.HOD] ?? 1, color: '#f59e0b' },
-    { label: 'Principal', value: overview?.users?.byRole?.[ROLES.PRINCIPAL] ?? 1, color: '#10b981' },
-    { label: 'Accounts', value: overview?.users?.byRole?.[ROLES.ACCOUNTS] ?? 1, color: '#14b8a6' },
-    { label: 'Super Admin', value: overview?.users?.byRole?.[ROLES.SUPER_ADMIN] ?? 1, color: '#ef4444' },
-    { label: 'Inactive', value: overview?.users?.disabled ?? 1, color: '#94a3b8' }
+    { label: 'Students', value: studentCount, color: '#3b82f6' },
+    { label: 'Faculty', value: facultyCount, color: '#8b5cf6' },
+    { label: 'HOD', value: hodCount, color: '#f59e0b' },
+    { label: 'Principal', value: principalCount, color: '#10b981' },
+    { label: 'Accounts', value: accountsCount, color: '#14b8a6' },
+    { label: 'Super Admin', value: superAdminCount, color: '#ef4444' },
+    { label: 'Inactive', value: inactiveCount, color: '#94a3b8' }
   ];
 
-  const recentActivityItems = (auditLogs && auditLogs.length > 0)
-    ? auditLogs.slice(0, 4).map((l, i) => {
+  const formatTimeAgo = (dateStr) => {
+    if (!dateStr) return 'Recently';
+    const diff = Math.floor((new Date() - new Date(dateStr)) / 1000);
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+  };
+
+  const rawActivities = (overview?.audit?.recentActivities && overview.audit.recentActivities.length > 0)
+    ? overview.audit.recentActivities
+    : (auditLogs && auditLogs.length > 0)
+    ? auditLogs
+    : null;
+
+  const recentActivityItems = rawActivities
+    ? rawActivities.slice(0, 4).map((l, i) => {
         const icons = [UserPlus, Building2, DollarSign, Activity];
         const colors = ['text-blue-600 bg-blue-50', 'text-teal-600 bg-teal-50', 'text-amber-600 bg-amber-50', 'text-purple-600 bg-purple-50'];
+        const actionTitle = l.action ? l.action.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : 'System Event';
         return {
-          title: `${l.action || 'Activity'} (${l.entityType || 'System'})`,
-          time: new Date(l.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          title: actionTitle,
+          time: formatTimeAgo(l.createdAt),
           icon: icons[i % icons.length],
           iconColor: colors[i % colors.length].split(' ')[0],
           iconBg: colors[i % colors.length].split(' ')[1]
@@ -543,30 +568,30 @@ export const AdminDashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatWidget
           title="Institutional Users"
-          value={overview?.users?.total ?? totalUsers ?? 10}
-          subtitle={`${overview?.users?.active || 8} Active`}
+          value={totalUsersCount}
+          subtitle={`${overview?.users?.active ?? (totalUsersCount - inactiveCount)} Active`}
           trend={{ value: '+2 this month', positive: true }}
           icon={Users}
           color="indigo"
         />
         <StatWidget
           title="Departments"
-          value={overview?.academic?.departments ?? 4}
+          value={overview?.academic?.departments ?? 0}
           subtitle="Active"
           icon={Building2}
           color="blue"
         />
         <StatWidget
           title="Students"
-          value={overview?.academic?.studentProfiles ?? 2}
-          subtitle="Active"
+          value={studentCount}
+          subtitle={`${studentCount} Active`}
           icon={GraduationCap}
           color="emerald"
         />
         <StatWidget
           title="Audit Events"
-          value={overview?.audit?.totalLogs ?? 47}
-          subtitle="This week"
+          value={overview?.audit?.totalLogs ?? 0}
+          subtitle="Total logged"
           icon={Activity}
           color="rose"
         />

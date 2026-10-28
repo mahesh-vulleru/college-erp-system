@@ -50,9 +50,11 @@ export const Table = ({
                     <td key={colIdx} className={`px-4 py-3 text-navy-800 text-xs sm:text-sm whitespace-nowrap ${col.cellClassName || ''}`}>
                       {col.cell
                         ? col.cell(row)
+                        : col.render
+                        ? col.render(row)
                         : typeof col.accessor === 'function'
                         ? col.accessor(row)
-                        : row[col.accessor]}
+                        : col.accessor ? row[col.accessor] : null}
                     </td>
                   ))}
                 </tr>

@@ -64,6 +64,12 @@ export const StatWidget = ({
 
   const scheme = colors[color] || colors.blue;
 
+  // Safely extract string value if trend is passed as an object e.g. { value: '+2 this month', positive: true }
+  const trendText = typeof trend === 'object' && trend !== null ? trend.value : trend;
+  const isUp = typeof trend === 'object' && trend !== null
+    ? (trend.positive !== undefined ? Boolean(trend.positive) : trend.direction !== 'down')
+    : trendDirection === 'up';
+
   return (
     <div className={`bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between ${className}`}>
       <div className="flex-1 min-w-0 pr-3">
@@ -73,20 +79,20 @@ export const StatWidget = ({
         <div className="mt-1 text-xl sm:text-2xl font-bold tracking-tight text-slate-900 truncate">
           {value}
         </div>
-        {(subtitle || trend) && (
+        {(subtitle || trendText) && (
           <div className="mt-1 flex items-center space-x-1.5 text-xs">
-            {trend && (
+            {trendText && (
               <span
                 className={`inline-flex items-center text-[11px] font-bold ${
-                  trendDirection === 'up' ? 'text-emerald-600' : 'text-rose-600'
+                  isUp ? 'text-emerald-600' : 'text-rose-600'
                 }`}
               >
-                {trendDirection === 'up' ? (
+                {isUp ? (
                   <ArrowUpRight className="w-3 h-3 mr-0.5" />
                 ) : (
                   <ArrowDownRight className="w-3 h-3 mr-0.5" />
                 )}
-                {trend}
+                {trendText}
               </span>
             )}
             {subtitle && (
