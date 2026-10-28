@@ -64,6 +64,23 @@ export const StatWidget = ({
 
   const scheme = colors[color] || colors.blue;
 
+  let trendText = null;
+  let isPositive = trendDirection === 'up';
+
+  if (trend) {
+    if (typeof trend === 'object' && trend !== null) {
+      trendText = trend.value !== undefined ? String(trend.value) : '';
+      if (typeof trend.positive === 'boolean') {
+        isPositive = trend.positive;
+      }
+    } else {
+      trendText = String(trend);
+    }
+  }
+
+  const displayValue = (typeof value === 'object' && value !== null) ? (value.value ?? '') : value;
+  const displaySubtitle = (typeof subtitle === 'object' && subtitle !== null) ? (subtitle.value ?? '') : subtitle;
+
   return (
     <div className={`bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between ${className}`}>
       <div className="flex-1 min-w-0 pr-3">
@@ -71,27 +88,27 @@ export const StatWidget = ({
           {title}
         </span>
         <div className="mt-1 text-xl sm:text-2xl font-bold tracking-tight text-slate-900 truncate">
-          {value}
+          {displayValue}
         </div>
-        {(subtitle || trend) && (
+        {(displaySubtitle || trendText) && (
           <div className="mt-1 flex items-center space-x-1.5 text-xs">
-            {trend && (
+            {trendText && (
               <span
                 className={`inline-flex items-center text-[11px] font-bold ${
-                  trendDirection === 'up' ? 'text-emerald-600' : 'text-rose-600'
+                  isPositive ? 'text-emerald-600' : 'text-rose-600'
                 }`}
               >
-                {trendDirection === 'up' ? (
+                {isPositive ? (
                   <ArrowUpRight className="w-3 h-3 mr-0.5" />
                 ) : (
                   <ArrowDownRight className="w-3 h-3 mr-0.5" />
                 )}
-                {trend}
+                {trendText}
               </span>
             )}
-            {subtitle && (
+            {displaySubtitle && (
               <span className="text-[11px] text-slate-400 font-medium truncate">
-                {subtitle}
+                {displaySubtitle}
               </span>
             )}
           </div>

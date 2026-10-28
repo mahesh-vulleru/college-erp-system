@@ -57,6 +57,7 @@ export const StudentDashboard = () => {
   const [myTimetable, setMyTimetable] = useState([]);
   const [myInvoices, setMyInvoices] = useState([]);
   const [myNotices, setMyNotices] = useState([]);
+  const [myExams, setMyExams] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const queryTab = searchParams.get('tab');
   const [studentActiveTab, setStudentActiveTab] = useState(queryTab || 'courses');
@@ -118,7 +119,7 @@ export const StudentDashboard = () => {
     try {
       if (isStudentRole) {
         // Load student self data
-        const [profRes, attRes, resRes, payRes, subjRes, timeRes, invRes, notRes] = await Promise.all([
+        const [profRes, attRes, resRes, payRes, subjRes, timeRes, invRes, notRes, examRes] = await Promise.all([
           api.getMyStudentProfile().catch(() => ({ data: null })),
           api.getAttendance().catch(() => ({ data: [] })),
           api.getResults().catch(() => ({ data: [] })),
@@ -126,7 +127,8 @@ export const StudentDashboard = () => {
           api.getSubjects().catch(() => ({ data: [] })),
           api.getTimetable().catch(() => ({ data: [] })),
           api.getFeeInvoices().catch(() => ({ data: [] })),
-          api.getNotices().catch(() => ({ data: [] }))
+          api.getNotices().catch(() => ({ data: [] })),
+          api.getExams().catch(() => ({ data: [] }))
         ]);
 
         if (profRes?.data) setMyProfile(profRes.data);
@@ -137,6 +139,7 @@ export const StudentDashboard = () => {
         if (timeRes?.data) setMyTimetable(timeRes.data);
         if (invRes?.data) setMyInvoices(invRes.data);
         if (notRes?.data) setMyNotices(notRes.data);
+        if (examRes?.data) setMyExams(Array.isArray(examRes.data) ? examRes.data : []);
       } else {
         // Load administrative directory
         const [studRes, deptRes] = await Promise.all([
@@ -670,6 +673,18 @@ export const StudentDashboard = () => {
           </button>
 
           <button
+            onClick={() => setStudentActiveTab('exams')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              studentActiveTab === 'exams'
+                ? 'border-teal-600 text-teal-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <CalendarCheck className="w-4 h-4" />
+            <span>Examinations ({myExams.length})</span>
+          </button>
+
+          <button
             onClick={() => setStudentActiveTab('results')}
             className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
               studentActiveTab === 'results'
@@ -792,6 +807,50 @@ export const StudentDashboard = () => {
                     <Badge variant={att.status === 'present' ? 'success' : 'danger'} size="xs">
                       {att.status.toUpperCase()}
                     </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* TAB: Published Examinations */}
+        {studentActiveTab === 'exams' && (
+          <Card
+            title={`Semester Examination Schedule (${myExams.length} Cycles)`}
+            subtitle="Officially published examination timetables for your department and semester"
+          >
+            {myExams.length === 0 ? (
+              <div className="py-8 text-center text-navy-500 text-xs">
+                <CalendarCheck className="w-8 h-8 text-navy-300 mx-auto mb-2" />
+                No published examinations for your current semester at this time.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {myExams.map((exam) => (
+                  <div
+                    key={exam._id || exam.id}
+                    className="p-4 rounded-xl bg-warm-50 border border-navy-100 flex items-center justify-between text-xs"
+                  >
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-bold text-navy-950 text-sm">{exam.name}</span>
+                        <Badge variant="teal" size="xs">{exam.examType || 'Semester End'}</Badge>
+                      </div>
+                      <div className="text-[11px] text-navy-500 font-mono mt-1 space-x-2">
+                        <span>Venue: {exam.venue || 'Exam Hall'}</span>
+                        <span>&bull;</span>
+                        <span>Semester {exam.semester}</span>
+                        <span>&bull;</span>
+                        <span>Academic Year: {exam.academicYear}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <Badge variant="navy" size="xs">
+                        {exam.startDate ? new Date(exam.startDate).toLocaleDateString() : 'TBD'} - {exam.endDate ? new Date(exam.endDate).toLocaleDateString() : 'TBD'}
+                      </Badge>
+                      <span className="text-[10px] text-emerald-600 font-semibold block mt-1">Verified Published</span>
+                    </div>
                   </div>
                 ))}
               </div>

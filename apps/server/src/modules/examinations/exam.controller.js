@@ -1,6 +1,9 @@
 const Examination = require('./exam.model');
+const Student = require('../students/student.model');
+const Faculty = require('../faculty/faculty.model');
+const Department = require('../departments/department.model');
 const { sendSuccess, sendError } = require('../../utils/response');
-const { HTTP_STATUS } = require('@college-erp/shared');
+const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 
 async function listExams(req, res, next) {
   try {
@@ -10,6 +13,32 @@ async function listExams(req, res, next) {
     if (req.query.department) query.department = req.query.department;
     if (req.query.examType) query.examType = req.query.examType;
     if (req.query.status) query.status = req.query.status;
+    if (req.query.isPublished !== undefined) query.isPublished = req.query.isPublished === 'true';
+
+    // Role-based visibility enforcement
+    if (req.user && req.user.role === ROLES.STUDENT) {
+      query.isPublished = true;
+      if (!req.query.status) query.status = { $ne: 'cancelled' };
+      const studentProfile = await Student.findOne({ user: req.user._id });
+      if (studentProfile) {
+        if (!req.query.department && studentProfile.department) {
+          query.$or = [{ department: studentProfile.department }, { department: null }];
+        }
+        if (!req.query.semester && studentProfile.currentSemester) {
+          query.semester = studentProfile.currentSemester;
+        }
+      }
+    } else if (req.user && req.user.role === ROLES.HOD && !req.query.department) {
+      const dept = await Department.findOne({ hod: req.user._id }) || (req.user.department ? await Department.findOne({ name: req.user.department }) : null);
+      if (dept) {
+        query.$or = [{ department: dept._id }, { department: null }];
+      }
+    } else if (req.user && req.user.role === ROLES.FACULTY && !req.query.department) {
+      const facultyProfile = await Faculty.findOne({ user: req.user._id });
+      if (facultyProfile && facultyProfile.department) {
+        query.$or = [{ department: facultyProfile.department }, { department: null }];
+      }
+    }
 
     const exams = await Examination.find(query)
       .populate('department', 'name code')
@@ -40,6 +69,28 @@ async function getExamById(req, res, next) {
       });
     }
 
+    // Students cannot access unpublished or cancelled exams, or exams outside their department
+    if (req.user && req.user.role === ROLES.STUDENT) {
+      if (!exam.isPublished || exam.status === 'cancelled') {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          message: 'Students cannot view unpublished or cancelled examinations',
+          code: 'FORBIDDEN'
+        });
+      }
+      const studentProfile = await Student.findOne({ user: req.user._id });
+      if (studentProfile && exam.department && studentProfile.department) {
+        const examDeptId = exam.department._id || exam.department;
+        if (!examDeptId.equals(studentProfile.department)) {
+          return sendError(res, {
+            statusCode: HTTP_STATUS.FORBIDDEN,
+            message: 'Students cannot view examinations outside their department',
+            code: 'FORBIDDEN'
+          });
+        }
+      }
+    }
+
     return sendSuccess(res, { data: exam });
   } catch (error) {
     next(error);
@@ -49,6 +100,14 @@ async function getExamById(req, res, next) {
 async function createExam(req, res, next) {
   try {
     const { name, examType, academicYear, semester, department, course, venue, startDate, endDate, isPublished, status } = req.body;
+
+    let examDept = department;
+    if (req.user && req.user.role === ROLES.HOD) {
+      const hodDept = await Department.findOne({ hod: req.user._id }) || (req.user.department ? await Department.findOne({ name: req.user.department }) : null);
+      if (hodDept) {
+        examDept = hodDept._id;
+      }
+    }
 
     const parsedStart = new Date(startDate);
     const parsedEnd = new Date(endDate);
@@ -85,7 +144,7 @@ async function createExam(req, res, next) {
       examType: examType || 'Semester End',
       academicYear: (academicYear || '').trim(),
       semester: Number(semester),
-      department: department || null,
+      department: examDept || null,
       course: course || null,
       venue: (venue || 'Main Examination Hall').trim(),
       startDate: parsedStart,

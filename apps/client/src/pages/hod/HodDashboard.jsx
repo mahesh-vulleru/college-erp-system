@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   Users,
+  PlusCircle,
+  Calendar,
   BookOpen,
   CalendarCheck,
   Award,
@@ -51,6 +53,18 @@ export const HodDashboard = () => {
   const [timetableSlots, setTimetableSlots] = useState([]);
   const [facultyList, setFacultyList] = useState([]);
   const [studentList, setStudentList] = useState([]);
+  const [deptExamsList, setDeptExamsList] = useState([]);
+  const [isScheduleExamOpen, setIsScheduleExamOpen] = useState(false);
+  const [examForm, setExamForm] = useState({
+    name: '',
+    examType: 'Mid-Term 1',
+    academicYear: '2025-2026',
+    semester: 1,
+    venue: 'Exam Hall 1',
+    startDate: '',
+    endDate: '',
+    isPublished: false
+  });
   const [searchParams, setSearchParams] = useSearchParams();
   const queryTab = searchParams.get('tab');
   const [hodActiveTab, setHodActiveTab] = useState(queryTab || 'faculty');
@@ -85,13 +99,14 @@ export const HodDashboard = () => {
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [deptRes, usersRes, subjRes, timeRes, facRes, studRes] = await Promise.all([
+      const [deptRes, usersRes, subjRes, timeRes, facRes, studRes, examsRes] = await Promise.all([
         api.getDepartmentSummaries().catch(() => ({ data: [] })),
         api.getUsers({ role: ROLES.HOD, limit: 50 }).catch(() => ({ data: [] })),
         api.getSubjects().catch(() => ({ data: [] })),
         api.getTimetable().catch(() => ({ data: [] })),
         api.getFaculty().catch(() => ({ data: [] })),
-        api.getStudents({ limit: 100 }).catch(() => ({ data: [] }))
+        api.getStudents({ limit: 100 }).catch(() => ({ data: [] })),
+        api.getExams().catch(() => ({ data: [] }))
       ]);
 
       if (deptRes?.data) setDepartments(deptRes.data);
@@ -100,6 +115,7 @@ export const HodDashboard = () => {
       if (timeRes?.data) setTimetableSlots(timeRes.data);
       if (facRes?.data) setFacultyList(facRes.data);
       if (studRes?.data) setStudentList(studRes.data);
+      if (examsRes?.data) setDeptExamsList(Array.isArray(examsRes.data) ? examsRes.data : []);
     } catch (err) {
       addToast({
         type: 'error',
@@ -121,6 +137,85 @@ export const HodDashboard = () => {
     setAssignForm({ hodUserId: dept.hod?._id || dept.hod?.id || '' });
     setFormError('');
     setIsAssignHodOpen(true);
+  };
+
+  const handleScheduleExamSubmit = async (e) => {
+    e.preventDefault();
+    setFormError('');
+    if (!examForm.name || !examForm.startDate || !examForm.endDate) {
+      setFormError('Please enter exam title, start date, and end date.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await api.createExam({
+        ...examForm,
+        semester: Number(examForm.semester)
+      });
+      addToast({
+        type: 'success',
+        title: 'Examination Scheduled',
+        message: `${examForm.name} scheduled successfully.`
+      });
+      setIsScheduleExamOpen(false);
+      setExamForm({
+        name: '',
+        examType: 'Mid-Term 1',
+        academicYear: '2025-2026',
+        semester: 1,
+        venue: 'Exam Hall 1',
+        startDate: '',
+        endDate: '',
+        isPublished: false
+      });
+      loadData();
+    } catch (err) {
+      setFormError(err.message || 'Failed to schedule examination.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleTogglePublishExam = async (exam) => {
+    try {
+      await api.updateExam(exam._id || exam.id, {
+        isPublished: !exam.isPublished
+      });
+      addToast({
+        type: 'success',
+        title: exam.isPublished ? 'Examination Unpublished' : 'Examination Published',
+        message: `${exam.name} is now ${exam.isPublished ? 'hidden from' : 'visible to'} students.`
+      });
+      loadData();
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Update Failed',
+        message: err.message
+      });
+    }
+  };
+
+  const handleCancelExam = async (exam) => {
+    if (!window.confirm(`Are you sure you want to cancel ${exam.name}?`)) return;
+    try {
+      await api.updateExam(exam._id || exam.id, {
+        status: 'cancelled',
+        isPublished: false
+      });
+      addToast({
+        type: 'info',
+        title: 'Examination Cancelled',
+        message: `${exam.name} has been marked as cancelled.`
+      });
+      loadData();
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Cancel Failed',
+        message: err.message
+      });
+    }
   };
 
   // Submit HOD Assignment to Department (with backend conflict prevention)
@@ -433,6 +528,17 @@ export const HodDashboard = () => {
       )
     : [];
 
+  const deptExams = myDept
+    ? deptExamsList.filter(
+        (e) =>
+          !e.department ||
+          e.department?._id === myDept.id ||
+          e.department?._id === myDept._id ||
+          e.department === myDept.id ||
+          e.department === myDept._id
+      )
+    : deptExamsList;
+
   // ==========================================
   // VIEW 1: AUTHENTICATED HOD ROLE PORTAL
   // ==========================================
@@ -701,6 +807,18 @@ export const HodDashboard = () => {
           </button>
 
           <button
+            onClick={() => setHodActiveTab('exams')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              hodActiveTab === 'exams'
+                ? 'border-teal-600 text-teal-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <Award className="w-4 h-4" />
+            <span>Examinations ({deptExams.length})</span>
+          </button>
+
+          <button
             onClick={() => setHodActiveTab('syllabus')}
             className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
               hodActiveTab === 'syllabus'
@@ -830,6 +948,205 @@ export const HodDashboard = () => {
             )}
           </Card>
         )}
+
+        {/* TAB 5: Department Examinations */}
+        {hodActiveTab === 'exams' && (
+          <Card
+            title={`Department Examination Cycles (${deptExams.length})`}
+            subtitle="Schedule, review, publish, and manage semester & mid-term examinations"
+            action={
+              <Button
+                variant="primary"
+                size="sm"
+                icon={PlusCircle}
+                onClick={() => setIsScheduleExamOpen(true)}
+              >
+                Schedule Examination
+              </Button>
+            }
+          >
+            {deptExams.length === 0 ? (
+              <div className="py-8 text-center space-y-3">
+                <p className="text-xs text-navy-500">No examination cycles scheduled for this department yet.</p>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon={PlusCircle}
+                  onClick={() => setIsScheduleExamOpen(true)}
+                >
+                  Schedule First Examination
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {deptExams.map((exam) => (
+                  <div
+                    key={exam._id || exam.id}
+                    className="p-4 rounded-xl bg-warm-50 border border-navy-100 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-bold text-navy-950 text-sm">{exam.name}</span>
+                        <Badge
+                          variant={exam.status === 'cancelled' ? 'rose' : exam.isPublished ? 'teal' : 'amber'}
+                          size="xs"
+                        >
+                          {exam.status === 'cancelled' ? 'Cancelled' : exam.isPublished ? 'Published to Students' : 'Draft / Unpublished'}
+                        </Badge>
+                        <Badge variant="navy" size="xs">
+                          {exam.examType || 'Semester End'}
+                        </Badge>
+                      </div>
+                      <div className="text-[11px] text-navy-500 font-mono flex flex-wrap gap-x-3 gap-y-1">
+                        <span>Sem {exam.semester} ({exam.academicYear})</span>
+                        <span>&bull;</span>
+                        <span>Venue: {exam.venue || 'Exam Hall'}</span>
+                        <span>&bull;</span>
+                        <span>
+                          {exam.startDate ? new Date(exam.startDate).toLocaleDateString() : 'N/A'} - {exam.endDate ? new Date(exam.endDate).toLocaleDateString() : 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2 flex-shrink-0">
+                      {exam.status !== 'cancelled' && (
+                        <>
+                          <Button
+                            variant={exam.isPublished ? 'secondary' : 'teal'}
+                            size="xs"
+                            onClick={() => handleTogglePublishExam(exam)}
+                          >
+                            {exam.isPublished ? 'Unpublish' : 'Publish to Students'}
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="xs"
+                            onClick={() => handleCancelExam(exam)}
+                          >
+                            Cancel Exam
+                          </Button>
+                        </>
+                      )}
+                      {exam.status === 'cancelled' && (
+                        <span className="text-[11px] text-rose-600 font-semibold italic">
+                          Exam cycle cancelled
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* Schedule Examination Modal */}
+        <Modal
+          isOpen={isScheduleExamOpen}
+          onClose={() => setIsScheduleExamOpen(false)}
+          title="Schedule Department Examination"
+          subtitle={`Create a certified examination cycle for ${myDept?.name || 'Department'}`}
+          maxWidth="max-w-lg"
+          footer={
+            <>
+              <Button variant="secondary" size="sm" onClick={() => setIsScheduleExamOpen(false)} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button variant="primary" size="sm" onClick={handleScheduleExamSubmit} isLoading={isSubmitting} icon={PlusCircle}>
+                Create Examination
+              </Button>
+            </>
+          }
+        >
+          <form onSubmit={handleScheduleExamSubmit} className="space-y-4">
+            {formError && <Notification type="error" message={formError} onClose={() => setFormError('')} />}
+
+            <Input
+              label="Examination Title"
+              id="exam-name"
+              required
+              value={examForm.name}
+              onChange={(e) => setExamForm({ ...examForm, name: e.target.value })}
+              placeholder="e.g. End Semester Theory Examination Nov 2026"
+            />
+
+            <div className="grid grid-cols-2 gap-3">
+              <Select
+                label="Exam Type"
+                id="exam-type"
+                value={examForm.examType}
+                onChange={(e) => setExamForm({ ...examForm, examType: e.target.value })}
+                options={[
+                  { value: 'Mid-Term 1', label: 'Mid-Term 1' },
+                  { value: 'Mid-Term 2', label: 'Mid-Term 2' },
+                  { value: 'Semester End', label: 'Semester End' },
+                  { value: 'Practical / Lab', label: 'Practical / Lab' },
+                  { value: 'Supplementary', label: 'Supplementary' }
+                ]}
+              />
+
+              <Input
+                label="Academic Year"
+                id="exam-year"
+                required
+                value={examForm.academicYear}
+                onChange={(e) => setExamForm({ ...examForm, academicYear: e.target.value })}
+                placeholder="2025-2026"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Select
+                label="Semester"
+                id="exam-semester"
+                value={examForm.semester}
+                onChange={(e) => setExamForm({ ...examForm, semester: Number(e.target.value) })}
+                options={[1, 2, 3, 4, 5, 6, 7, 8].map((s) => ({ value: s, label: `Semester ${s}` }))}
+              />
+
+              <Input
+                label="Venue / Hall"
+                id="exam-venue"
+                value={examForm.venue}
+                onChange={(e) => setExamForm({ ...examForm, venue: e.target.value })}
+                placeholder="Exam Hall 1"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label="Start Date"
+                id="exam-start"
+                type="date"
+                required
+                value={examForm.startDate}
+                onChange={(e) => setExamForm({ ...examForm, startDate: e.target.value })}
+              />
+
+              <Input
+                label="End Date"
+                id="exam-end"
+                type="date"
+                required
+                value={examForm.endDate}
+                onChange={(e) => setExamForm({ ...examForm, endDate: e.target.value })}
+              />
+            </div>
+
+            <div className="flex items-center space-x-2 pt-2">
+              <input
+                type="checkbox"
+                id="exam-publish"
+                checked={examForm.isPublished}
+                onChange={(e) => setExamForm({ ...examForm, isPublished: e.target.checked })}
+                className="rounded border-navy-300 text-teal-600 focus:ring-teal-500 h-4 w-4"
+              />
+              <label htmlFor="exam-publish" className="text-xs text-navy-800 font-medium">
+                Publish immediately to enrolled students (otherwise saved as draft)
+              </label>
+            </div>
+          </form>
+        </Modal>
       </div>
     );
   }

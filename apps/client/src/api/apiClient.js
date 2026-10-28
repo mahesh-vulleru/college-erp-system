@@ -254,6 +254,8 @@ class ApiClient {
     if (params.department) searchParams.append('department', params.department);
     if (params.semester) searchParams.append('semester', params.semester);
     if (params.academicYear) searchParams.append('academicYear', params.academicYear);
+    if (params.department) searchParams.append('department', params.department);
+    if (params.status) searchParams.append('status', params.status);
     if (params.status) searchParams.append('status', params.status);
     if (params.feeCategory) searchParams.append('feeCategory', params.feeCategory);
     const qs = searchParams.toString();

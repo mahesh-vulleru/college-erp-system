@@ -1,6 +1,7 @@
 const Result = require('./result.model');
 const Examination = require('../examinations/exam.model');
 const Student = require('../students/student.model');
+const Department = require('../departments/department.model');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 
@@ -23,10 +24,21 @@ async function getResults(req, res, next) {
       }
       query.student = profile._id;
 
-      // Find published exams only
-      const publishedExams = await Examination.find({ isPublished: true }).select('_id');
+      // Find published and active exams only
+      const publishedExams = await Examination.find({
+        isPublished: true,
+        status: { $ne: 'cancelled' }
+      }).select('_id');
       const publishedExamIds = publishedExams.map((e) => e._id);
       query.examination = { $in: publishedExamIds };
+    } else if (req.user.role === ROLES.HOD && !query.examination) {
+      // HOD default scoping to their department
+      const dept = await Department.findOne({ hod: req.user._id });
+      if (dept) {
+        const deptExams = await Examination.find({ department: dept._id }).select('_id');
+        const deptExamIds = deptExams.map((e) => e._id);
+        query.examination = { $in: deptExamIds };
+      }
     }
 
     const results = await Result.find(query)
@@ -52,6 +64,23 @@ async function getResults(req, res, next) {
 async function recordResult(req, res, next) {
   try {
     const { examination, student, subject, internalMarks = 0, externalMarks = 0, status: submittedStatus } = req.body;
+
+    const examDoc = await Examination.findById(examination);
+    if (!examDoc) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        message: 'Examination not found',
+        code: 'EXAM_NOT_FOUND'
+      });
+    }
+
+    if (examDoc.status === 'cancelled') {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: 'Cannot record marks for a cancelled examination',
+        code: 'EXAM_CANCELLED'
+      });
+    }
 
     const numInternal = Number(internalMarks);
     const numExternal = Number(externalMarks);
@@ -120,6 +149,23 @@ async function batchRecordResults(req, res, next) {
         statusCode: HTTP_STATUS.BAD_REQUEST,
         message: 'Records array is required for batch marks entry',
         code: 'INVALID_PAYLOAD'
+      });
+    }
+
+    const examDoc = await Examination.findById(examination);
+    if (!examDoc) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        message: 'Examination not found',
+        code: 'EXAM_NOT_FOUND'
+      });
+    }
+
+    if (examDoc.status === 'cancelled') {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: 'Cannot record marks for a cancelled examination',
+        code: 'EXAM_CANCELLED'
       });
     }
 

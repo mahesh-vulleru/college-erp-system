@@ -121,7 +121,7 @@ export const FacultyDashboard = () => {
           api.getSubjects().catch(() => ({ data: [] })),
           api.getTimetable().catch(() => ({ data: [] })),
           api.getStudents({ limit: 100 }).catch(() => ({ data: [] })),
-          api.getExaminationsReport().catch(() => ({ data: [] })),
+          api.getExams().catch(() => ({ data: [] })),
           api.getAttendance().catch(() => ({ data: [] }))
         ]);
 
@@ -828,6 +828,13 @@ export const FacultyDashboard = () => {
           <Card
             title="Institutional Examinations & Assessment Information"
             subtitle="Scheduled mid-term and semester evaluation cycles"
+            action={
+              <Link to="/results">
+                <Button variant="teal" size="xs">
+                  Enter / Record Marks &rarr;
+                </Button>
+              </Link>
+            }
           >
             {exams.length === 0 ? (
               <p className="text-xs text-navy-400 py-6 text-center">No examination cycles currently scheduled.</p>

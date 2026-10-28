@@ -1,6 +1,9 @@
 const Timetable = require('./timetable.model');
+const Student = require('../students/student.model');
+const Faculty = require('../faculty/faculty.model');
+const Department = require('../departments/department.model');
 const { sendSuccess, sendError } = require('../../utils/response');
-const { HTTP_STATUS } = require('@college-erp/shared');
+const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 
 async function getTimetable(req, res, next) {
   try {
@@ -11,6 +14,29 @@ async function getTimetable(req, res, next) {
     if (req.query.section) query.section = req.query.section.toUpperCase();
     if (req.query.dayOfWeek) query.dayOfWeek = req.query.dayOfWeek;
     if (req.query.faculty) query.faculty = req.query.faculty;
+
+    // Contextual role-based scoping when parameters are omitted
+    if (req.user && req.user.role === ROLES.STUDENT) {
+      const studentProfile = await Student.findOne({ user: req.user._id });
+      if (studentProfile) {
+        if (!req.query.department && studentProfile.department) {
+          query.department = studentProfile.department;
+        }
+        if (!req.query.semester && studentProfile.currentSemester) {
+          query.semester = studentProfile.currentSemester;
+        }
+      }
+    } else if (req.user && req.user.role === ROLES.FACULTY && !req.query.faculty && !req.query.department) {
+      const facultyProfile = await Faculty.findOne({ user: req.user._id });
+      if (facultyProfile) {
+        query.faculty = facultyProfile._id;
+      }
+    } else if (req.user && req.user.role === ROLES.HOD && !req.query.department) {
+      const dept = await Department.findOne({ hod: req.user._id }) || (req.user.department ? await Department.findOne({ name: req.user.department }) : null);
+      if (dept) {
+        query.department = dept._id;
+      }
+    }
 
     const slots = await Timetable.find(query)
       .populate('subject', 'name code credits isLab')
