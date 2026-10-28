@@ -1,12 +1,17 @@
 import React from 'react';
-import { ShieldAlert, ArrowLeft, Home } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, Home, Key } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/common/Button';
 import { useAuth } from '../context/AuthContext';
 
 export const UnauthorizedPage = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const handleSwitchToAdmin = () => {
+    logout();
+    navigate('/login?role=super_admin');
+  };
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4">
@@ -15,19 +20,27 @@ export const UnauthorizedPage = () => {
       </div>
       <h2 className="text-2xl font-extrabold text-navy-950 tracking-tight">403 — Access Forbidden</h2>
       <p className="mt-2 text-sm text-navy-600 max-w-md font-light leading-relaxed">
-        Your institutional role (<strong>{user?.role?.replace(/_/g, ' ') || 'Guest'}</strong>) does not have authorization to view this protected resource.
+        Your current session role (<strong>{user?.role?.replace(/_/g, ' ') || 'Guest'}</strong>) does not have authorization to view this protected resource (Admin Dashboard).
       </p>
-      <div className="mt-6 flex items-center space-x-3">
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         <Button variant="secondary" size="sm" onClick={() => navigate(-1)} icon={ArrowLeft}>
           Go Back
         </Button>
         <Button
-          variant="primary"
+          variant="secondary"
           size="sm"
           onClick={() => navigate(isAuthenticated ? '/dashboard' : '/login')}
           icon={Home}
         >
           {isAuthenticated ? 'My Dashboard' : 'Institutional Login'}
+        </Button>
+        <Button
+          variant="teal"
+          size="sm"
+          onClick={handleSwitchToAdmin}
+          icon={Key}
+        >
+          Switch to Admin Account
         </Button>
       </div>
     </div>

@@ -274,6 +274,14 @@ class ApiClient {
     return this.post('/v1/subjects', data);
   }
 
+  updateSubject(id, data) {
+    return this.put(`/v1/subjects/${id}`, data);
+  }
+
+  deleteSubject(id) {
+    return this.delete(`/v1/subjects/${id}`);
+  }
+
   // Faculty
   getFaculty(params = {}) {
     const searchParams = new URLSearchParams();
@@ -596,6 +604,8 @@ class ApiClient {
     const searchParams = new URLSearchParams();
     if (params.student) searchParams.append('student', params.student);
     if (params.subject) searchParams.append('subject', params.subject);
+    if (params.department) searchParams.append('department', params.department);
+    if (params.departmentId) searchParams.append('departmentId', params.departmentId);
     const qs = searchParams.toString();
     return this.get(`/v1/attendance/summary${qs ? `?${qs}` : ''}`);
   }

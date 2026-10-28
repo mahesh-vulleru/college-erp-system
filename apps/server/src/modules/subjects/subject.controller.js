@@ -1,6 +1,7 @@
 const Subject = require('./subject.model');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS } = require('@college-erp/shared');
+const { recordAuditLog } = require('../../utils/auditLogger');
 
 async function listSubjects(req, res, next) {
   try {
@@ -23,7 +24,7 @@ async function listSubjects(req, res, next) {
 async function createSubject(req, res, next) {
   try {
     const { name, code, course, department, semester, credits, isLab, syllabusUrl } = req.body;
-    const existing = await Subject.findOne({ code });
+    const existing = await Subject.findOne({ code: code?.toUpperCase()?.trim() });
     if (existing) {
       return sendError(res, {
         statusCode: HTTP_STATUS.CONFLICT,
@@ -33,14 +34,22 @@ async function createSubject(req, res, next) {
     }
 
     const subject = await Subject.create({
-      name,
-      code,
+      name: name?.trim(),
+      code: code?.toUpperCase()?.trim(),
       course,
       department,
       semester,
       credits,
       isLab,
       syllabusUrl
+    });
+
+    await recordAuditLog({
+      req,
+      action: 'SUBJECT_CREATED',
+      entityType: 'Subject',
+      entityId: subject._id,
+      details: { code: subject.code, name: subject.name }
     });
 
     return sendSuccess(res, {
@@ -53,8 +62,98 @@ async function createSubject(req, res, next) {
   }
 }
 
+async function updateSubject(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { name, code, course, department, semester, credits, isLab, syllabusUrl } = req.body;
+
+    const subject = await Subject.findById(id);
+    if (!subject) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        message: 'Subject not found',
+        code: 'NOT_FOUND'
+      });
+    }
+
+    if (code) {
+      const formattedCode = code.toUpperCase().trim();
+      if (formattedCode !== subject.code) {
+        const existing = await Subject.findOne({ code: formattedCode, _id: { $ne: id } });
+        if (existing) {
+          return sendError(res, {
+            statusCode: HTTP_STATUS.CONFLICT,
+            message: `Subject with code '${formattedCode}' already exists`,
+            code: 'DUPLICATE_RESOURCE'
+          });
+        }
+        subject.code = formattedCode;
+      }
+    }
+
+    if (name) subject.name = name.trim();
+    if (course) subject.course = course;
+    if (department !== undefined) subject.department = department || undefined;
+    if (semester !== undefined) subject.semester = Number(semester);
+    if (credits !== undefined) subject.credits = Number(credits);
+    if (isLab !== undefined) subject.isLab = Boolean(isLab);
+    if (syllabusUrl !== undefined) subject.syllabusUrl = syllabusUrl;
+
+    await subject.save();
+    await subject.populate('course', 'name code');
+    if (subject.department) {
+      await subject.populate('department', 'name code');
+    }
+
+    await recordAuditLog({
+      req,
+      action: 'SUBJECT_UPDATED',
+      entityType: 'Subject',
+      entityId: subject._id,
+      details: { code: subject.code, name: subject.name }
+    });
+
+    return sendSuccess(res, {
+      message: 'Subject updated successfully',
+      data: subject
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function deleteSubject(req, res, next) {
+  try {
+    const { id } = req.params;
+    const subject = await Subject.findByIdAndDelete(id);
+    if (!subject) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        message: 'Subject not found',
+        code: 'NOT_FOUND'
+      });
+    }
+
+    await recordAuditLog({
+      req,
+      action: 'SUBJECT_DELETED',
+      entityType: 'Subject',
+      entityId: id,
+      details: { code: subject.code, name: subject.name }
+    });
+
+    return sendSuccess(res, {
+      message: 'Subject deleted successfully',
+      data: { id }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   listSubjects,
-  createSubject
+  createSubject,
+  updateSubject,
+  deleteSubject
 };
-

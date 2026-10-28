@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/routing/ProtectedRoute';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 // Public Pages
 import LandingPage from './pages/LandingPage';
@@ -56,6 +57,7 @@ const DashboardRedirect = () => {
     case 'super_admin':
     case 'superadmin':
     case 'super_administrator':
+    case 'admin':
       return <Navigate to="/admin" replace />;
     case 'principal':
       return <Navigate to="/principal" replace />;
@@ -79,7 +81,8 @@ export const App = () => {
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <ToastProvider>
-          <Routes>
+          <ErrorBoundary>
+            <Routes>
             {/* 1. Public Landing Page */}
             <Route path="/" element={<LandingPage />} />
 
@@ -93,13 +96,17 @@ export const App = () => {
             {/* Dynamic Dashboard Route - redirects to authenticated user's role portal */}
             <Route path="/dashboard" element={<DashboardRedirect />} />
 
+            {/* Admin Dashboard URL Aliases */}
+            <Route path="/admin-dashboard" element={<Navigate to="/admin" replace />} />
+            <Route path="/admindashboard" element={<Navigate to="/admin" replace />} />
+
             {/* 3. Protected Institutional Portals & Subsystems inside AppLayout */}
             <Route element={<AppLayout />}>
               {/* Optional System Diagnostics & Team Allocation Hub */}
               <Route
                 path="overview"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL]}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, 'admin']}>
                     <DashboardPage />
                   </ProtectedRoute>
                 }
@@ -109,15 +116,18 @@ export const App = () => {
               <Route
                 path="admin"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, 'admin', 'superadmin', 'super_administrator']}>
                     <AdminDashboard />
                   </ProtectedRoute>
                 }
               />
+              <Route path="admin/dashboard" element={<Navigate to="/admin" replace />} />
+              <Route path="dashboard/admin" element={<Navigate to="/admin" replace />} />
+
               <Route
                 path="principal"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL]}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, 'admin']}>
                     <PrincipalDashboard />
                   </ProtectedRoute>
                 }
@@ -125,7 +135,7 @@ export const App = () => {
               <Route
                 path="hod"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD]}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, 'admin']}>
                     <HodDashboard />
                   </ProtectedRoute>
                 }
@@ -133,7 +143,7 @@ export const App = () => {
               <Route
                 path="faculty"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.FACULTY]}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.FACULTY, 'admin']}>
                     <FacultyDashboard />
                   </ProtectedRoute>
                 }
@@ -141,7 +151,7 @@ export const App = () => {
               <Route
                 path="student"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.STUDENT]}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.STUDENT, 'admin']}>
                     <StudentDashboard />
                   </ProtectedRoute>
                 }
@@ -149,7 +159,7 @@ export const App = () => {
               <Route
                 path="accounts"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS]}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, 'admin']}>
                     <AccountsDashboard />
                   </ProtectedRoute>
                 }
@@ -217,7 +227,7 @@ export const App = () => {
               <Route
                 path="fees"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT]}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT, 'admin']}>
                     <FeeManagementPage />
                   </ProtectedRoute>
                 }
@@ -225,7 +235,7 @@ export const App = () => {
               <Route
                 path="payments"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT]}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT, 'admin']}>
                     <FeeManagementPage />
                   </ProtectedRoute>
                 }
@@ -241,7 +251,7 @@ export const App = () => {
               <Route
                 path="reports"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS]}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS, 'admin']}>
                     <ExecutiveReportsPage />
                   </ProtectedRoute>
                 }
@@ -249,7 +259,7 @@ export const App = () => {
               <Route
                 path="audit-logs"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL]}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, 'admin']}>
                     <AuditLogsPage />
                   </ProtectedRoute>
                 }
@@ -259,6 +269,7 @@ export const App = () => {
               <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>
+        </ErrorBoundary>
         </ToastProvider>
       </AuthProvider>
     </BrowserRouter>

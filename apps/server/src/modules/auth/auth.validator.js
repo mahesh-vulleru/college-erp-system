@@ -14,7 +14,8 @@ function validateLoginInput(data = {}) {
     errors.push('Password must be at least 6 characters');
   }
 
-  if (role && !ALL_ROLES.includes(role)) {
+  const allowedLoginRoles = [...ALL_ROLES, 'admin', 'superadmin', 'super_administrator'];
+  if (role && !allowedLoginRoles.includes(String(role).toLowerCase().trim().replace(/[\s-]+/g, '_'))) {
     errors.push(`Role must be one of: ${ALL_ROLES.join(', ')}`);
   }
 
@@ -35,7 +36,8 @@ function validateRegisterInput(data = {}) {
   const loginCheck = validateLoginInput({ email, password });
   errors.push(...loginCheck.errors);
 
-  if (role && !ALL_ROLES.includes(role)) {
+  const allowedLoginRoles = [...ALL_ROLES, 'admin', 'superadmin', 'super_administrator'];
+  if (role && !allowedLoginRoles.includes(String(role).toLowerCase().trim().replace(/[\s-]+/g, '_'))) {
     errors.push(`Role must be one of: ${ALL_ROLES.join(', ')}`);
   }
 

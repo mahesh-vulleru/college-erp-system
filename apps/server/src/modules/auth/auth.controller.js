@@ -62,7 +62,12 @@ async function login(req, res, next) {
     }
 
     // Role mismatch check: verify that the user's registered role matches the selected role
-    if (role && user.role !== role) {
+    const normalizeAuthRole = (r) => {
+      const s = String(r || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
+      if (s === 'admin' || s === 'superadmin' || s === 'super_administrator') return ROLES.SUPER_ADMIN;
+      return s;
+    };
+    if (role && normalizeAuthRole(user.role) !== normalizeAuthRole(role)) {
       logger.warn(`[AUTH_FAILURE] Category: AUTH_ROLE_MISMATCH | Email: ${normalizedEmail} | StoredRole: ${user.role} | SelectedRole: ${role}`);
       await recordAuditLog({
         req,

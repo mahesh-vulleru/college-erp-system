@@ -47,6 +47,10 @@ export const LandingPage = () => {
   };
 
   const getRoleDashboard = (role) => {
+    const normalized = (role || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
+    if (normalized === 'admin' || normalized === 'super_admin' || normalized === 'superadmin' || normalized === 'super_administrator') {
+      return '/admin';
+    }
     switch (role) {
       case 'super_admin': return '/admin';
       case 'principal': return '/principal';
@@ -177,15 +181,25 @@ export const LandingPage = () => {
                 Go to Portal ({user?.role?.replace(/_/g, ' ')})
               </Button>
             ) : (
-              <Button
-                variant="primary"
-                size="md"
-                onClick={() => navigate('/login')}
-                icon={ShieldCheck}
-                className="shadow-subtle"
-              >
-                Institutional Portal Login
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => navigate('/login?role=super_admin')}
+                  icon={ShieldCheck}
+                >
+                  Admin Portal
+                </Button>
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={() => navigate('/login')}
+                  icon={ArrowRight}
+                  className="shadow-subtle"
+                >
+                  Portal Login
+                </Button>
+              </div>
             )}
           </div>
         </div>

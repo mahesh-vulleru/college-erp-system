@@ -18,7 +18,12 @@ app.use(helmet({
 
 // 2. CORS setup for Client Origin
 app.use(cors({
-  origin: env.CLIENT_URL,
+  origin: (origin, callback) => {
+    if (!origin || origin === env.CLIENT_URL || origin === 'http://localhost:5173' || origin === 'http://127.0.0.1:5173' || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Blocked by CORS policy'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

@@ -80,7 +80,8 @@ async function markAttendanceBatch(req, res, next) {
 
 async function getAttendanceSummary(req, res, next) {
   try {
-    let studentId = req.query.studentId;
+    let studentId = req.query.studentId || req.query.student;
+    const departmentId = req.query.departmentId || req.query.department;
 
     if (req.user.role === ROLES.STUDENT) {
       const profile = await Student.findOne({ user: req.user._id });
@@ -94,18 +95,38 @@ async function getAttendanceSummary(req, res, next) {
       studentId = profile._id;
     }
 
-    const records = await Attendance.find(studentId ? { student: studentId } : {});
+    let query = {};
+    let totalDepartmentStudents = 0;
+
+    if (departmentId) {
+      const deptStudents = await Student.find({ department: departmentId }).select('_id');
+      totalDepartmentStudents = deptStudents.length;
+      const studentIds = deptStudents.map((s) => s._id);
+      query.student = { $in: studentIds };
+    } else if (studentId) {
+      query.student = studentId;
+    }
+
+    if (req.query.subject) {
+      query.subject = req.query.subject;
+    }
+
+    const records = await Attendance.find(query);
     const totalClasses = records.length;
     const presentClasses = records.filter((r) => r.status === 'present').length;
-    const percentage = totalClasses > 0 ? ((presentClasses / totalClasses) * 100).toFixed(1) : 0;
+    const absentClasses = records.filter((r) => r.status === 'absent').length;
+    const percentage = totalClasses > 0 ? Number(((presentClasses / totalClasses) * 100).toFixed(1)) : 0;
 
     return sendSuccess(res, {
       message: 'Attendance summary calculated',
       data: {
         totalClasses,
         presentClasses,
-        percentage: Number(percentage),
-        statusAlert: percentage < 75 ? 'Low Attendance (<75%)' : 'Good Standing'
+        absentClasses,
+        percentage,
+        totalDepartmentStudents,
+        hasRecords: totalClasses > 0,
+        statusAlert: totalClasses === 0 ? 'No attendance records yet' : percentage < 75 ? 'Low Attendance (<75%)' : 'Good Standing (≥75%)'
       }
     });
   } catch (error) {

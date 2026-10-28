@@ -9,7 +9,8 @@ import {
   RefreshCw,
   Layers,
   CheckCircle,
-  FileText
+  FileText,
+  Trash2
 } from 'lucide-react';
 import api from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
@@ -53,6 +54,10 @@ export const CoursesPage = () => {
 
   // Subject Modals
   const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false);
+  const [isEditingSubject, setIsEditingSubject] = useState(false);
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [isDeleteSubjectModalOpen, setIsDeleteSubjectModalOpen] = useState(false);
+  const [subjectToDelete, setSubjectToDelete] = useState(null);
   const [subjectFormData, setSubjectFormData] = useState({
     name: '',
     code: '',
@@ -143,6 +148,8 @@ export const CoursesPage = () => {
   };
 
   const handleOpenCreateSubject = () => {
+    setIsEditingSubject(false);
+    setSelectedSubject(null);
     setSubjectFormData({
       name: '',
       code: '',
@@ -155,6 +162,42 @@ export const CoursesPage = () => {
     setIsSubjectModalOpen(true);
   };
 
+  const handleOpenEditSubject = (sub) => {
+    setIsEditingSubject(true);
+    setSelectedSubject(sub);
+    setSubjectFormData({
+      name: sub.name || '',
+      code: sub.code || '',
+      course: sub.course?._id || sub.course || courses[0]?._id || '',
+      semester: sub.semester || 1,
+      credits: sub.credits || 3,
+      isLab: !!sub.isLab
+    });
+    setModalError('');
+    setIsSubjectModalOpen(true);
+  };
+
+  const handleConfirmDeleteSubject = (sub) => {
+    setSubjectToDelete(sub);
+    setIsDeleteSubjectModalOpen(true);
+  };
+
+  const handleDeleteSubject = async () => {
+    if (!subjectToDelete) return;
+    setSubmitting(true);
+    try {
+      await api.deleteSubject(subjectToDelete._id);
+      addToast('Subject deleted successfully', 'success');
+      setIsDeleteSubjectModalOpen(false);
+      setSubjectToDelete(null);
+      fetchData();
+    } catch (err) {
+      addToast(err.message || 'Failed to delete subject', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleSubjectSubmit = async (e) => {
     e.preventDefault();
     if (!subjectFormData.name || !subjectFormData.code || !subjectFormData.course) {
@@ -164,16 +207,22 @@ export const CoursesPage = () => {
     setSubmitting(true);
     setModalError('');
     try {
-      await api.createSubject({
+      const payload = {
         ...subjectFormData,
         semester: Number(subjectFormData.semester),
         credits: Number(subjectFormData.credits)
-      });
-      addToast('Subject added to curriculum successfully', 'success');
+      };
+      if (isEditingSubject && selectedSubject) {
+        await api.updateSubject(selectedSubject._id, payload);
+        addToast('Subject updated successfully', 'success');
+      } else {
+        await api.createSubject(payload);
+        addToast('Subject added to curriculum successfully', 'success');
+      }
       setIsSubjectModalOpen(false);
       fetchData();
     } catch (err) {
-      setModalError(err.message || 'Failed to create subject');
+      setModalError(err.message || 'Failed to save subject');
     } finally {
       setSubmitting(false);
     }
@@ -383,12 +432,13 @@ export const CoursesPage = () => {
                   <th className="py-3 px-4">Semester</th>
                   <th className="py-3 px-4">Credits</th>
                   <th className="py-3 px-4">Type</th>
+                  {isPrivileged && <th className="py-3 px-4 text-right">Actions</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-navy-100">
                 {filteredSubjects.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="py-8 text-center text-navy-500 text-xs">
+                    <td colSpan={isPrivileged ? "7" : "6"} className="py-8 text-center text-navy-500 text-xs">
                       No curriculum subjects found. Add subjects using the button above.
                     </td>
                   </tr>
@@ -405,6 +455,28 @@ export const CoursesPage = () => {
                           {sub.isLab ? 'Lab Practical' : 'Theory'}
                         </Badge>
                       </td>
+                      {isPrivileged && (
+                        <td className="py-3 px-4 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => handleOpenEditSubject(sub)}
+                              className="px-2.5 py-1 text-xs font-medium text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 rounded-md transition-colors inline-flex items-center"
+                              title="Edit Subject"
+                            >
+                              <Edit2 className="w-3.5 h-3.5 mr-1" />
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleConfirmDeleteSubject(sub)}
+                              className="px-2.5 py-1 text-xs font-medium text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 rounded-md transition-colors inline-flex items-center"
+                              title="Delete Subject"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 mr-1" />
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}
@@ -502,11 +574,11 @@ export const CoursesPage = () => {
         </form>
       </Modal>
 
-      {/* Add Subject Modal */}
+      {/* Add / Edit Subject Modal */}
       <Modal
         isOpen={isSubjectModalOpen}
         onClose={() => setIsSubjectModalOpen(false)}
-        title="Add Curriculum Subject"
+        title={isEditingSubject ? 'Edit Curriculum Subject' : 'Add Curriculum Subject'}
       >
         <form onSubmit={handleSubjectSubmit} className="space-y-4">
           {modalError && <Notification type="error" message={modalError} onClose={() => setModalError('')} />}
@@ -586,10 +658,50 @@ export const CoursesPage = () => {
               Cancel
             </Button>
             <Button variant="primary" type="submit" disabled={submitting} className="bg-teal-600">
-              {submitting ? 'Adding...' : 'Add to Curriculum'}
+              {submitting ? 'Saving...' : isEditingSubject ? 'Update Subject' : 'Add to Curriculum'}
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete Subject Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteSubjectModalOpen}
+        onClose={() => {
+          setIsDeleteSubjectModalOpen(false);
+          setSubjectToDelete(null);
+        }}
+        title="Delete Subject Confirmation"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-navy-700">
+            Are you sure you want to permanently delete curriculum subject{' '}
+            <strong className="text-navy-950 font-bold">
+              {subjectToDelete?.code} - {subjectToDelete?.name}
+            </strong>
+            ? This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-2 pt-3 border-t">
+            <Button
+              variant="ghost"
+              type="button"
+              onClick={() => {
+                setIsDeleteSubjectModalOpen(false);
+                setSubjectToDelete(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleDeleteSubject}
+              disabled={submitting}
+              className="bg-rose-600 hover:bg-rose-700 text-white"
+            >
+              {submitting ? 'Deleting...' : 'Delete Subject'}
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

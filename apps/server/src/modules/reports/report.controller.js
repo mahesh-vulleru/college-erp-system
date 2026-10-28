@@ -159,8 +159,8 @@ async function getAdminOverview(req, res, next) {
           departments: totalDepartments,
           courses: totalCourses,
           subjects: totalSubjects,
-          facultyProfiles: totalFacultyProfiles,
-          studentProfiles: totalStudentProfiles,
+          facultyProfiles: Math.max(totalFacultyProfiles, facultyCount),
+          studentProfiles: Math.max(totalStudentProfiles, studentCount),
           targetCapacity: 1000
         },
         finance: {
