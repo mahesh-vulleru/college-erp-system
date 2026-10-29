@@ -12,37 +12,43 @@ const env = require('./env');
 
 let isConnected = false;
 
-async function connectDB() {
+async function connectDB(retries = 3, delayMs = 2000) {
   if (isConnected) {
     return mongoose.connection;
   }
 
-  try {
-    const conn = await mongoose.connect(env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000,
-      autoIndex: env.NODE_ENV !== 'production'
-    });
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const conn = await mongoose.connect(env.MONGODB_URI, {
+        serverSelectionTimeoutMS: 20000,
+        autoIndex: env.NODE_ENV !== 'production'
+      });
 
-    isConnected = true;
-    console.log(`[MongoDB] Connected to database: ${conn.connection.name} (${conn.connection.host})`);
+      isConnected = true;
+      console.log(`[MongoDB] Connected to database: ${conn.connection.name} (${conn.connection.host})`);
 
-    mongoose.connection.on('error', (err) => {
-      console.error('[MongoDB] Runtime error:', err.message);
-    });
+      mongoose.connection.on('error', (err) => {
+        console.error('[MongoDB] Runtime error:', err.message);
+      });
 
-    mongoose.connection.on('disconnected', () => {
-      console.warn('[MongoDB] Disconnected. Reconnect may be attempted...');
-      isConnected = false;
-    });
+      mongoose.connection.on('disconnected', () => {
+        console.warn('[MongoDB] Disconnected. Reconnect may be attempted...');
+        isConnected = false;
+      });
 
-    return conn;
-  } catch (error) {
-    console.error(`[MongoDB] Initial connection error: ${error.message}`);
-    // Do not crash test suites when testing without a live DB
-    if (env.NODE_ENV !== 'test') {
-      console.error('[MongoDB] Check that your MongoDB server is running and MONGODB_URI is valid.');
+      return conn;
+    } catch (error) {
+      console.error(`[MongoDB] Connection attempt ${attempt}/${retries} failed: ${error.message}`);
+      if (attempt < retries) {
+        console.log(`[MongoDB] Retrying connection in ${delayMs}ms...`);
+        await new Promise((res) => setTimeout(res, delayMs));
+      } else {
+        if (env.NODE_ENV !== 'test') {
+          console.error('[MongoDB] Check that your MongoDB server is running and MONGODB_URI is valid.');
+        }
+        throw error;
+      }
     }
-    throw error;
   }
 }
 

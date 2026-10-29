@@ -2,6 +2,10 @@ const Result = require('./result.model');
 const Examination = require('../examinations/exam.model');
 const Student = require('../students/student.model');
 const Department = require('../departments/department.model');
+<<<<<<< HEAD
+=======
+const mongoose = require('mongoose');
+>>>>>>> origin/main
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 

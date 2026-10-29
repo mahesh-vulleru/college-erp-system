@@ -134,7 +134,7 @@ export const FacultyDashboard = () => {
             setAttendanceForm((prev) => ({ ...prev, studentId: studRes.data[0]._id || studRes.data[0].id }));
           }
         }
-        if (examRes?.data) setExams(Array.isArray(examRes.data) ? examRes.data : []);
+        if (examRes?.data) setExams(Array.isArray(examRes.data) ? examRes.data : (examRes.data?.exams || []));
         if (attRes?.data) setAttendanceRecords(attRes.data);
         if (subjRes?.data?.length > 0) {
           setAttendanceForm((prev) => ({ ...prev, subject: subjRes.data[0]._id || subjRes.data[0].id }));

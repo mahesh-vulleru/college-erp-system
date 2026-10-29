@@ -1,7 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../api/apiClient';
 
-const AuthContext = createContext(null);
+const defaultAuthContext = {
+  user: null,
+  token: null,
+  isAuthenticated: false,
+  isLoading: false,
+  login: async () => {},
+  logout: () => {}
+};
+
+const AuthContext = createContext(defaultAuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
@@ -32,7 +41,7 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('college_erp_user', JSON.stringify(response.user));
         }
       } catch (err) {
-        if (isMounted) {
+        if (isMounted && (err.status === 401 || err.code === 'TOKEN_EXPIRED')) {
           setUser(null);
           setToken(null);
           localStorage.removeItem('college_erp_token');
@@ -94,8 +103,5 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  return context || defaultAuthContext;
 };

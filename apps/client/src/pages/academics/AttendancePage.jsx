@@ -102,7 +102,9 @@ export const AttendancePage = () => {
       const targetSub = subjects.find((s) => s._id === selectedSubject);
       const studentQuery = {};
       if (targetSub?.semester) studentQuery.semester = targetSub.semester;
-      if (targetSub?.department) studentQuery.department = targetSub.department;
+      if (targetSub?.department) {
+        studentQuery.department = targetSub.department?._id || targetSub.department?.id || (typeof targetSub.department === 'string' ? targetSub.department : null);
+      }
 
       // 2. Fetch enrolled students
       const studentsRes = await api.getStudents(studentQuery);

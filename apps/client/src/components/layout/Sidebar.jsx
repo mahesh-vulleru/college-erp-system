@@ -31,7 +31,7 @@ const ROLE_NAV_CONFIGS = {
     {
       title: 'Overview',
       items: [
-        { path: '/admin', label: 'Control Center', icon: LayoutDashboard },
+        { path: '/admin', label: 'Admin Dashboard', icon: LayoutDashboard },
         { path: '/overview', label: 'System Overview Hub', icon: Compass }
       ]
     },
@@ -317,7 +317,11 @@ const ROLE_NAV_CONFIGS = {
 
 export const Sidebar = ({ isOpen, onClose }) => {
   const { user } = useAuth();
-  const role = user?.role;
+  const rawRole = user?.role;
+  const normalizedRole = (rawRole || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
+  const role = (normalizedRole === 'admin' || normalizedRole === 'superadmin' || normalizedRole === 'super_administrator')
+    ? ROLES.SUPER_ADMIN
+    : rawRole;
   const location = useLocation();
 
   const theme = getRoleTheme(role, location.pathname);

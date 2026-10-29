@@ -34,7 +34,6 @@ async function startServer() {
 
     process.on("unhandledRejection", (reason) => {
       logger.error("Unhandled Promise Rejection:", reason);
-      shutdown("unhandledRejection", 1);
     });
 
     process.on("uncaughtException", (error) => {

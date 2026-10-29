@@ -40,7 +40,10 @@ async function login(req, res, next) {
       });
     }
 
-    const isMatch = await user.comparePassword(password);
+    let isMatch = await user.comparePassword(password);
+    if (!isMatch && typeof password === 'string' && password.trim() !== password) {
+      isMatch = await user.comparePassword(password.trim());
+    }
     if (!isMatch) {
       logger.warn(`[AUTH_FAILURE] Category: AUTH_PASSWORD_MISMATCH | Email: ${normalizedEmail}`);
       await recordAuditLog({
@@ -59,7 +62,12 @@ async function login(req, res, next) {
     }
 
     // Role mismatch check: verify that the user's registered role matches the selected role
-    if (role && user.role !== role) {
+    const normalizeAuthRole = (r) => {
+      const s = String(r || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
+      if (s === 'admin' || s === 'superadmin' || s === 'super_administrator') return ROLES.SUPER_ADMIN;
+      return s;
+    };
+    if (role && normalizeAuthRole(user.role) !== normalizeAuthRole(role)) {
       logger.warn(`[AUTH_FAILURE] Category: AUTH_ROLE_MISMATCH | Email: ${normalizedEmail} | StoredRole: ${user.role} | SelectedRole: ${role}`);
       await recordAuditLog({
         req,
@@ -72,7 +80,8 @@ async function login(req, res, next) {
       });
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({
         success: false,
-        message: `Role mismatch: This account is registered as '${user.role.replace(/_/g, ' ')}', not '${role.replace(/_/g, ' ')}'. Please choose the correct role.`
+        message: `Role mismatch: This account is registered as '${user.role.replace(/_/g, ' ')}', not '${role.replace(/_/g, ' ')}'. Please choose the correct role.`,
+        registeredRole: user.role
       });
     }
 

@@ -16,6 +16,10 @@ const paymentRoutes = require('../modules/payments/payment.routes');
 const noticeRoutes = require('../modules/notices/notice.routes');
 const reportRoutes = require('../modules/reports/report.routes');
 const auditRoutes = require('../modules/audit-logs/audit.routes');
+const { getAttendanceOverview, getDepartmentSummaries, getExaminationsReport } = require('../modules/reports/report.controller');
+const authenticate = require('../middleware/auth');
+const { authorizeRoles } = require('../middleware/rbac');
+const { ROLES } = require('@college-erp/shared');
 
 const router = express.Router();
 
@@ -28,12 +32,25 @@ const v1Router = express.Router();
 v1Router.use('/auth', authRoutes);
 v1Router.use('/users', usersRoutes);
 v1Router.use('/departments', departmentRoutes);
+v1Router.get('/department-summaries', authenticate, getDepartmentSummaries);
 v1Router.use('/courses', courseRoutes);
 v1Router.use('/subjects', subjectRoutes);
 v1Router.use('/students', studentRoutes);
 v1Router.use('/faculty', facultyRoutes);
 v1Router.use('/timetable', timetableRoutes);
 v1Router.use('/attendance', attendanceRoutes);
+v1Router.get(
+  '/attendance-overview',
+  authenticate,
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getAttendanceOverview
+);
+v1Router.get(
+  ['/examination-reports', '/examinations-report'],
+  authenticate,
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getExaminationsReport
+);
 v1Router.use('/examinations', examRoutes);
 v1Router.use('/results', resultRoutes);
 v1Router.use('/fees', feeRoutes);

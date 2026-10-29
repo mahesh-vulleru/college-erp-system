@@ -1,16 +1,24 @@
 const Examination = require('./exam.model');
+<<<<<<< HEAD
 const Student = require('../students/student.model');
 const Faculty = require('../faculty/faculty.model');
 const Department = require('../departments/department.model');
+=======
+const Department = require('../departments/department.model');
+const Student = require('../students/student.model');
+const mongoose = require('mongoose');
+>>>>>>> origin/main
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 
 async function listExams(req, res, next) {
   try {
     const query = {};
-    if (req.query.semester) query.semester = parseInt(req.query.semester, 10);
+    if (req.query.semester) {
+      const sem = parseInt(req.query.semester, 10);
+      if (!isNaN(sem)) query.semester = sem;
+    }
     if (req.query.academicYear) query.academicYear = req.query.academicYear;
-    if (req.query.department) query.department = req.query.department;
     if (req.query.examType) query.examType = req.query.examType;
     if (req.query.status) query.status = req.query.status;
     if (req.query.isPublished !== undefined) query.isPublished = req.query.isPublished === 'true';
@@ -38,6 +46,41 @@ async function listExams(req, res, next) {
       if (facultyProfile && facultyProfile.department) {
         query.$or = [{ department: facultyProfile.department }, { department: null }];
       }
+    }
+
+    if (req.query.department) {
+      const deptVal = String(req.query.department).trim();
+      if (deptVal && deptVal !== '[object Object]') {
+        if (mongoose.Types.ObjectId.isValid(deptVal)) {
+          query.department = deptVal;
+        } else {
+          const foundDept = await Department.findOne({
+            $or: [{ code: deptVal.toUpperCase() }, { name: deptVal }]
+          });
+          if (foundDept) {
+            query.department = foundDept._id;
+          } else {
+            return sendError(res, {
+              statusCode: HTTP_STATUS.BAD_REQUEST,
+              message: `Department '${deptVal}' not found`,
+              code: 'INVALID_DEPARTMENT'
+            });
+          }
+        }
+      }
+    }
+
+    if (req.user && req.user.role === ROLES.STUDENT) {
+      query.isPublished = true;
+      query.status = { $ne: 'cancelled' };
+      const studentProfile = await Student.findOne({ user: req.user._id });
+      if (studentProfile) {
+        if (studentProfile.department) query.department = studentProfile.department;
+        if (studentProfile.currentSemester) query.semester = studentProfile.currentSemester;
+      }
+    } else if (req.user && req.user.role === ROLES.HOD && !query.department) {
+      const dept = await Department.findOne({ hod: req.user._id });
+      if (dept) query.department = dept._id;
     }
 
     const exams = await Examination.find(query)

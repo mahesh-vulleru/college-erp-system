@@ -1,4 +1,6 @@
 const Student = require('./student.model');
+const Department = require('../departments/department.model');
+const mongoose = require('mongoose');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 const { recordAuditLog } = require('../../utils/auditLogger');
@@ -10,7 +12,32 @@ async function listStudents(req, res, next) {
     const skip = (page - 1) * limit;
 
     const query = {};
-    if (req.query.department) query.department = req.query.department;
+    if (req.query.department) {
+      const deptVal = String(req.query.department).trim();
+      if (deptVal === '[object Object]' || deptVal === 'undefined' || deptVal === 'null') {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.BAD_REQUEST,
+          message: 'Invalid department identifier supplied',
+          code: 'INVALID_DEPARTMENT'
+        });
+      }
+      if (mongoose.Types.ObjectId.isValid(deptVal)) {
+        query.department = deptVal;
+      } else {
+        const foundDept = await Department.findOne({
+          $or: [{ code: deptVal.toUpperCase() }, { name: deptVal }]
+        });
+        if (foundDept) {
+          query.department = foundDept._id;
+        } else {
+          return sendError(res, {
+            statusCode: HTTP_STATUS.BAD_REQUEST,
+            message: `Department '${deptVal}' not found or invalid format`,
+            code: 'INVALID_DEPARTMENT'
+          });
+        }
+      }
+    }
     if (req.query.semester) query.currentSemester = parseInt(req.query.semester, 10);
     if (req.query.batch) query.batchYear = req.query.batch;
     if (req.query.status) query.admissionStatus = req.query.status;

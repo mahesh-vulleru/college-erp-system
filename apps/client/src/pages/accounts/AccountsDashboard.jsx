@@ -18,7 +18,8 @@ import {
   FileText,
   ArrowRight,
   ExternalLink,
-  CheckCircle2
+  CheckCircle2,
+  Award
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import CampusBuildingGraphic from '../../components/common/CampusBuildingGraphic';

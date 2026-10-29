@@ -73,7 +73,7 @@ router.get(
 );
 
 router.get(
-  '/examinations',
+  ['/examinations', '/examination', '/examination-reports'],
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
   getExaminationsReport
 );

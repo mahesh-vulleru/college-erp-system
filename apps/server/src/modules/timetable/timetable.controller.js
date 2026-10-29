@@ -1,19 +1,74 @@
 const Timetable = require('./timetable.model');
+<<<<<<< HEAD
 const Student = require('../students/student.model');
 const Faculty = require('../faculty/faculty.model');
 const Department = require('../departments/department.model');
+=======
+const Department = require('../departments/department.model');
+const Student = require('../students/student.model');
+const Faculty = require('../faculty/faculty.model');
+const mongoose = require('mongoose');
+const { ROLES } = require('@college-erp/shared');
+>>>>>>> origin/main
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 
 async function getTimetable(req, res, next) {
   try {
     const query = {};
-    if (req.query.department) query.department = req.query.department;
-    if (req.query.course) query.course = req.query.course;
-    if (req.query.semester) query.semester = parseInt(req.query.semester, 10);
-    if (req.query.section) query.section = req.query.section.toUpperCase();
-    if (req.query.dayOfWeek) query.dayOfWeek = req.query.dayOfWeek;
-    if (req.query.faculty) query.faculty = req.query.faculty;
+    if (req.query.department) {
+      const deptVal = String(req.query.department).trim();
+      if (deptVal && deptVal !== '[object Object]') {
+        if (mongoose.Types.ObjectId.isValid(deptVal)) {
+          query.department = deptVal;
+        } else {
+          const foundDept = await Department.findOne({
+            $or: [{ code: deptVal.toUpperCase() }, { name: deptVal }]
+          });
+          if (foundDept) {
+            query.department = foundDept._id;
+          } else {
+            return sendError(res, {
+              statusCode: HTTP_STATUS.BAD_REQUEST,
+              message: `Department '${deptVal}' not found`,
+              code: 'INVALID_DEPARTMENT'
+            });
+          }
+        }
+      }
+    }
+    if (req.query.course) {
+      const cVal = String(req.query.course).trim();
+      if (mongoose.Types.ObjectId.isValid(cVal)) query.course = cVal;
+    }
+    if (req.query.faculty) {
+      const fVal = String(req.query.faculty).trim();
+      if (mongoose.Types.ObjectId.isValid(fVal)) query.faculty = fVal;
+    }
+    if (req.query.semester) {
+      const sem = parseInt(req.query.semester, 10);
+      if (!isNaN(sem)) query.semester = sem;
+    }
+    if (req.query.section && typeof req.query.section === 'string') {
+      query.section = req.query.section.toUpperCase();
+    }
+    if (req.query.dayOfWeek && typeof req.query.dayOfWeek === 'string') {
+      query.dayOfWeek = req.query.dayOfWeek;
+    }
+
+    if (req.user && req.user.role === ROLES.STUDENT && !query.department) {
+      const studentProfile = await Student.findOne({ user: req.user._id });
+      if (studentProfile) {
+        if (studentProfile.department) query.department = studentProfile.department;
+        if (studentProfile.currentSemester) query.semester = studentProfile.currentSemester;
+      }
+    } else if (req.user && req.user.role === ROLES.FACULTY && !query.faculty) {
+      const facultyProfile = await Faculty.findOne({ user: req.user._id });
+      if (facultyProfile) query.faculty = facultyProfile._id;
+    } else if (req.user && req.user.role === ROLES.HOD && !query.department) {
+      const dept = await Department.findOne({ hod: req.user._id });
+      if (dept) query.department = dept._id;
+    }
 
     // Contextual role-based scoping when parameters are omitted
     if (req.user && req.user.role === ROLES.STUDENT) {
