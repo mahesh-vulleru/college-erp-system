@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   GraduationCap,
   BookOpen,
@@ -30,7 +31,18 @@ export const CoursesPage = () => {
 
   const isPrivileged = user && [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD].includes(user.role);
 
-  const [activeTab, setActiveTab] = useState('courses'); // 'courses' | 'subjects'
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(
+    location.pathname.includes('/subjects') ? 'subjects' : 'courses'
+  ); // 'courses' | 'subjects'
+
+  useEffect(() => {
+    if (location.pathname.includes('/subjects')) {
+      setActiveTab('subjects');
+    } else if (location.pathname.includes('/courses')) {
+      setActiveTab('courses');
+    }
+  }, [location.pathname]);
   const [courses, setCourses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [departments, setDepartments] = useState([]);
