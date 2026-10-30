@@ -10,7 +10,24 @@ export const ToastProvider = ({ children }) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const addToast = useCallback(({ type = 'info', title, message, duration = 4000 }) => {
+  const addToast = useCallback((options, maybeType) => {
+    let type = 'info';
+    let title = '';
+    let message = '';
+    let duration = 4000;
+
+    if (typeof options === 'string') {
+      message = options;
+      if (typeof maybeType === 'string') {
+        type = maybeType;
+      }
+    } else if (options && typeof options === 'object') {
+      type = options.type || 'info';
+      title = options.title || '';
+      message = options.message || '';
+      duration = options.duration !== undefined ? options.duration : 4000;
+    }
+
     const id = Date.now() + Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { id, type, title, message }]);
 

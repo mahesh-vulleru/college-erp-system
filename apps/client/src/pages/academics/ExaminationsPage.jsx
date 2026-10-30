@@ -109,12 +109,16 @@ export const ExaminationsPage = () => {
     setCurrentExamId(null);
     const today = new Date().toISOString().split('T')[0];
     const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const defaultDept =
+      (departments.find(
+        (d) => d.hod === user?._id || d.hod?._id === user?._id || d.name === user?.department || d.code === user?.department
+      )?._id) || departments[0]?._id || '';
     setFormData({
       name: '',
       examType: 'Semester End',
       academicYear: '2025-2026',
       semester: 3,
-      department: departments[0]?._id || '',
+      department: defaultDept,
       course: courses[0]?._id || '',
       venue: 'Main Examination Hall',
       startDate: today,

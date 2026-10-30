@@ -102,8 +102,45 @@ export const ExecutiveReportsPage = () => {
     loadReport();
   }, [loadReport]);
 
-  const handleExportCsv = (type) => {
-    window.open(`/api/v1/reports/export?type=${type}`, '_blank');
+  useEffect(() => {
+    if (user?.role === ROLES.HOD && departments.length > 0 && !selectedDept) {
+      const match = departments.find(
+        (d) => d.name === user.department || d._id === user.department || d.code === user.department || d.hod === user._id || d.hod?._id === user._id
+      );
+      if (match) {
+        setSelectedDept(match._id);
+      }
+    }
+  }, [user, departments, selectedDept]);
+
+  const handleExportCsv = async (type) => {
+    try {
+      const token = api.getToken();
+      const res = await fetch(`/api/v1/reports/export?type=${type}`, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
+      });
+      if (!res.ok) {
+        throw new Error(`Export failed with HTTP ${res.status}`);
+      }
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${type}-report.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      addToast({ type: 'success', title: 'Export Generated', message: `${type.toUpperCase()} report downloaded successfully.` });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Export Failed',
+        message: err.message
+      });
+    }
   };
 
   return (
@@ -113,7 +150,7 @@ export const ExecutiveReportsPage = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-navy-950 flex items-center">
             <BarChart3 className="w-6 h-6 mr-2.5 text-teal-600" />
-            Executive Reports & Analytics
+            {user?.role === ROLES.HOD ? 'Department Reports & Analytics' : 'Executive Reports & Analytics'}
           </h1>
           <p className="text-xs sm:text-sm text-navy-600 mt-1">
             Data-backed metrics calculated from stored enrollment, attendance, financial ledgers, and audit history.
@@ -182,24 +219,28 @@ export const ExecutiveReportsPage = () => {
           <Award className="w-4 h-4 mr-2" />
           Published Results
         </button>
-        <button
-          onClick={() => setActiveTab('finance')}
-          className={`pb-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-all flex items-center ${
-            activeTab === 'finance' ? 'border-teal-600 text-teal-700' : 'border-transparent text-navy-500 hover:text-navy-900'
-          }`}
-        >
-          <CreditCard className="w-4 h-4 mr-2" />
-          Financial Ledgers & Dues
-        </button>
-        <button
-          onClick={() => setActiveTab('activity')}
-          className={`pb-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-all flex items-center ${
-            activeTab === 'activity' ? 'border-teal-600 text-teal-700' : 'border-transparent text-navy-500 hover:text-navy-900'
-          }`}
-        >
-          <ShieldCheck className="w-4 h-4 mr-2" />
-          System Activity
-        </button>
+        {['super_admin', 'principal', 'accounts', 'admin'].includes((user?.role || '').toLowerCase()) && (
+          <button
+            onClick={() => setActiveTab('finance')}
+            className={`pb-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-all flex items-center ${
+              activeTab === 'finance' ? 'border-teal-600 text-teal-700' : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <CreditCard className="w-4 h-4 mr-2" />
+            Financial Ledgers & Dues
+          </button>
+        )}
+        {['super_admin', 'principal', 'admin'].includes((user?.role || '').toLowerCase()) && (
+          <button
+            onClick={() => setActiveTab('activity')}
+            className={`pb-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-all flex items-center ${
+              activeTab === 'activity' ? 'border-teal-600 text-teal-700' : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4 mr-2" />
+            System Activity
+          </button>
+        )}
       </div>
 
       {/* TAB 1: Enrollment Analytics */}

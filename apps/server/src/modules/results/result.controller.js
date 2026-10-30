@@ -1,11 +1,8 @@
+const mongoose = require('mongoose');
 const Result = require('./result.model');
 const Examination = require('../examinations/exam.model');
 const Student = require('../students/student.model');
 const Department = require('../departments/department.model');
-<<<<<<< HEAD
-=======
-const mongoose = require('mongoose');
->>>>>>> origin/main
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 
@@ -35,13 +32,29 @@ async function getResults(req, res, next) {
       }).select('_id');
       const publishedExamIds = publishedExams.map((e) => e._id);
       query.examination = { $in: publishedExamIds };
-    } else if (req.user.role === ROLES.HOD && !query.examination) {
-      // HOD default scoping to their department
-      const dept = await Department.findOne({ hod: req.user._id });
-      if (dept) {
-        const deptExams = await Examination.find({ department: dept._id }).select('_id');
-        const deptExamIds = deptExams.map((e) => e._id);
-        query.examination = { $in: deptExamIds };
+    } else if (req.user && req.user.role === ROLES.HOD) {
+      let hodDept = null;
+      if (req.user.department) {
+        hodDept = await Department.findOne({
+          $or: [{ name: req.user.department }, { hod: req.user._id }]
+        });
+      } else {
+        hodDept = await Department.findOne({ hod: req.user._id });
+      }
+
+      if (hodDept) {
+        if (!req.query.student) {
+          const deptStudents = await Student.find({ department: hodDept._id }).select('_id');
+          const deptStudentIds = deptStudents.map((s) => s._id);
+          query.student = { $in: deptStudentIds };
+        }
+        if (!req.query.examination) {
+          const deptExams = await Examination.find({ department: hodDept._id }).select('_id');
+          if (deptExams.length > 0) {
+            const deptExamIds = deptExams.map((e) => e._id);
+            query.examination = { $in: deptExamIds };
+          }
+        }
       }
     }
 

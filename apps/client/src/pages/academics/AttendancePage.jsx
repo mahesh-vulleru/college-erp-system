@@ -55,17 +55,29 @@ export const AttendancePage = () => {
           api.getDepartments()
         ]);
         const subList = sRes.data || [];
+        const deptList = dRes.data || [];
         setSubjects(subList);
-        setDepartments(dRes.data || []);
+        setDepartments(deptList);
         if (subList.length > 0) {
-          setSelectedSubject(subList[0]._id);
+          let defaultSub = subList[0];
+          if (user?.role === ROLES.HOD && (user?.department || user?._id)) {
+            const hodDeptMatch = deptList.find(
+              (d) => d.name === user.department || d.code === user.department || d._id === user.department || d.hod === user._id || d.hod?._id === user._id
+            );
+            const deptId = hodDeptMatch?._id || user.department;
+            const deptSub = subList.find(
+              (s) => (s.department?._id || s.department) === deptId || s.department?.name === user.department
+            );
+            if (deptSub) defaultSub = deptSub;
+          }
+          setSelectedSubject(defaultSub._id);
         }
       } catch (err) {
         setError(err.message || 'Failed to load curriculum subjects');
       }
     }
     loadMeta();
-  }, []);
+  }, [user]);
 
   // For Student view: load personal attendance
   const fetchStudentPersonalData = useCallback(async () => {
@@ -342,11 +354,14 @@ export const AttendancePage = () => {
                   onChange={(e) => setSelectedSubject(e.target.value)}
                   className="w-full text-xs border border-navy-200 rounded-lg p-2.5 bg-white text-navy-800 focus:ring-2 focus:ring-teal-500"
                 >
-                  {subjects.map((sub) => (
-                    <option key={sub._id} value={sub._id}>
-                      {sub.code} - {sub.name} (Sem {sub.semester})
-                    </option>
-                  ))}
+                  {subjects.map((sub) => {
+                    const deptCode = sub.department?.code || sub.department?.name || '';
+                    return (
+                      <option key={sub._id} value={sub._id}>
+                        {deptCode ? `[${deptCode}] ` : ''}{sub.code} - {sub.name} (Sem {sub.semester})
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
               <div>

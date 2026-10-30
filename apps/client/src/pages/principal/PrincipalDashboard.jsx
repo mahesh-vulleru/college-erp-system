@@ -36,6 +36,9 @@ import Notification from '../../components/common/Notification';
 import api from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import StudentAtRiskAlerts from '../../components/principal/StudentAtRiskAlerts';
+import FacultyLeaveManagement from '../../components/principal/FacultyLeaveManagement';
+import ExecutiveReportsExport from '../../components/principal/ExecutiveReportsExport';
 
 export const PrincipalDashboard = () => {
   const { user } = useAuth();
@@ -473,6 +476,9 @@ export const PrincipalDashboard = () => {
         />
       </Card>
 
+      {/* Feature 1: Student At-Risk Identification & Attendance Alerts */}
+      <StudentAtRiskAlerts departments={deptSummaries} />
+
       {/* 2. Institutional Examinations & Academic Results Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card
@@ -637,6 +643,9 @@ export const PrincipalDashboard = () => {
         </Card>
       </div>
 
+      {/* Feature 2: Faculty Leave Management & Approval Workflow */}
+      <FacultyLeaveManagement departments={deptSummaries} />
+
       {/* 3. Academic Calendar & Institutional Circulars */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card
@@ -709,6 +718,9 @@ export const PrincipalDashboard = () => {
         </Card>
       </div>
 
+
+      {/* Feature 3: Multi-Format Executive Reports Export */}
+      <ExecutiveReportsExport departments={deptSummaries} />
 
       {/* Proposal Review & Executive Decision Modal */}
       {selectedReviewApproval && (

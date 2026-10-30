@@ -1,13 +1,8 @@
+const mongoose = require('mongoose');
 const Examination = require('./exam.model');
-<<<<<<< HEAD
+const Department = require('../departments/department.model');
 const Student = require('../students/student.model');
 const Faculty = require('../faculty/faculty.model');
-const Department = require('../departments/department.model');
-=======
-const Department = require('../departments/department.model');
-const Student = require('../students/student.model');
-const mongoose = require('mongoose');
->>>>>>> origin/main
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 

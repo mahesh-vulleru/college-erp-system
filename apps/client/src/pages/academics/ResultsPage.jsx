@@ -70,9 +70,7 @@ export const ResultsPage = () => {
       setSubjects(subList);
       setStudents(studentList);
 
-      if (examList.length > 0) {
-        setSelectedExam((prev) => prev || examList[0]._id);
-      }
+      // Keep selectedExam empty by default to display all results across exams
     } catch {
       // Non-blocking
     }

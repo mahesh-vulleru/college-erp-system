@@ -358,9 +358,28 @@ export const Sidebar = ({ isOpen, onClose }) => {
   // Precision active state matching supporting query params & tab anchors
   const isItemActive = (itemPath) => {
     const currentFull = `${location.pathname}${location.search}`;
+    if (itemPath === currentFull) return true;
+
     if (itemPath.includes('?')) {
-      return currentFull === itemPath;
+      const [itemBase, itemQueryStr] = itemPath.split('?');
+      if (location.pathname !== itemBase) return false;
+      const itemParams = new URLSearchParams(itemQueryStr);
+      const currentParams = new URLSearchParams(location.search);
+      const itemTab = itemParams.get('tab');
+      const currentTab = currentParams.get('tab');
+
+      if (itemTab && currentTab) {
+        if (itemTab === currentTab) return true;
+        // Aliases for HOD and academic tabs
+        if ((itemTab === 'faculty' || itemTab === 'roster') && (currentTab === 'faculty' || currentTab === 'roster')) return true;
+        if ((itemTab === 'syllabus' || itemTab === 'curriculum' || itemTab === 'subjects') && (currentTab === 'syllabus' || currentTab === 'curriculum' || currentTab === 'subjects')) return true;
+        if ((itemTab === 'timetable' || itemTab === 'schedule') && (currentTab === 'timetable' || currentTab === 'schedule')) return true;
+        if ((itemTab === 'students' || itemTab === 'cohort') && (currentTab === 'students' || currentTab === 'cohort')) return true;
+        if ((itemTab === 'exams' || itemTab === 'examination') && (currentTab === 'exams' || currentTab === 'examination')) return true;
+      }
+      return false;
     }
+
     // If current location has query params, do not match parent dashboard path
     if (location.search && (itemPath === '/student' || itemPath === '/faculty' || itemPath === '/hod' || itemPath === '/accounts' || itemPath === '/fees')) {
       return false;

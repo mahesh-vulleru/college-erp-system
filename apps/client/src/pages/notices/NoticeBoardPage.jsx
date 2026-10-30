@@ -100,6 +100,17 @@ export const NoticeBoardPage = () => {
     loadData();
   }, [loadData]);
 
+  useEffect(() => {
+    if (user?.role === ROLES.HOD && departments.length > 0 && !noticeForm.department) {
+      const match = departments.find(
+        (d) => d.hod === user._id || d.hod?._id === user._id || d.name === user.department || d.code === user.department
+      );
+      if (match) {
+        setNoticeForm((prev) => ({ ...prev, department: match._id }));
+      }
+    }
+  }, [user, departments, noticeForm.department]);
+
   const handleCreateOrUpdate = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);

@@ -1,15 +1,8 @@
-const Timetable = require('./timetable.model');
-<<<<<<< HEAD
-const Student = require('../students/student.model');
-const Faculty = require('../faculty/faculty.model');
-const Department = require('../departments/department.model');
-=======
-const Department = require('../departments/department.model');
-const Student = require('../students/student.model');
-const Faculty = require('../faculty/faculty.model');
 const mongoose = require('mongoose');
-const { ROLES } = require('@college-erp/shared');
->>>>>>> origin/main
+const Timetable = require('./timetable.model');
+const Department = require('../departments/department.model');
+const Student = require('../students/student.model');
+const Faculty = require('../faculty/faculty.model');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 
@@ -65,8 +58,19 @@ async function getTimetable(req, res, next) {
     } else if (req.user && req.user.role === ROLES.FACULTY && !query.faculty) {
       const facultyProfile = await Faculty.findOne({ user: req.user._id });
       if (facultyProfile) query.faculty = facultyProfile._id;
-    } else if (req.user && req.user.role === ROLES.HOD && !query.department) {
-      const dept = await Department.findOne({ hod: req.user._id });
+    } else if (req.user && req.user.role === ROLES.HOD) {
+      const dept = await Department.findOne({
+        $or: [
+          { hod: req.user._id },
+          ...(req.user.department
+            ? [
+                ...(mongoose.Types.ObjectId.isValid(req.user.department) ? [{ _id: req.user.department }] : []),
+                { name: req.user.department },
+                { code: String(req.user.department).toUpperCase() }
+              ]
+            : [])
+        ]
+      });
       if (dept) query.department = dept._id;
     }
 

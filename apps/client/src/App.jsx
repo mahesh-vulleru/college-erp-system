@@ -100,6 +100,10 @@ export const App = () => {
             <Route path="/admin-dashboard" element={<Navigate to="/admin" replace />} />
             <Route path="/admindashboard" element={<Navigate to="/admin" replace />} />
 
+            {/* HOD Dashboard URL Aliases */}
+            <Route path="/hod-dashboard" element={<Navigate to="/hod" replace />} />
+            <Route path="/hoddashboard" element={<Navigate to="/hod" replace />} />
+
             {/* 3. Protected Institutional Portals & Subsystems inside AppLayout */}
             <Route element={<AppLayout />}>
               {/* Optional System Diagnostics & Team Allocation Hub */}
@@ -140,6 +144,20 @@ export const App = () => {
                   </ProtectedRoute>
                 }
               />
+              {/* HOD Direct Sub-Routes & Aliases */}
+              <Route path="hod/dashboard" element={<Navigate to="/hod" replace />} />
+              <Route path="hod/faculty" element={<Navigate to="/hod?tab=faculty" replace />} />
+              <Route path="hod/syllabus" element={<Navigate to="/hod?tab=syllabus" replace />} />
+              <Route path="hod/courses" element={<Navigate to="/hod?tab=syllabus" replace />} />
+              <Route path="hod/timetable" element={<Navigate to="/hod?tab=timetable" replace />} />
+              <Route path="hod/students" element={<Navigate to="/hod?tab=students" replace />} />
+              <Route path="hod/exams" element={<Navigate to="/hod?tab=exams" replace />} />
+              <Route path="hod/alerts" element={<Navigate to="/hod?tab=alerts" replace />} />
+              <Route path="hod/attendance" element={<Navigate to="/attendance" replace />} />
+              <Route path="hod/examinations" element={<Navigate to="/examinations" replace />} />
+              <Route path="hod/results" element={<Navigate to="/results" replace />} />
+              <Route path="hod/reports" element={<Navigate to="/reports" replace />} />
+              <Route path="hod/notices" element={<Navigate to="/notices" replace />} />
               <Route
                 path="faculty"
                 element={
