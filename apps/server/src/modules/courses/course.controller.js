@@ -1,6 +1,7 @@
 const Course = require('./course.model');
 const { sendSuccess, sendError } = require('../../utils/response');
-const { HTTP_STATUS } = require('@college-erp/shared');
+const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
+const { resolveHodDepartment, isHodDepartment } = require('../../utils/hodScoping');
 
 async function listCourses(req, res, next) {
   try {
@@ -39,6 +40,17 @@ async function getCourseById(req, res, next) {
 async function createCourse(req, res, next) {
   try {
     const { name, code, department, degreeType, durationSemesters, totalCredits } = req.body;
+
+    if (req.user?.role === ROLES.HOD && department) {
+      const matches = await isHodDepartment(req.user, department);
+      if (!matches) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          message: 'Forbidden: HOD can only create courses within their assigned department',
+          code: 'FORBIDDEN'
+        });
+      }
+    }
     const cleanCode = (code || '').toUpperCase().trim();
     const existing = await Course.findOne({ code: cleanCode });
     if (existing) {
@@ -80,6 +92,17 @@ async function updateCourse(req, res, next) {
         message: 'Course not found',
         code: 'NOT_FOUND'
       });
+    }
+
+    if (req.user?.role === ROLES.HOD && course.department) {
+      const matches = await isHodDepartment(req.user, course.department);
+      if (!matches) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          message: 'Forbidden: HOD can only update courses within their assigned department',
+          code: 'FORBIDDEN'
+        });
+      }
     }
 
     if (code && code.toUpperCase().trim() !== course.code) {

@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 const { recordAuditLog } = require('../../utils/auditLogger');
+const { resolveHodDepartment } = require('../../utils/hodScoping');
 
 /**
  * List Leave Requests with role-based scoping, filters, and summary metrics
@@ -175,6 +176,30 @@ async function getLeaveRequestById(req, res, next) {
       });
     }
 
+    // Role-based scoping / ownership verification
+    if (req.user.role === ROLES.FACULTY) {
+      const leaveUserId = leave.user?._id ? leave.user._id.toString() : leave.user?.toString();
+      if (leaveUserId !== req.user._id.toString()) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          message: 'Forbidden: Faculty can only view their own leave requests',
+          code: 'FORBIDDEN'
+        });
+      }
+    } else if (req.user.role === ROLES.HOD) {
+      const hodDept = await resolveHodDepartment(req.user);
+      if (hodDept && leave.department) {
+        const leaveDeptId = leave.department._id ? leave.department._id.toString() : leave.department.toString();
+        if (hodDept._id.toString() !== leaveDeptId) {
+          return sendError(res, {
+            statusCode: HTTP_STATUS.FORBIDDEN,
+            message: 'Forbidden: HOD can only view leave requests for their own department',
+            code: 'FORBIDDEN'
+          });
+        }
+      }
+    }
+
     return sendSuccess(res, { data: leave });
   } catch (error) {
     next(error);
@@ -262,6 +287,23 @@ async function reviewLeave(req, res, next) {
         statusCode: HTTP_STATUS.BAD_REQUEST,
         message: 'Rejection reason is mandatory when rejecting a leave request',
         code: 'REJECTION_REASON_REQUIRED'
+      });
+    }
+
+    // Role-based authorization: prevent self-approval of own leave applications
+    const existingLeave = await Leave.findById(req.params.id);
+    if (!existingLeave) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        message: 'Leave application not found',
+        code: 'LEAVE_NOT_FOUND'
+      });
+    }
+    if (existingLeave.user && existingLeave.user.toString() === req.user._id.toString()) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.FORBIDDEN,
+        message: 'Forbidden: You cannot review or approve your own leave application',
+        code: 'CANNOT_APPROVE_OWN_LEAVE'
       });
     }
 

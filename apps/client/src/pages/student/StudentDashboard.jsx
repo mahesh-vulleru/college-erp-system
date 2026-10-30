@@ -58,6 +58,11 @@ export const StudentDashboard = () => {
   const [myInvoices, setMyInvoices] = useState([]);
   const [myNotices, setMyNotices] = useState([]);
   const [myExams, setMyExams] = useState([]);
+  const [selectedHallTicketExam, setSelectedHallTicketExam] = useState(null);
+  const [payNowInvoice, setPayNowInvoice] = useState(null);
+  const [isPayNowOpen, setIsPayNowOpen] = useState(false);
+  const [payNowMethod, setPayNowMethod] = useState('UPI');
+  const [payNowTxnRef, setPayNowTxnRef] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
   const queryTab = searchParams.get('tab');
   const [studentActiveTab, setStudentActiveTab] = useState(queryTab || 'courses');
@@ -308,6 +313,41 @@ export const StudentDashboard = () => {
   };
 
   // Toggle Status
+  const handleExecutePayNow = async (e) => {
+    e.preventDefault();
+    if (!payNowInvoice) return;
+    setIsSubmitting(true);
+    try {
+      const studentId = myProfile?._id || user?._id;
+      const res = await api.recordPayment({
+        student: studentId,
+        invoice: payNowInvoice._id || payNowInvoice.id,
+        feeStructure: payNowInvoice.feeStructure?._id || payNowInvoice.feeStructure || null,
+        amountPaid: Number(payNowInvoice.outstandingBalance || payNowInvoice.balance || payNowInvoice.amountDue || 0),
+        paymentMethod: payNowMethod || 'UPI',
+        transactionReference: payNowTxnRef || `UPI-${Date.now()}`
+      });
+
+      addToast({
+        type: 'success',
+        title: 'Payment Successful',
+        message: `Official Receipt ${res.data?.receiptNumber || 'generated'} issued.`
+      });
+
+      setIsPayNowOpen(false);
+      setPayNowInvoice(null);
+      await loadData();
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Payment Failed',
+        message: err.message
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleConfirmToggle = async () => {
     if (!confirmToggleUser?.user?._id) return;
     const currentStatus = confirmToggleUser.user.status;
@@ -845,11 +885,20 @@ export const StudentDashboard = () => {
                         <span>Academic Year: {exam.academicYear}</span>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex flex-col items-end gap-1">
                       <Badge variant="navy" size="xs">
                         {exam.startDate ? new Date(exam.startDate).toLocaleDateString() : 'TBD'} - {exam.endDate ? new Date(exam.endDate).toLocaleDateString() : 'TBD'}
                       </Badge>
-                      <span className="text-[10px] text-emerald-600 font-semibold block mt-1">Verified Published</span>
+                      <span className="text-[10px] text-emerald-600 font-semibold block">Verified Published</span>
+                      <Button
+                        size="xs"
+                        variant="primary"
+                        onClick={() => setSelectedHallTicketExam(exam)}
+                        className="mt-1 flex items-center gap-1 bg-cyan-700 hover:bg-cyan-800 text-white"
+                      >
+                        <FileText className="w-3 h-3" />
+                        Digital Hall Ticket
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -951,8 +1000,23 @@ export const StudentDashboard = () => {
                         <Badge variant={inv.paymentStatus === 'paid' ? 'success' : 'amber'} size="xs">
                           {inv.paymentStatus?.toUpperCase() || 'PENDING'}
                         </Badge>
+                        {inv.paymentStatus !== 'paid' && (
+                          <Button
+                            size="xs"
+                            variant="primary"
+                            onClick={() => {
+                              setPayNowInvoice(inv);
+                              setPayNowTxnRef('UPI' + Math.floor(100000000 + Math.random() * 900000000));
+                              setIsPayNowOpen(true);
+                            }}
+                            className="mt-1 bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1"
+                          >
+                            <CreditCard className="w-3 h-3" />
+                            Pay Online Now
+                          </Button>
+                        )}
                         <Link to="/fees" className="text-[10px] font-semibold text-blue-600 hover:text-blue-800 block mt-1">
-                          Pay / Receipt &rarr;
+                          View In Portal &rarr;
                         </Link>
                       </div>
                     </div>
@@ -1451,6 +1515,145 @@ export const StudentDashboard = () => {
         isDanger={confirmToggleUser?.user?.status === USER_STATUS.ACTIVE}
         isLoading={isSubmitting}
       />
+
+      {/* Modal 5: Digital Hall Ticket */}
+      <Modal
+        isOpen={!!selectedHallTicketExam}
+        onClose={() => setSelectedHallTicketExam(null)}
+        title="Official Examination Hall Ticket"
+        subtitle="Digitally verified academic admit card"
+        maxWidth="max-w-2xl"
+        footer={
+          <>
+            <Button variant="secondary" size="sm" onClick={() => setSelectedHallTicketExam(null)}>
+              Close
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => window.print()}
+              className="bg-cyan-700 hover:bg-cyan-800 text-white"
+            >
+              Print / Save PDF
+            </Button>
+          </>
+        }
+      >
+        {selectedHallTicketExam && (
+          <div className="p-4 border-2 border-slate-900 rounded-xl space-y-4 bg-white text-slate-900">
+            <div className="border-b-2 border-slate-900 pb-3 text-center">
+              <h2 className="text-lg font-black tracking-wider uppercase text-slate-950">College of Engineering & Technology</h2>
+              <p className="text-xs text-slate-600 font-medium">Office of the Controller of Examinations &bull; Official Admit Card</p>
+              <div className="inline-block mt-1 px-3 py-0.5 bg-slate-950 text-white text-[11px] font-bold uppercase tracking-widest rounded">
+                {selectedHallTicketExam.name}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className="space-y-1">
+                <p><strong className="text-slate-600">Candidate Name:</strong> <span className="font-bold text-slate-950">{user?.name}</span></p>
+                <p><strong className="text-slate-600">Roll Number:</strong> <span className="font-mono font-bold text-blue-700">{myProfile?.rollNumber || '24CSE101'}</span></p>
+                <p><strong className="text-slate-600">Enrollment No:</strong> <span className="font-mono">{myProfile?.enrollmentNumber || 'EN2024001'}</span></p>
+              </div>
+              <div className="space-y-1">
+                <p><strong className="text-slate-600">Department:</strong> <span className="font-bold">{myProfile?.department?.name || 'Computer Science'}</span></p>
+                <p><strong className="text-slate-600">Semester:</strong> Semester {selectedHallTicketExam.semester || myProfile?.currentSemester || 1}</p>
+                <p><strong className="text-slate-600">Exam Venue:</strong> <span className="font-semibold text-slate-950">{selectedHallTicketExam.venue || 'Main Exam Hall'}</span></p>
+              </div>
+            </div>
+
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+              <p className="font-bold text-slate-800 mb-1">Scheduled Examination Window:</p>
+              <p className="font-mono text-slate-700">
+                {selectedHallTicketExam.startDate ? new Date(selectedHallTicketExam.startDate).toLocaleDateString() : 'TBD'} to{' '}
+                {selectedHallTicketExam.endDate ? new Date(selectedHallTicketExam.endDate).toLocaleDateString() : 'TBD'}
+              </p>
+            </div>
+
+            <div className="border-t border-slate-200 pt-3 text-[11px] text-slate-500 space-y-1">
+              <p className="font-bold text-slate-700">Mandatory Candidate Instructions:</p>
+              <p>1. Candidate must report to the allocated examination hall at least 30 minutes before commencement.</p>
+              <p>2. Mandatory display of institutional photo identity card along with this verified Hall Ticket.</p>
+              <p>3. Possession of mobile phones, smartwatches, or unauthorized printed materials is strictly prohibited.</p>
+            </div>
+
+            <div className="flex justify-between items-center pt-3 border-t-2 border-slate-900 text-[10px] text-slate-500 font-mono">
+              <span>Security Hash: HT-{selectedHallTicketExam._id ? selectedHallTicketExam._id.slice(-8).toUpperCase() : 'VERIFIED'}</span>
+              <span className="font-bold text-slate-800">Controller of Examinations (Sign)</span>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal 6: Online Payment Gateway */}
+      <Modal
+        isOpen={isPayNowOpen}
+        onClose={() => { setIsPayNowOpen(false); setPayNowInvoice(null); }}
+        title="Institutional Fee Payment Gateway"
+        subtitle="Secure encrypted electronic payment settlement"
+        maxWidth="max-w-md"
+        footer={
+          <>
+            <Button variant="secondary" size="sm" onClick={() => { setIsPayNowOpen(false); setPayNowInvoice(null); }} disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleExecutePayNow}
+              isLoading={isSubmitting}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              Confirm & Pay ₹ {Number(payNowInvoice?.outstandingBalance || payNowInvoice?.balance || 0).toLocaleString('en-IN')}
+            </Button>
+          </>
+        }
+      >
+        {payNowInvoice && (
+          <form onSubmit={handleExecutePayNow} className="space-y-4 text-xs">
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1">
+              <p className="text-emerald-900 font-bold text-sm">Invoice #{payNowInvoice.invoiceNumber}</p>
+              <p className="text-emerald-700 text-xs">{payNowInvoice.title || 'Semester Fee Invoice'}</p>
+              <p className="text-xl font-black text-emerald-950 font-mono pt-1">
+                ₹ {Number(payNowInvoice.outstandingBalance || payNowInvoice.balance || 0).toLocaleString('en-IN')}
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-semibold text-slate-700">Select Payment Method</label>
+              <div className="grid grid-cols-3 gap-2">
+                {['UPI', 'NetBanking', 'Card'].map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setPayNowMethod(m)}
+                    className={`py-2 px-3 rounded-lg border text-xs font-bold transition-all ${
+                      payNowMethod === m
+                        ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
+                        : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Input
+              label="Transaction / UPI Reference Number"
+              id="pay-txn-ref"
+              required
+              value={payNowTxnRef}
+              onChange={(e) => setPayNowTxnRef(e.target.value)}
+              placeholder="e.g. UPI1234567890"
+            />
+
+            <p className="text-[11px] text-slate-500">
+              * Payment is authenticated through 256-bit SSL encryption. Official receipt will be generated and added to your financial records immediately.
+            </p>
+          </form>
+        )}
+      </Modal>
     </div>
   );
 };

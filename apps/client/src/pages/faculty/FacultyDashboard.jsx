@@ -54,6 +54,14 @@ export const FacultyDashboard = () => {
   const [students, setStudents] = useState([]);
   const [exams, setExams] = useState([]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [myLeaves, setMyLeaves] = useState([]);
+  const [isApplyLeaveOpen, setIsApplyLeaveOpen] = useState(false);
+  const [leaveForm, setLeaveForm] = useState({
+    leaveType: 'casual',
+    startDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+    endDate: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0],
+    reason: ''
+  });
   const [searchParams, setSearchParams] = useSearchParams();
   const queryTab = searchParams.get('tab');
   const [facultyActiveTab, setFacultyActiveTab] = useState(queryTab || 'timetable');
@@ -128,6 +136,9 @@ export const FacultyDashboard = () => {
         if (myProfRes?.data) setMyProfile(myProfRes.data);
         if (subjRes?.data) setSubjects(subjRes.data);
         if (timeRes?.data) setTimetableSlots(timeRes.data);
+        const leavesRes = await api.getLeaves().catch(() => ({ data: [] }));
+        if (leavesRes?.data?.leaves) setMyLeaves(leavesRes.data.leaves);
+        else if (Array.isArray(leavesRes?.data)) setMyLeaves(leavesRes.data);
         if (studRes?.data) {
           setStudents(studRes.data);
           if (studRes.data.length > 0) {
@@ -297,6 +308,37 @@ export const FacultyDashboard = () => {
   };
 
   // Toggle Status
+  const handleApplyLeaveSubmit = async (e) => {
+    e.preventDefault();
+    if (!leaveForm.reason.trim()) {
+      setFormError('Please enter a reason for leave.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await api.applyLeave(leaveForm);
+      addToast({
+        type: 'success',
+        title: 'Leave Application Submitted',
+        message: 'Your leave application has been submitted for review.'
+      });
+      setIsApplyLeaveOpen(false);
+      setLeaveForm({
+        leaveType: 'casual',
+        startDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+        endDate: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0],
+        reason: ''
+      });
+      const freshLeaves = await api.getLeaves().catch(() => ({ data: [] }));
+      if (freshLeaves?.data?.leaves) setMyLeaves(freshLeaves.data.leaves);
+      else if (Array.isArray(freshLeaves?.data)) setMyLeaves(freshLeaves.data);
+    } catch (err) {
+      addToast({ type: 'error', title: 'Submission Failed', message: err.message });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleConfirmToggle = async () => {
     if (!confirmToggleUser?.user?._id) return;
     const currentStatus = confirmToggleUser.user.status;

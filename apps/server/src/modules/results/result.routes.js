@@ -10,7 +10,11 @@ const router = express.Router();
 
 router.use(authenticate);
 
-router.get('/', getResults);
+router.get(
+  '/',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
+  getResults
+);
 
 // Marks entry restricted to Faculty, HOD, and Principal
 router.post(

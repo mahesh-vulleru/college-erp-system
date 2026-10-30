@@ -16,7 +16,11 @@ const router = express.Router();
 router.use(authenticate);
 
 // Readable by all authenticated institutional users (Super Admin, Principal, HOD, Faculty, Student)
-router.get('/', getTimetable);
+router.get(
+  '/',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
+  getTimetable
+);
 
 // Management restricted to Super Admin, Principal, and HOD
 router.post(

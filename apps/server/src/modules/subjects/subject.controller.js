@@ -5,6 +5,7 @@ const { ROLES } = require('@college-erp/shared');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS } = require('@college-erp/shared');
 const { recordAuditLog } = require('../../utils/auditLogger');
+const { resolveHodDepartment, isHodDepartment } = require('../../utils/hodScoping');
 
 async function listSubjects(req, res, next) {
   try {

@@ -699,6 +699,25 @@ async function exportReportCsv(req, res, next) {
     const reportType = (req.query.type || '').toLowerCase();
     const format = req.query.format || 'csv';
 
+    // Strict role scoping for report exports
+    if (req.user.role === ROLES.ACCOUNTS) {
+      if (reportType !== 'finance' && reportType !== 'fee') {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          message: 'Forbidden: Accounts role can only export financial reports',
+          code: 'FORBIDDEN'
+        });
+      }
+    } else if (req.user.role === ROLES.HOD) {
+      if (reportType === 'finance' || reportType === 'fee' || reportType === 'admin_activity') {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          message: 'Forbidden: HOD role cannot access or export financial or administrative reports',
+          code: 'FORBIDDEN'
+        });
+      }
+    }
+
     // 1. Enrollment Report
     if (reportType === 'enrollment') {
       const studentQuery = {};

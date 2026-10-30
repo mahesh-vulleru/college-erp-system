@@ -16,20 +16,28 @@ const router = express.Router();
 router.use(authenticate);
 
 // Publicly readable for all authenticated institutional users
-router.get('/', listDepartments);
-router.get('/:id', getDepartmentById);
+router.get(
+  '/',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
+  listDepartments
+);
+router.get(
+  '/:id',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
+  getDepartmentById
+);
 
 // Restricted creation & modification to Super Admin and Principal
 router.post(
   '/',
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL),
+  authorizeRoles(ROLES.SUPER_ADMIN),
   validateRequest(validateDepartmentInput),
   createDepartment
 );
 
 router.put(
   '/:id',
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL),
+  authorizeRoles(ROLES.SUPER_ADMIN),
   updateDepartment
 );
 

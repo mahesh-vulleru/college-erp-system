@@ -10,7 +10,11 @@ const router = express.Router();
 
 router.use(authenticate);
 
-router.get('/', listSubjects);
+router.get(
+  '/',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
+  listSubjects
+);
 
 router.post(
   '/',

@@ -16,8 +16,16 @@ const router = express.Router();
 
 router.use(authenticate);
 
-router.get('/', listCourses);
-router.get('/:id', getCourseById);
+router.get(
+  '/',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
+  listCourses
+);
+router.get(
+  '/:id',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
+  getCourseById
+);
 
 router.post(
   '/',

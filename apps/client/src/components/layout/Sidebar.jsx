@@ -72,15 +72,15 @@ const ROLE_NAV_CONFIGS = {
     }
   ],
 
-  // 2. Principal: Institutional Management, Academic Administration, Academics & Governance
+  // 2. Principal: Executive Leadership, Academic Administration, Operations & Examination, Governance & Audits
   [ROLES.PRINCIPAL]: [
     {
-      title: 'Institutional Management',
+      title: 'Executive Leadership',
       items: [
         { path: '/principal', label: 'Principal Dashboard', icon: LayoutDashboard },
         { path: '/principal/accreditation', label: 'Accreditation & Compliance', icon: ShieldCheck },
         { path: '/principal/goals', label: 'Institutional Goals & KPIs', icon: Target },
-        { path: '/principal/events', label: 'Deadline & Event Tracker', icon: CalendarCheck },
+        { path: '/principal/events', label: 'Institutional Academic Calendar', icon: CalendarCheck },
         { path: '/overview', label: 'Institutional Health', icon: Compass }
       ]
     },
@@ -90,18 +90,24 @@ const ROLE_NAV_CONFIGS = {
         { path: '/departments', label: 'Academic Departments', icon: Building2 },
         { path: '/faculty', label: 'Teaching Faculty', icon: Users },
         { path: '/students', label: 'Student Cohorts', icon: GraduationCap },
-        { path: '/courses', label: 'Programs & Courses', icon: BookOpen },
-        { path: '/timetable', label: 'Class Timetables', icon: Clock },
-        { path: '/attendance', label: 'Daily Attendance', icon: CalendarCheck }
+        { path: '/courses', label: 'Programs & Courses', icon: BookOpen }
       ]
     },
     {
-      title: 'Academics & Governance',
+      title: 'Operations & Performance',
       items: [
-        { path: '/examinations', label: 'Examinations System', icon: FileText },
-        { path: '/results', label: 'Results & Performance', icon: Award },
+        { path: '/timetable', label: 'Class Timetables', icon: Clock },
+        { path: '/attendance', label: 'Daily Attendance', icon: CalendarCheck },
+        { path: '/examinations', label: 'Examination Status & Schedules', icon: FileText },
+        { path: '/results', label: 'Results & Performance', icon: Award }
+      ]
+    },
+    {
+      title: 'Governance & Audits',
+      items: [
+        { path: '/reports?tab=faculty', label: 'Faculty Workload', icon: Clock },
         { path: '/reports', label: 'Executive Reports', icon: BarChart3 },
-        { path: '/audit-logs', label: 'Security & Audit Logs', icon: ShieldCheck },
+        { path: '/audit-logs', label: 'Regulatory Audit Reports', icon: ShieldCheck },
         { path: '/notices', label: 'Notice Board', icon: Bell }
       ]
     }
@@ -308,7 +314,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
     }
 
     // If current location has query params, do not match parent dashboard path
-    if (location.search && (itemPath === '/student' || itemPath === '/faculty' || itemPath === '/hod' || itemPath === '/accounts' || itemPath === '/fees')) {
+    if (location.search && (itemPath === '/student' || itemPath === '/faculty' || itemPath === '/hod' || itemPath === '/accounts' || itemPath === '/fees' || itemPath === '/reports')) {
       return false;
     }
     return location.pathname === itemPath;

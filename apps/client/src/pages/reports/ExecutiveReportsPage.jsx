@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   BarChart3,
   Download,
@@ -32,7 +33,15 @@ export const ExecutiveReportsPage = () => {
   const { user } = useAuth();
   const { addToast } = useToast();
 
-  const [activeTab, setActiveTab] = useState('enrollment'); // 'enrollment' | 'faculty' | 'attendance' | 'results' | 'finance' | 'activity'
+  const [searchParams] = useSearchParams();
+  const queryTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(queryTab || 'enrollment'); // 'enrollment' | 'faculty' | 'attendance' | 'results' | 'finance' | 'activity'
+
+  useEffect(() => {
+    if (queryTab) {
+      setActiveTab(queryTab);
+    }
+  }, [queryTab]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Report Data States

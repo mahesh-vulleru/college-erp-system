@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 const { recordAuditLog } = require('../../utils/auditLogger');
+const { resolveHodDepartment, isHodDepartment } = require('../../utils/hodScoping');
 
 async function listStudents(req, res, next) {
   try {
@@ -15,7 +16,23 @@ async function listStudents(req, res, next) {
     const skip = (page - 1) * limit;
 
     const query = {};
-    if (req.query.department) {
+    if (req.user?.role === ROLES.HOD) {
+      const hodDept = await resolveHodDepartment(req.user);
+      if (hodDept) {
+        if (req.query.department) {
+          const deptVal = String(req.query.department).trim();
+          const matches = await isHodDepartment(req.user, deptVal);
+          if (!matches) {
+            return sendError(res, {
+              statusCode: HTTP_STATUS.FORBIDDEN,
+              message: 'Forbidden: HOD can only view students within their assigned department',
+              code: 'FORBIDDEN'
+            });
+          }
+        }
+        query.department = hodDept._id;
+      }
+    } else if (req.query.department) {
       const deptVal = String(req.query.department).trim();
       if (deptVal === '[object Object]' || deptVal === 'undefined' || deptVal === 'null') {
         return sendError(res, {
@@ -40,21 +57,6 @@ async function listStudents(req, res, next) {
           });
         }
       }
-    } else if (req.user?.role === ROLES.HOD) {
-      // Enforce HOD department-level scoping to ensure cross-department data isolation
-      const dept = await Department.findOne({
-        $or: [
-          { hod: req.user._id },
-          ...(req.user.department
-            ? [
-                ...(mongoose.Types.ObjectId.isValid(req.user.department) ? [{ _id: req.user.department }] : []),
-                { name: req.user.department },
-                { code: String(req.user.department).toUpperCase() }
-              ]
-            : [])
-        ]
-      });
-      if (dept) query.department = dept._id;
     }
     if (req.query.semester) query.currentSemester = parseInt(req.query.semester, 10);
     if (req.query.batch) query.batchYear = req.query.batch;
@@ -106,6 +108,17 @@ async function getStudentById(req, res, next) {
       });
     }
 
+    if (req.user?.role === ROLES.HOD && student.department) {
+      const matches = await isHodDepartment(req.user, student.department._id || student.department);
+      if (!matches) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          message: 'Forbidden: HOD can only view student details within their assigned department',
+          code: 'FORBIDDEN'
+        });
+      }
+    }
+
     return sendSuccess(res, { data: student });
   } catch (error) {
     next(error);
@@ -136,6 +149,17 @@ async function getMyStudentProfile(req, res, next) {
 async function createStudentProfile(req, res, next) {
   try {
     const { user, rollNumber, enrollmentNumber, department, course, currentSemester, batchYear, guardianName, guardianPhone, admissionStatus } = req.body;
+
+    if (req.user?.role === ROLES.HOD && department) {
+      const matches = await isHodDepartment(req.user, department);
+      if (!matches) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          message: 'Forbidden: HOD can only create student profiles within their assigned department',
+          code: 'FORBIDDEN'
+        });
+      }
+    }
 
     const existing = await Student.findOne({ $or: [{ rollNumber }, { user }] });
     if (existing) {
@@ -187,6 +211,28 @@ async function updateStudentProfile(req, res, next) {
         message: 'Student profile not found',
         code: 'NOT_FOUND'
       });
+    }
+
+    if (req.user?.role === ROLES.HOD && student.department) {
+      const matches = await isHodDepartment(req.user, student.department._id || student.department);
+      if (!matches) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          message: 'Forbidden: HOD can only view risk details for students in their assigned department',
+          code: 'FORBIDDEN'
+        });
+      }
+    }
+
+    if (req.user?.role === ROLES.HOD && student.department) {
+      const matches = await isHodDepartment(req.user, student.department);
+      if (!matches) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          message: 'Forbidden: HOD can only update student profiles within their assigned department',
+          code: 'FORBIDDEN'
+        });
+      }
     }
 
     if (department) student.department = department;

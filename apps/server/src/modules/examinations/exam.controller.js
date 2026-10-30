@@ -5,6 +5,7 @@ const Student = require('../students/student.model');
 const Faculty = require('../faculty/faculty.model');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
+const { resolveHodDepartment, isHodDepartment } = require('../../utils/hodScoping');
 
 async function listExams(req, res, next) {
   try {
@@ -129,6 +130,17 @@ async function getExamById(req, res, next) {
       }
     }
 
+    if (req.user && req.user.role === ROLES.HOD && exam.department) {
+      const matches = await isHodDepartment(req.user, exam.department._id || exam.department);
+      if (!matches) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          message: 'Forbidden: HOD cannot view examinations outside their department',
+          code: 'FORBIDDEN'
+        });
+      }
+    }
+
     return sendSuccess(res, { data: exam });
   } catch (error) {
     next(error);
@@ -214,6 +226,28 @@ async function updateExam(req, res, next) {
         message: 'Examination not found',
         code: 'NOT_FOUND'
       });
+    }
+
+    if (req.user && req.user.role === ROLES.HOD && exam.department) {
+      const matches = await isHodDepartment(req.user, exam.department._id || exam.department);
+      if (!matches) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          message: 'Forbidden: HOD can only delete examinations for their assigned department',
+          code: 'FORBIDDEN'
+        });
+      }
+    }
+
+    if (req.user && req.user.role === ROLES.HOD && exam.department) {
+      const matches = await isHodDepartment(req.user, exam.department._id || exam.department);
+      if (!matches) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          message: 'Forbidden: HOD can only update examinations for their assigned department',
+          code: 'FORBIDDEN'
+        });
+      }
     }
 
     const { name, examType, academicYear, semester, department, course, venue, startDate, endDate, isPublished, status } = req.body;
