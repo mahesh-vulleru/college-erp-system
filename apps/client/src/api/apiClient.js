@@ -609,6 +609,216 @@ class ApiClient {
     const qs = searchParams.toString();
     return this.get(`/v1/attendance/summary${qs ? `?${qs}` : ''}`);
   }
+
+  getAtRiskStudents(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.department) searchParams.append('department', params.department);
+    if (params.semester) searchParams.append('semester', params.semester);
+    if (params.riskLevel) searchParams.append('riskLevel', params.riskLevel);
+    if (params.search) searchParams.append('search', params.search);
+    if (params.page) searchParams.append('page', params.page);
+    if (params.limit) searchParams.append('limit', params.limit);
+    if (params.sortBy) searchParams.append('sortBy', params.sortBy);
+    const qs = searchParams.toString();
+    return this.get(`/v1/students/at-risk${qs ? `?${qs}` : ''}`);
+  }
+
+  getStudentRiskDetails(studentId) {
+    return this.get(`/v1/students/${studentId}/risk-details`);
+  }
+
+  getLeaves(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.status) searchParams.append('status', params.status);
+    if (params.department) searchParams.append('department', params.department);
+    if (params.leaveType) searchParams.append('leaveType', params.leaveType);
+    if (params.search) searchParams.append('search', params.search);
+    if (params.page) searchParams.append('page', params.page);
+    if (params.limit) searchParams.append('limit', params.limit);
+    const qs = searchParams.toString();
+    return this.get(`/v1/leaves${qs ? `?${qs}` : ''}`);
+  }
+
+  getLeaveById(id) {
+    return this.get(`/v1/leaves/${id}`);
+  }
+
+  applyLeave(data) {
+    return this.post('/v1/leaves', data);
+  }
+
+  reviewLeave(id, data) {
+    return this.patch(`/v1/leaves/${id}/review`, data);
+  }
+
+  async downloadReport(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.type) searchParams.append('type', params.type);
+    if (params.format) searchParams.append('format', params.format);
+    if (params.department) searchParams.append('department', params.department);
+    if (params.semester) searchParams.append('semester', params.semester);
+    if (params.startDate) searchParams.append('startDate', params.startDate);
+    if (params.endDate) searchParams.append('endDate', params.endDate);
+    const qs = searchParams.toString();
+
+    const token = this.getToken();
+    const response = await fetch(`${this.baseUrl}/v1/reports/export?${qs}`, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      }
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || 'Report download failed');
+    }
+
+    const blob = await response.blob();
+    const disposition = response.headers.get('content-disposition');
+    let filename = `report-${params.type || 'export'}.${params.format || 'csv'}`;
+    if (disposition && disposition.includes('filename=')) {
+      const match = disposition.match(/filename="?([^";]+)"?/);
+      if (match && match[1]) filename = match[1];
+    }
+
+    const blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl);
+    return { success: true, filename };
+  }
+
+  // -------------------------------------------------------------
+  // Phase 1: Institutional Management - Accreditation & Compliance
+  // -------------------------------------------------------------
+  getAccreditationCriteria(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.framework) searchParams.append('framework', params.framework);
+    if (params.category) searchParams.append('category', params.category);
+    if (params.status) searchParams.append('status', params.status);
+    if (params.department) searchParams.append('department', params.department);
+    if (params.search) searchParams.append('search', params.search);
+    if (params.page) searchParams.append('page', params.page);
+    if (params.limit) searchParams.append('limit', params.limit);
+    const qs = searchParams.toString();
+    return this.get(`/v1/accreditation${qs ? `?${qs}` : ''}`);
+  }
+
+  getAccreditationSummary() {
+    return this.get('/v1/accreditation/summary');
+  }
+
+  getAccreditationCriterionById(id) {
+    return this.get(`/v1/accreditation/${id}`);
+  }
+
+  createAccreditationCriterion(data) {
+    return this.post('/v1/accreditation', data);
+  }
+
+  updateAccreditationCriterion(id, data) {
+    return this.put(`/v1/accreditation/${id}`, data);
+  }
+
+  deleteAccreditationCriterion(id) {
+    return this.delete(`/v1/accreditation/${id}`);
+  }
+
+  addCriterionEvidence(id, data) {
+    return this.post(`/v1/accreditation/${id}/evidence`, data);
+  }
+
+  verifyCriterionEvidence(id, docId, data) {
+    return this.patch(`/v1/accreditation/${id}/evidence/${docId}/verify`, data);
+  }
+
+  // -------------------------------------------------------------
+  // Phase 1: Institutional Management - Goals & KPI Tracker
+  // -------------------------------------------------------------
+  getInstitutionalGoals(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.category) searchParams.append('category', params.category);
+    if (params.status) searchParams.append('status', params.status);
+    if (params.priority) searchParams.append('priority', params.priority);
+    if (params.academicYear) searchParams.append('academicYear', params.academicYear);
+    if (params.semester) searchParams.append('semester', params.semester);
+    if (params.department) searchParams.append('department', params.department);
+    if (params.search) searchParams.append('search', params.search);
+    if (params.page) searchParams.append('page', params.page);
+    if (params.limit) searchParams.append('limit', params.limit);
+    const qs = searchParams.toString();
+    return this.get(`/v1/institutional-goals${qs ? `?${qs}` : ''}`);
+  }
+
+  getGoalsSummary() {
+    return this.get('/v1/institutional-goals/summary');
+  }
+
+  getInstitutionalGoalById(id) {
+    return this.get(`/v1/institutional-goals/${id}`);
+  }
+
+  createInstitutionalGoal(data) {
+    return this.post('/v1/institutional-goals', data);
+  }
+
+  updateInstitutionalGoal(id, data) {
+    return this.put(`/v1/institutional-goals/${id}`, data);
+  }
+
+  deleteInstitutionalGoal(id) {
+    return this.delete(`/v1/institutional-goals/${id}`);
+  }
+
+  recordGoalProgress(id, data) {
+    return this.post(`/v1/institutional-goals/${id}/progress`, data);
+  }
+
+  // -------------------------------------------------------------
+  // Phase 1: Institutional Management - Deadlines & Events
+  // -------------------------------------------------------------
+  getInstitutionalEvents(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.category) searchParams.append('category', params.category);
+    if (params.status) searchParams.append('status', params.status);
+    if (params.priority) searchParams.append('priority', params.priority);
+    if (params.department) searchParams.append('department', params.department);
+    if (params.startDate) searchParams.append('startDate', params.startDate);
+    if (params.endDate) searchParams.append('endDate', params.endDate);
+    if (params.search) searchParams.append('search', params.search);
+    if (params.page) searchParams.append('page', params.page);
+    if (params.limit) searchParams.append('limit', params.limit);
+    const qs = searchParams.toString();
+    return this.get(`/v1/institutional-events${qs ? `?${qs}` : ''}`);
+  }
+
+  getEventsSummary() {
+    return this.get('/v1/institutional-events/summary');
+  }
+
+  getInstitutionalEventById(id) {
+    return this.get(`/v1/institutional-events/${id}`);
+  }
+
+  createInstitutionalEvent(data) {
+    return this.post('/v1/institutional-events', data);
+  }
+
+  updateInstitutionalEvent(id, data) {
+    return this.put(`/v1/institutional-events/${id}`, data);
+  }
+
+  deleteInstitutionalEvent(id) {
+    return this.delete(`/v1/institutional-events/${id}`);
+  }
+
+  markEventCompleted(id, data = {}) {
+    return this.patch(`/v1/institutional-events/${id}/complete`, data);
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL);

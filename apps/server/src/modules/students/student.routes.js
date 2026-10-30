@@ -4,7 +4,9 @@ const {
   getStudentById,
   getMyStudentProfile,
   createStudentProfile,
-  updateStudentProfile
+  updateStudentProfile,
+  getAtRiskStudents,
+  getStudentRiskDetails
 } = require('./student.controller');
 const { validateStudentProfileInput } = require('./student.validator');
 const authenticate = require('../../middleware/auth');
@@ -24,6 +26,19 @@ router.get(
   '/',
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.ACCOUNTS),
   listStudents
+);
+
+// At-Risk Student Identification & Alerts (Principal, Super Admin, HOD)
+router.get(
+  '/at-risk',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getAtRiskStudents
+);
+
+router.get(
+  '/:id/risk-details',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getStudentRiskDetails
 );
 
 router.get(

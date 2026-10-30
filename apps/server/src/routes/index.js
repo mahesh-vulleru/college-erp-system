@@ -16,6 +16,10 @@ const paymentRoutes = require('../modules/payments/payment.routes');
 const noticeRoutes = require('../modules/notices/notice.routes');
 const reportRoutes = require('../modules/reports/report.routes');
 const auditRoutes = require('../modules/audit-logs/audit.routes');
+const leaveRoutes = require('../modules/leave/leave.routes');
+const accreditationRoutes = require('../modules/accreditation/accreditation.routes');
+const goalRoutes = require('../modules/goals/goal.routes');
+const eventRoutes = require('../modules/events/institutionalEvent.routes');
 const { getAttendanceOverview, getDepartmentSummaries, getExaminationsReport } = require('../modules/reports/report.controller');
 const authenticate = require('../middleware/auth');
 const { authorizeRoles } = require('../middleware/rbac');
@@ -58,6 +62,10 @@ v1Router.use('/payments', paymentRoutes);
 v1Router.use('/notices', noticeRoutes);
 v1Router.use('/reports', reportRoutes);
 v1Router.use('/audit-logs', auditRoutes);
+v1Router.use('/leaves', leaveRoutes);
+v1Router.use('/accreditation', accreditationRoutes);
+v1Router.use('/institutional-goals', goalRoutes);
+v1Router.use('/institutional-events', eventRoutes);
 
 router.use('/v1', v1Router);
 
