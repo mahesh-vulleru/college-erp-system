@@ -38,6 +38,11 @@ import NoticeBoardPage from './pages/notices/NoticeBoardPage';
 import ExecutiveReportsPage from './pages/reports/ExecutiveReportsPage';
 import AuditLogsPage from './pages/audit/AuditLogsPage';
 
+// Phase 1 Institutional Management Pages
+import AccreditationCompliancePage from './pages/principal/AccreditationCompliancePage';
+import InstitutionalGoalsPage from './pages/principal/InstitutionalGoalsPage';
+import DeadlineEventTrackerPage from './pages/principal/DeadlineEventTrackerPage';
+
 import { ROLES } from '@college-erp/shared';
 
 // Smart redirector for /dashboard based on authenticated role
@@ -133,6 +138,30 @@ export const App = () => {
                 element={
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, 'admin']}>
                     <PrincipalDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="principal/accreditation"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, 'admin']}>
+                    <AccreditationCompliancePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="principal/goals"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, 'admin']}>
+                    <InstitutionalGoalsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="principal/events"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, 'admin']}>
+                    <DeadlineEventTrackerPage />
                   </ProtectedRoute>
                 }
               />

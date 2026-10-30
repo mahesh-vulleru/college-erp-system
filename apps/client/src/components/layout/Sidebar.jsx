@@ -18,7 +18,8 @@ import {
   Compass,
   Layers,
   TrendingUp,
-  UserCheck
+  UserCheck,
+  Target
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '@college-erp/shared';
@@ -77,6 +78,14 @@ const ROLE_NAV_CONFIGS = {
 
   // 2. Principal: Executive Overview, Departments, Academic Performance, Examinations, Reports, Notices
   [ROLES.PRINCIPAL]: [
+    {
+      title: 'Institutional Management',
+      items: [
+        { path: '/principal/accreditation', label: 'Accreditation & Compliance', icon: ShieldCheck },
+        { path: '/principal/goals', label: 'Institutional Goals & KPIs', icon: Target },
+        { path: '/principal/events', label: 'Deadline & Event Tracker', icon: CalendarCheck }
+      ]
+    },
     {
       title: 'Executive Overview',
       items: [

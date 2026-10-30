@@ -18,7 +18,10 @@ import {
   ExternalLink,
   FileSpreadsheet,
   Layers,
-  ArrowRight
+  ArrowRight,
+  ShieldCheck,
+  Target,
+  AlertTriangle
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import CampusBuildingGraphic from '../../components/common/CampusBuildingGraphic';
@@ -50,6 +53,16 @@ export const PrincipalDashboard = () => {
   const [notices, setNotices] = useState([]);
   const [examReports, setExamReports] = useState([]);
   const [resultsSummary, setResultsSummary] = useState(null);
+  const [instMetrics, setInstMetrics] = useState({
+    accreditationCompletion: 0,
+    totalCriteria: 0,
+    completedCriteria: 0,
+    goalAchievement: 0,
+    totalGoals: 0,
+    onTrackGoals: 0,
+    upcomingDeadlines: 0,
+    overdueItems: 0
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedReviewApproval, setSelectedReviewApproval] = useState(null);
   const [enrollmentPeriod, setEnrollmentPeriod] = useState('This Year');
@@ -124,14 +137,34 @@ export const PrincipalDashboard = () => {
   const loadDashboardData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [deptRes, summaryRes, attRes, noticesRes, examRes, resultRes] = await Promise.all([
+      const [deptRes, summaryRes, attRes, noticesRes, examRes, resultRes, accRes, goalRes, evtRes] = await Promise.all([
         api.getDepartmentSummaries().catch(() => ({ data: [] })),
         api.getAcademicSummary().catch(() => ({ data: null })),
         api.getAttendanceOverview().catch(() => ({ data: null })),
         api.getNotices().catch(() => ({ data: [] })),
         api.getExaminationsReport().catch(() => ({ data: [] })),
-        api.getResultsSummaryReport().catch(() => ({ data: null }))
+        api.getResultsSummaryReport().catch(() => ({ data: null })),
+        api.getAccreditationSummary().catch(() => ({ data: null })),
+        api.getGoalsSummary().catch(() => ({ data: null })),
+        api.getEventsSummary().catch(() => ({ data: null }))
       ]);
+
+      const accData = accRes?.data || {};
+      const goalData = goalRes?.data || {};
+      const evtData = evtRes?.data || {};
+
+      const totalOverdue = (accData.overdueCriteria || 0) + (goalData.overdueGoals || 0) + (evtData.overdueTasks || 0);
+
+      setInstMetrics({
+        accreditationCompletion: accData.overallCompliancePercentage || 0,
+        totalCriteria: accData.totalCriteria || 0,
+        completedCriteria: accData.completedCriteria || 0,
+        goalAchievement: goalData.overallAchievementPercentage || 0,
+        totalGoals: goalData.totalGoals || 0,
+        onTrackGoals: (goalData.statusDistribution?.in_progress || 0) + (goalData.statusDistribution?.completed || 0),
+        upcomingDeadlines: evtData.upcomingDeadlines || 0,
+        overdueItems: totalOverdue
+      });
 
       if (deptRes?.data) setDeptSummaries(deptRes.data);
       if (summaryRes?.data) setAcademicSummary(summaryRes.data);
@@ -362,6 +395,151 @@ export const PrincipalDashboard = () => {
           icon={CalendarCheck}
           color="blue"
         />
+      </div>
+
+      {/* Phase 1: Institutional Management Strategic Overview */}
+      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-subtle">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-indigo-600" />
+              Institutional Management & Strategic Governance
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              High-level accreditation compliance, institutional KPI tracking, and operational calendar deadlines.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/principal/accreditation"
+              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors"
+            >
+              All Portals <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Accreditation Completion */}
+          <Link
+            to="/principal/accreditation"
+            className="group p-4 rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/50 to-white hover:border-indigo-300 hover:shadow-md transition-all block"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-indigo-900 uppercase tracking-wider">
+                Accreditation
+              </span>
+              <div className="p-2 rounded-lg bg-indigo-100 text-indigo-700 group-hover:scale-110 transition-transform">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+            </div>
+            <div className="mt-2">
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-indigo-950">
+                  {instMetrics.accreditationCompletion}%
+                </span>
+                <span className="text-xs text-indigo-600 font-medium">compliance</span>
+              </div>
+              <div className="w-full bg-indigo-100 rounded-full h-1.5 mt-2 overflow-hidden">
+                <div
+                  className="bg-indigo-600 h-1.5 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(instMetrics.accreditationCompletion, 100)}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-slate-500 mt-2 flex items-center justify-between">
+                <span>{instMetrics.completedCriteria} of {instMetrics.totalCriteria} criteria verified</span>
+                <ArrowRight className="w-3 h-3 text-indigo-400 group-hover:translate-x-0.5 transition-transform" />
+              </p>
+            </div>
+          </Link>
+
+          {/* Card 2: Institutional Goal Achievement */}
+          <Link
+            to="/principal/goals"
+            className="group p-4 rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50/50 to-white hover:border-emerald-300 hover:shadow-md transition-all block"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-emerald-900 uppercase tracking-wider">
+                Goal Achievement
+              </span>
+              <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700 group-hover:scale-110 transition-transform">
+                <Target className="w-5 h-5" />
+              </div>
+            </div>
+            <div className="mt-2">
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-emerald-950">
+                  {instMetrics.goalAchievement}%
+                </span>
+                <span className="text-xs text-emerald-600 font-medium">overall KPI</span>
+              </div>
+              <div className="w-full bg-emerald-100 rounded-full h-1.5 mt-2 overflow-hidden">
+                <div
+                  className="bg-emerald-600 h-1.5 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(instMetrics.goalAchievement, 100)}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-slate-500 mt-2 flex items-center justify-between">
+                <span>{instMetrics.onTrackGoals} of {instMetrics.totalGoals} goals active/met</span>
+                <ArrowRight className="w-3 h-3 text-emerald-400 group-hover:translate-x-0.5 transition-transform" />
+              </p>
+            </div>
+          </Link>
+
+          {/* Card 3: Upcoming Deadlines */}
+          <Link
+            to="/principal/events"
+            className="group p-4 rounded-xl border border-amber-100 bg-gradient-to-br from-amber-50/50 to-white hover:border-amber-300 hover:shadow-md transition-all block"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-amber-900 uppercase tracking-wider">
+                Upcoming Deadlines
+              </span>
+              <div className="p-2 rounded-lg bg-amber-100 text-amber-700 group-hover:scale-110 transition-transform">
+                <Clock className="w-5 h-5" />
+              </div>
+            </div>
+            <div className="mt-2">
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-amber-950">
+                  {instMetrics.upcomingDeadlines}
+                </span>
+                <span className="text-xs text-amber-600 font-medium">milestones</span>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-3.5 flex items-center justify-between">
+                <span>Due in next 14 calendar days</span>
+                <ArrowRight className="w-3 h-3 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+              </p>
+            </div>
+          </Link>
+
+          {/* Card 4: Overdue Action Items */}
+          <Link
+            to="/principal/events?status=overdue"
+            className="group p-4 rounded-xl border border-rose-100 bg-gradient-to-br from-rose-50/50 to-white hover:border-rose-300 hover:shadow-md transition-all block"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-rose-900 uppercase tracking-wider">
+                Overdue Items
+              </span>
+              <div className="p-2 rounded-lg bg-rose-100 text-rose-700 group-hover:scale-110 transition-transform">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+            </div>
+            <div className="mt-2">
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-rose-700">
+                  {instMetrics.overdueItems}
+                </span>
+                <span className="text-xs text-rose-600 font-medium">pending</span>
+              </div>
+              <p className="text-[11px] text-rose-600 font-medium mt-3.5 flex items-center justify-between">
+                <span>Requires immediate intervention</span>
+                <ArrowRight className="w-3 h-3 text-rose-400 group-hover:translate-x-0.5 transition-transform" />
+              </p>
+            </div>
+          </Link>
+        </div>
       </div>
 
       {/* Charts Row: Enrollment Trend & Department Strength */}
