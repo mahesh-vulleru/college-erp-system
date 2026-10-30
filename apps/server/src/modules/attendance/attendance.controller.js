@@ -3,6 +3,7 @@ const Student = require('../students/student.model');
 const Department = require('../departments/department.model');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
+const { resolveHodDepartment, isHodDepartment } = require('../../utils/hodScoping');
 
 async function getAttendanceRecords(req, res, next) {
   try {
@@ -97,7 +98,7 @@ async function markAttendanceBatch(req, res, next) {
 async function getAttendanceSummary(req, res, next) {
   try {
     let studentId = req.query.studentId || req.query.student;
-    const departmentId = req.query.departmentId || req.query.department;
+    let departmentId = req.query.departmentId || req.query.department;
 
     if (req.user.role === ROLES.STUDENT) {
       const profile = await Student.findOne({ user: req.user._id });
@@ -109,6 +110,7 @@ async function getAttendanceSummary(req, res, next) {
         });
       }
       studentId = profile._id;
+      departmentId = null; // Prevent student from viewing departmental aggregates
     }
 
     let query = {};

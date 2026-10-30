@@ -17,7 +17,11 @@ const router = express.Router();
 router.use(authenticate);
 
 // Gateway configuration status check
-router.get('/gateway-status', getGatewayStatus);
+router.get(
+  '/gateway-status',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT),
+  getGatewayStatus
+);
 
 // List payments
 router.get(
@@ -36,7 +40,7 @@ router.get(
 // Record payment (Accounts, Super Admin, Principal, or Student initiating)
 router.post(
   '/',
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS),
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT),
   validateRequest(validatePaymentInput),
   recordPayment
 );

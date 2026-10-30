@@ -27,7 +27,7 @@ import { getRoleTheme } from '../../theme/roleThemes';
 
 // Six Role-Specific Navigation Groups strictly matching application routes & architecture
 const ROLE_NAV_CONFIGS = {
-  // 1. Super Admin: Overview, Institution, Academics, Operations, Finance, Reports, Security
+  // 1. Super Admin: Overview, User Management, Institution, Academics, Operations, Finance & Administration
   [ROLES.SUPER_ADMIN]: [
     {
       title: 'Overview',
@@ -37,95 +37,83 @@ const ROLE_NAV_CONFIGS = {
       ]
     },
     {
+      title: 'User Management',
+      items: [
+        { path: '/admin/users', label: 'User Directory', icon: Users },
+        { path: '/audit-logs', label: 'Security & Audit Logs', icon: ShieldCheck }
+      ]
+    },
+    {
       title: 'Institution',
       items: [
-        { path: '/departments', label: 'Departments', icon: Building2 }
+        { path: '/departments', label: 'Academic Departments', icon: Building2 },
+        { path: '/faculty', label: 'Teaching Faculty', icon: UserCheck },
+        { path: '/students', label: 'Student Registry', icon: GraduationCap }
       ]
     },
     {
       title: 'Academics',
       items: [
         { path: '/courses', label: 'Programs & Courses', icon: BookOpen },
-        { path: '/subjects', label: 'Curriculum Subjects', icon: Layers }
-      ]
-    },
-    {
-      title: 'Operations',
-      items: [
+        { path: '/subjects', label: 'Curriculum Subjects', icon: Layers },
         { path: '/timetable', label: 'Class Timetables', icon: Clock },
-        { path: '/attendance', label: 'Daily Attendance', icon: CalendarCheck }
-      ]
-    },
-    {
-      title: 'Finance',
-      items: [
-        { path: '/fees', label: 'Fee Schedules & Dues', icon: CreditCard }
-      ]
-    },
-    {
-      title: 'Reports',
-      items: [
-        { path: '/reports', label: 'Executive Reports', icon: BarChart3 }
-      ]
-    },
-    {
-      title: 'Security',
-      items: [
-        { path: '/audit-logs', label: 'Security & Audit Logs', icon: ShieldCheck }
-      ]
-    }
-  ],
-
-  // 2. Principal: Executive Overview, Departments, Academic Performance, Examinations, Reports, Notices
-  [ROLES.PRINCIPAL]: [
-    {
-      title: 'Institutional Management',
-      items: [
-        { path: '/principal/accreditation', label: 'Accreditation & Compliance', icon: ShieldCheck },
-        { path: '/principal/goals', label: 'Institutional Goals & KPIs', icon: Target },
-        { path: '/principal/events', label: 'Deadline & Event Tracker', icon: CalendarCheck }
-      ]
-    },
-    {
-      title: 'Executive Overview',
-      items: [
-        { path: '/principal', label: 'Principal Dashboard', icon: LayoutDashboard },
-        { path: '/overview', label: 'Institutional Health', icon: Compass }
-      ]
-    },
-    {
-      title: 'Departments',
-      items: [
-        { path: '/departments', label: 'Academic Departments', icon: Building2 }
-      ]
-    },
-    {
-      title: 'Academic Performance',
-      items: [
+        { path: '/attendance', label: 'Daily Attendance', icon: CalendarCheck },
+        { path: '/examinations', label: 'Examinations System', icon: FileText },
         { path: '/results', label: 'Results & Performance', icon: Award }
       ]
     },
     {
-      title: 'Examinations',
+      title: 'Finance & Administration',
       items: [
-        { path: '/examinations', label: 'Examinations System', icon: FileText }
-      ]
-    },
-    {
-      title: 'Reports',
-      items: [
-        { path: '/reports', label: 'Executive Reports', icon: BarChart3 }
-      ]
-    },
-    {
-      title: 'Notices',
-      items: [
+        { path: '/fees', label: 'Fee Schedules & Dues', icon: CreditCard },
+        { path: '/reports', label: 'Executive Reports', icon: BarChart3 },
         { path: '/notices', label: 'Notice Board', icon: Bell }
       ]
     }
   ],
 
-  // 3. HOD: Department Overview, Faculty, Courses & Subjects, Timetable, Attendance, Examinations, Results
+  // 2. Principal: Executive Leadership, Academic Administration, Operations & Examination, Governance & Audits
+  [ROLES.PRINCIPAL]: [
+    {
+      title: 'Executive Leadership',
+      items: [
+        { path: '/principal', label: 'Principal Dashboard', icon: LayoutDashboard },
+        { path: '/principal/accreditation', label: 'Accreditation & Compliance', icon: ShieldCheck },
+        { path: '/principal/goals', label: 'Institutional Goals & KPIs', icon: Target },
+        { path: '/principal/events', label: 'Institutional Academic Calendar', icon: CalendarCheck },
+        { path: '/overview', label: 'Institutional Health', icon: Compass }
+      ]
+    },
+    {
+      title: 'Academic Administration',
+      items: [
+        { path: '/departments', label: 'Academic Departments', icon: Building2 },
+        { path: '/faculty', label: 'Teaching Faculty', icon: Users },
+        { path: '/students', label: 'Student Cohorts', icon: GraduationCap },
+        { path: '/courses', label: 'Programs & Courses', icon: BookOpen }
+      ]
+    },
+    {
+      title: 'Operations & Performance',
+      items: [
+        { path: '/timetable', label: 'Class Timetables', icon: Clock },
+        { path: '/attendance', label: 'Daily Attendance', icon: CalendarCheck },
+        { path: '/examinations', label: 'Examination Status & Schedules', icon: FileText },
+        { path: '/results', label: 'Results & Performance', icon: Award }
+      ]
+    },
+    {
+      title: 'Governance & Audits',
+      items: [
+        { path: '/reports?tab=faculty', label: 'Faculty Workload', icon: Clock },
+        { path: '/reports', label: 'Executive Reports', icon: BarChart3 },
+        { path: '/audit-logs', label: 'Regulatory Audit Reports', icon: ShieldCheck },
+        { path: '/notices', label: 'Notice Board', icon: Bell }
+      ]
+    }
+  ],
+
+  // 3. HOD: Department Overview, Faculty & Students, Courses, Operations, Examinations & Administration
   [ROLES.HOD]: [
     {
       title: 'Department Overview',
@@ -134,38 +122,29 @@ const ROLE_NAV_CONFIGS = {
       ]
     },
     {
-      title: 'Faculty',
+      title: 'Faculty & Students',
       items: [
-        { path: '/hod?tab=faculty', label: 'Department Faculty', icon: Users }
+        { path: '/faculty', label: 'Department Faculty', icon: Users },
+        { path: '/students', label: 'Student Cohort', icon: GraduationCap }
       ]
     },
     {
-      title: 'Courses & Subjects',
+      title: 'Courses & Curriculum',
       items: [
-        { path: '/hod?tab=syllabus', label: 'Courses & Syllabus', icon: BookOpen }
+        { path: '/courses', label: 'Courses & Syllabus', icon: BookOpen }
       ]
     },
     {
-      title: 'Timetable',
+      title: 'Timetable & Operations',
       items: [
-        { path: '/hod?tab=timetable', label: 'Department Timetable', icon: Clock }
-      ]
-    },
-    {
-      title: 'Attendance',
-      items: [
+        { path: '/timetable', label: 'Department Timetable', icon: Clock },
         { path: '/attendance', label: 'Attendance Register', icon: CalendarCheck }
       ]
     },
     {
-      title: 'Examinations',
+      title: 'Examinations & Performance',
       items: [
-        { path: '/examinations', label: 'Examinations Cell', icon: Award }
-      ]
-    },
-    {
-      title: 'Results',
-      items: [
+        { path: '/examinations', label: 'Examinations Cell', icon: Award },
         { path: '/results', label: 'Results & Analysis', icon: FileText }
       ]
     },
@@ -178,7 +157,7 @@ const ROLE_NAV_CONFIGS = {
     }
   ],
 
-  // 4. Faculty: Dashboard, My Classes, Timetable, Attendance, Examinations & Marks, Notices
+  // 4. Faculty: Dashboard, Teaching & Schedule, Attendance & Students, Examinations & Grading, Communications
   [ROLES.FACULTY]: [
     {
       title: 'Dashboard',
@@ -187,39 +166,35 @@ const ROLE_NAV_CONFIGS = {
       ]
     },
     {
-      title: 'My Classes',
+      title: 'Teaching & Schedule',
       items: [
-        { path: '/faculty?tab=courses', label: 'Assigned Courses', icon: BookOpen },
-        { path: '/faculty?tab=roster', label: 'Student Rosters', icon: Users }
+        { path: '/courses', label: 'Assigned Courses & Syllabus', icon: BookOpen },
+        { path: '/timetable', label: 'Teaching Schedule', icon: Clock }
       ]
     },
     {
-      title: 'Timetable',
+      title: 'Attendance & Students',
       items: [
-        { path: '/faculty?tab=timetable', label: 'Teaching Schedule', icon: Clock }
+        { path: '/attendance', label: 'Attendance Capture', icon: CalendarCheck },
+        { path: '/students', label: 'Student Directory', icon: Users }
       ]
     },
     {
-      title: 'Attendance',
+      title: 'Examinations & Grading',
       items: [
-        { path: '/attendance', label: 'Attendance Capture', icon: CalendarCheck }
+        { path: '/examinations', label: 'Exam Schedules & Cell', icon: Award },
+        { path: '/results', label: 'Evaluation & Marks Entry', icon: FileText }
       ]
     },
     {
-      title: 'Examinations & Marks',
-      items: [
-        { path: '/faculty?tab=exams', label: 'Exam Duty & Marks', icon: Award }
-      ]
-    },
-    {
-      title: 'Notices',
+      title: 'Communications',
       items: [
         { path: '/notices', label: 'Notice Board', icon: Bell }
       ]
     }
   ],
 
-  // 5. Student: Dashboard, My Courses, Timetable, Attendance, Examinations, Published Results, Fees, Notices, Profile
+  // 5. Student: Dashboard, Academics & Schedule, Attendance & Performance, Finance & Notices
   [ROLES.STUDENT]: [
     {
       title: 'Dashboard',
@@ -228,56 +203,30 @@ const ROLE_NAV_CONFIGS = {
       ]
     },
     {
-      title: 'My Courses',
+      title: 'Academics & Schedule',
       items: [
-        { path: '/student?tab=courses', label: 'Enrolled Courses', icon: BookOpen }
+        { path: '/courses', label: 'Enrolled Courses & Syllabus', icon: BookOpen },
+        { path: '/timetable', label: 'Semester Timetable', icon: Clock }
       ]
     },
     {
-      title: 'Timetable',
+      title: 'Attendance & Performance',
       items: [
-        { path: '/student?tab=timetable', label: 'Semester Timetable', icon: Clock }
+        { path: '/attendance', label: 'Attendance Register', icon: CalendarCheck },
+        { path: '/examinations', label: 'Exam Schedules', icon: Award },
+        { path: '/results', label: 'Published Results & Grades', icon: FileText }
       ]
     },
     {
-      title: 'Attendance',
+      title: 'Finance & Notices',
       items: [
-        { path: '/student?tab=attendance', label: 'Attendance Register', icon: CalendarCheck }
-      ]
-    },
-    {
-      title: 'Examinations',
-      items: [
-        { path: '/examinations', label: 'Exam Schedules', icon: Award }
-      ]
-    },
-    {
-      title: 'Published Results',
-      items: [
-        { path: '/student?tab=results', label: 'Grade Cards & SGPA', icon: FileText }
-      ]
-    },
-    {
-      title: 'Fees',
-      items: [
-        { path: '/fees', label: 'Fee Dues & Receipts', icon: CreditCard }
-      ]
-    },
-    {
-      title: 'Notices',
-      items: [
+        { path: '/fees', label: 'Fee Dues & Receipts', icon: CreditCard },
         { path: '/notices', label: 'Campus Circulars', icon: Bell }
-      ]
-    },
-    {
-      title: 'Profile',
-      items: [
-        { path: '/student?tab=profile', label: 'Student Profile', icon: GraduationCap }
       ]
     }
   ],
 
-  // 6. Accounts: Finance Overview, Fee Schedules, Invoices, Payments, Outstanding Dues, Financial Reports, Notices
+  // 6. Accounts: Finance Overview, Fee Management, Reports & Notices
   [ROLES.ACCOUNTS]: [
     {
       title: 'Finance Overview',
@@ -286,38 +235,18 @@ const ROLE_NAV_CONFIGS = {
       ]
     },
     {
-      title: 'Fee Schedules',
+      title: 'Fee Management',
       items: [
-        { path: '/fees?tab=structures', label: 'Fee Plans & Schedules', icon: Layers }
+        { path: '/fees?tab=structures', label: 'Fee Plans & Schedules', icon: Layers },
+        { path: '/fees?tab=invoices', label: 'Billing Invoices', icon: FileText },
+        { path: '/fees?tab=payments', label: 'Payment Transactions', icon: CreditCard },
+        { path: '/fees?status=unpaid', label: 'Outstanding Dues Ledgers', icon: TrendingUp }
       ]
     },
     {
-      title: 'Invoices',
+      title: 'Reports & Notices',
       items: [
-        { path: '/fees?tab=invoices', label: 'Billing Invoices', icon: FileText }
-      ]
-    },
-    {
-      title: 'Payments',
-      items: [
-        { path: '/fees?tab=payments', label: 'Payment Transactions', icon: CreditCard }
-      ]
-    },
-    {
-      title: 'Outstanding Dues',
-      items: [
-        { path: '/accounts?tab=invoices', label: 'Outstanding Ledgers', icon: TrendingUp }
-      ]
-    },
-    {
-      title: 'Financial Reports',
-      items: [
-        { path: '/reports', label: 'Financial Reports', icon: BarChart3 }
-      ]
-    },
-    {
-      title: 'Notices',
-      items: [
+        { path: '/reports', label: 'Financial Reports', icon: BarChart3 },
         { path: '/notices', label: 'Notice Board', icon: Bell }
       ]
     }
@@ -349,7 +278,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
 
   const getInitials = (name) => {
     if (!name) return 'U';
-    const parts = name.replace(/^(Dr.|Prof.|Mr.|Ms.|Mrs.)s+/i, '').trim().split(' ');
+    const parts = name.replace(/^(Dr.|Prof.|Mr.|Ms.|Mrs.)\s+/i, '').trim().split(' ');
     if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     return name.slice(0, 2).toUpperCase();
   };
@@ -364,7 +293,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
     }
   ];
 
-  // Precision active state matching supporting query params & tab anchors
+  // Precision active state matching supporting full pages, query params & tab anchors
   const isItemActive = (itemPath) => {
     const currentFull = `${location.pathname}${location.search}`;
     if (itemPath === currentFull) return true;
@@ -376,21 +305,16 @@ export const Sidebar = ({ isOpen, onClose }) => {
       const currentParams = new URLSearchParams(location.search);
       const itemTab = itemParams.get('tab');
       const currentTab = currentParams.get('tab');
+      const itemStatus = itemParams.get('status');
+      const currentStatus = currentParams.get('status');
 
-      if (itemTab && currentTab) {
-        if (itemTab === currentTab) return true;
-        // Aliases for HOD and academic tabs
-        if ((itemTab === 'faculty' || itemTab === 'roster') && (currentTab === 'faculty' || currentTab === 'roster')) return true;
-        if ((itemTab === 'syllabus' || itemTab === 'curriculum' || itemTab === 'subjects') && (currentTab === 'syllabus' || currentTab === 'curriculum' || currentTab === 'subjects')) return true;
-        if ((itemTab === 'timetable' || itemTab === 'schedule') && (currentTab === 'timetable' || currentTab === 'schedule')) return true;
-        if ((itemTab === 'students' || itemTab === 'cohort') && (currentTab === 'students' || currentTab === 'cohort')) return true;
-        if ((itemTab === 'exams' || itemTab === 'examination') && (currentTab === 'exams' || currentTab === 'examination')) return true;
-      }
+      if (itemTab && currentTab && itemTab === currentTab) return true;
+      if (itemStatus && currentStatus && itemStatus === currentStatus) return true;
       return false;
     }
 
     // If current location has query params, do not match parent dashboard path
-    if (location.search && (itemPath === '/student' || itemPath === '/faculty' || itemPath === '/hod' || itemPath === '/accounts' || itemPath === '/fees')) {
+    if (location.search && (itemPath === '/student' || itemPath === '/faculty' || itemPath === '/hod' || itemPath === '/accounts' || itemPath === '/fees' || itemPath === '/reports')) {
       return false;
     }
     return location.pathname === itemPath;

@@ -15,9 +15,21 @@ const router = express.Router();
 
 router.use(authenticate);
 
-router.get('/', getAttendanceRecords);
-router.get('/summary', getAttendanceSummary);
-router.get('/overview', getAttendanceOverview);
+router.get(
+  '/',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
+  getAttendanceRecords
+);
+router.get(
+  '/summary',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
+  getAttendanceSummary
+);
+router.get(
+  '/overview',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getAttendanceOverview
+);
 
 // Only faculty, HOD, and principal can mark attendance
 router.post(

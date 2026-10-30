@@ -11,7 +11,7 @@ router.use(authenticate);
 // Audit log querying permitted for administrative roles (Super Admin, Principal, HOD)
 router.get(
   '/',
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS),
   listAuditLogs
 );
 
@@ -23,7 +23,7 @@ router.get(
 
 router.get(
   '/:id',
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS),
   getAuditLogById
 );
 

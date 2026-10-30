@@ -22,9 +22,21 @@ const router = express.Router();
 router.use(authenticate);
 
 // Fee Structures (Plans)
-router.get('/', listFeeStructures);
-router.get('/structures', listFeeStructures);
-router.get('/structures/:id', getFeeStructureById);
+router.get(
+  '/',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT),
+  listFeeStructures
+);
+router.get(
+  '/structures',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT),
+  listFeeStructures
+);
+router.get(
+  '/structures/:id',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT),
+  getFeeStructureById
+);
 
 router.post(
   '/',

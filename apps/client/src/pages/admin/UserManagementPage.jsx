@@ -19,6 +19,7 @@ import {
 import api from '../../api/apiClient';
 import { useToast } from '../../context/ToastContext';
 import Card from '../../components/common/Card';
+import StatWidget from '../../components/common/StatWidget';
 import Table from '../../components/common/Table';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';

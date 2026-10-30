@@ -76,6 +76,20 @@ async function listAuditLogs(req, res, next) {
       }
     }
 
+    // Role-based financial scoping for Accounts: strictly isolate to financial logs per RBAC matrix
+    if (req.user && req.user.role === ROLES.ACCOUNTS) {
+      const financeConditions = [
+        { entityType: { $in: ['FeeStructure', 'Invoice', 'Payment'] } },
+        { action: { $regex: /FEE|INVOICE|PAYMENT|REFUND/i } }
+      ];
+      if (query.$or) {
+        query.$and = [{ $or: query.$or }, { $or: financeConditions }];
+        delete query.$or;
+      } else {
+        query.$or = financeConditions;
+      }
+    }
+
     const [logs, total] = await Promise.all([
       AuditLog.find(query)
         .populate('user', 'name email role department')
@@ -115,6 +129,18 @@ async function getAuditLogById(req, res, next) {
       });
     }
 
+    if (req.user && req.user.role === ROLES.ACCOUNTS) {
+      const isFinancial = ['FeeStructure', 'Invoice', 'Payment'].includes(log.entityType) ||
+        /FEE|INVOICE|PAYMENT|REFUND/i.test(log.action);
+      if (!isFinancial) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          message: 'Forbidden: Accounts role can only view financial audit logs',
+          code: 'FORBIDDEN'
+        });
+      }
+    }
+
     return sendSuccess(res, {
       message: 'Audit log record retrieved',
       data: log
@@ -134,6 +160,13 @@ async function exportAuditLogsCsv(req, res, next) {
     if (req.query.action) query.action = req.query.action;
     if (req.query.entityType) query.entityType = req.query.entityType;
     if (req.query.outcome) query.outcome = req.query.outcome;
+
+    if (req.user && req.user.role === ROLES.ACCOUNTS) {
+      query.$or = [
+        { entityType: { $in: ['FeeStructure', 'Invoice', 'Payment'] } },
+        { action: { $regex: /FEE|INVOICE|PAYMENT|REFUND/i } }
+      ];
+    }
 
     const logs = await AuditLog.find(query)
       .populate('user', 'name email role')

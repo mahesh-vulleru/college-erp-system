@@ -18,6 +18,7 @@ import DashboardPage from './pages/DashboardPage';
 
 // Role Dashboards
 import AdminDashboard from './pages/admin/AdminDashboard';
+import UserManagementPage from './pages/admin/UserManagementPage';
 import PrincipalDashboard from './pages/principal/PrincipalDashboard';
 import HodDashboard from './pages/hod/HodDashboard';
 import FacultyDashboard from './pages/faculty/FacultyDashboard';
@@ -131,6 +132,14 @@ export const App = () => {
                 }
               />
               <Route path="admin/dashboard" element={<Navigate to="/admin" replace />} />
+              <Route
+                path="admin/users"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, 'admin', 'superadmin', 'super_administrator']}>
+                    <UserManagementPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="dashboard/admin" element={<Navigate to="/admin" replace />} />
 
               <Route
@@ -175,12 +184,12 @@ export const App = () => {
               />
               {/* HOD Direct Sub-Routes & Aliases */}
               <Route path="hod/dashboard" element={<Navigate to="/hod" replace />} />
-              <Route path="hod/faculty" element={<Navigate to="/hod?tab=faculty" replace />} />
-              <Route path="hod/syllabus" element={<Navigate to="/hod?tab=syllabus" replace />} />
-              <Route path="hod/courses" element={<Navigate to="/hod?tab=syllabus" replace />} />
-              <Route path="hod/timetable" element={<Navigate to="/hod?tab=timetable" replace />} />
-              <Route path="hod/students" element={<Navigate to="/hod?tab=students" replace />} />
-              <Route path="hod/exams" element={<Navigate to="/hod?tab=exams" replace />} />
+              <Route path="hod/faculty" element={<Navigate to="/faculty" replace />} />
+              <Route path="hod/syllabus" element={<Navigate to="/courses" replace />} />
+              <Route path="hod/courses" element={<Navigate to="/courses" replace />} />
+              <Route path="hod/timetable" element={<Navigate to="/timetable" replace />} />
+              <Route path="hod/students" element={<Navigate to="/students" replace />} />
+              <Route path="hod/exams" element={<Navigate to="/examinations" replace />} />
               <Route path="hod/alerts" element={<Navigate to="/hod?tab=alerts" replace />} />
               <Route path="hod/attendance" element={<Navigate to="/attendance" replace />} />
               <Route path="hod/examinations" element={<Navigate to="/examinations" replace />} />
@@ -190,7 +199,7 @@ export const App = () => {
               <Route
                 path="faculty"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.FACULTY, 'admin']}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, 'admin']}>
                     <FacultyDashboard />
                   </ProtectedRoute>
                 }
@@ -198,7 +207,15 @@ export const App = () => {
               <Route
                 path="student"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.STUDENT, 'admin']}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
+                    <StudentDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="students"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
                     <StudentDashboard />
                   </ProtectedRoute>
                 }
@@ -216,7 +233,7 @@ export const App = () => {
               <Route
                 path="departments"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
                     <DepartmentsPage />
                   </ProtectedRoute>
                 }
@@ -224,7 +241,7 @@ export const App = () => {
               <Route
                 path="courses"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
                     <CoursesPage />
                   </ProtectedRoute>
                 }
@@ -232,7 +249,7 @@ export const App = () => {
               <Route
                 path="subjects"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
                     <CoursesPage />
                   </ProtectedRoute>
                 }
@@ -240,7 +257,7 @@ export const App = () => {
               <Route
                 path="timetable"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
                     <TimetablePage />
                   </ProtectedRoute>
                 }
@@ -248,7 +265,7 @@ export const App = () => {
               <Route
                 path="attendance"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
                     <AttendancePage />
                   </ProtectedRoute>
                 }
@@ -256,7 +273,7 @@ export const App = () => {
               <Route
                 path="examinations"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
                     <ExaminationsPage />
                   </ProtectedRoute>
                 }
@@ -264,7 +281,7 @@ export const App = () => {
               <Route
                 path="results"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
                     <ResultsPage />
                   </ProtectedRoute>
                 }
@@ -290,7 +307,7 @@ export const App = () => {
               <Route
                 path="notices"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.ACCOUNTS, 'admin']}>
                     <NoticeBoardPage />
                   </ProtectedRoute>
                 }
@@ -306,7 +323,7 @@ export const App = () => {
               <Route
                 path="audit-logs"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, 'admin']}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS, 'admin']}>
                     <AuditLogsPage />
                   </ProtectedRoute>
                 }
