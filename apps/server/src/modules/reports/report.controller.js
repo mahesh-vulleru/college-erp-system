@@ -12,6 +12,7 @@ const FeeStructure = require('../fees/fee.model');
 const Invoice = require('../fees/invoice.model');
 const User = require('../auth/auth.model');
 const AuditLog = require('../audit-logs/audit.model');
+const { generateCsv, generateSpreadsheetML, generateTextPdf } = require('../../utils/exportGenerators');
 const { computeInvoiceBalance } = require('../fees/fee.controller');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { ROLES, USER_STATUS, HTTP_STATUS } = require('@college-erp/shared');
@@ -663,55 +664,114 @@ async function getAdminActivityReport(req, res, next) {
 /**
  * CSV EXPORT DISPATCHER (Authorized)
  */
+function sendFormattedReport(res, { title, filenameBase, headers, rows, format }) {
+  const timestamp = new Date().toISOString().split('T')[0];
+  const fmt = (format || 'csv').toLowerCase();
+
+  if (fmt === 'xlsx' || fmt === 'excel') {
+    const xml = generateSpreadsheetML(title, headers, rows);
+    res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filenameBase}-${timestamp}.xlsx"`);
+    return res.status(HTTP_STATUS.OK).send(xml);
+  }
+
+  if (fmt === 'pdf') {
+    const pdfBuf = generateTextPdf(title, 'Apex Engineering College - Principal Executive Summary', headers, rows);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filenameBase}-${timestamp}.pdf"`);
+    return res.status(HTTP_STATUS.OK).send(pdfBuf);
+  }
+
+  // Default: CSV
+  const csv = generateCsv(headers, rows);
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="${filenameBase}-${timestamp}.csv"`);
+  return res.status(HTTP_STATUS.OK).send(csv);
+}
+
+/**
+ * Institutional Multi-Format Report Export Dispatcher
+ * Supports formats: csv, xlsx, pdf
+ * Supports report types: enrollment, attendance, finance, academic_summary, departments, examinations, results
+ */
 async function exportReportCsv(req, res, next) {
   try {
-    const reportType = req.query.type;
+    const reportType = (req.query.type || '').toLowerCase();
+    const format = req.query.format || 'csv';
 
+    // 1. Enrollment Report
     if (reportType === 'enrollment') {
-      const students = await Student.find()
+      const studentQuery = {};
+      if (req.query.department && req.query.department !== 'all') {
+        studentQuery.department = req.query.department;
+      }
+      if (req.query.semester && req.query.semester !== 'all') {
+        studentQuery.currentSemester = Number(req.query.semester);
+      }
+
+      const students = await Student.find(studentQuery)
         .populate('user', 'name email')
         .populate('department', 'name code')
         .populate('course', 'name code');
 
-      const headers = ['Roll Number', 'Student Name', 'Email', 'Department', 'Semester', 'Program'];
+      const headers = ['Roll Number', 'Student Name', 'Email', 'Department', 'Semester', 'Program', 'Status'];
       const rows = students.map((s) => [
-        s.rollNumber,
-        `"${(s.user?.name || '').replace(/"/g, '""')}"`,
+        s.rollNumber || '',
+        s.user?.name || '',
         s.user?.email || '',
-        s.department?.code || '',
-        s.currentSemester,
-        s.course?.code || ''
+        s.department?.code || s.department?.name || '',
+        s.currentSemester || 1,
+        s.course?.code || s.course?.name || '',
+        s.admissionStatus || 'enrolled'
       ]);
 
-      const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', 'attachment; filename="enrollment-report.csv"');
-      return res.status(HTTP_STATUS.OK).send(csv);
+      return sendFormattedReport(res, {
+        title: 'Student Enrollment & Registry Report',
+        filenameBase: 'enrollment-report',
+        headers,
+        rows,
+        format
+      });
     }
 
+    // 2. Attendance Report
     if (reportType === 'attendance') {
-      const records = await Attendance.find()
+      const attQuery = {};
+      if (req.query.subject && req.query.subject !== 'all') {
+        attQuery.subject = req.query.subject;
+      }
+      if (req.query.startDate && req.query.endDate) {
+        attQuery.date = { $gte: new Date(req.query.startDate), $lte: new Date(req.query.endDate) };
+      }
+
+      const records = await Attendance.find(attQuery)
         .populate('student', 'rollNumber')
         .populate('subject', 'name code')
-        .limit(500);
+        .populate('faculty', 'name')
+        .limit(1000)
+        .sort({ date: -1 });
 
       const headers = ['Date', 'Roll Number', 'Subject Code', 'Subject Name', 'Period', 'Status'];
       const rows = records.map((r) => [
         r.date ? new Date(r.date).toISOString().split('T')[0] : '',
         r.student?.rollNumber || '',
         r.subject?.code || '',
-        `"${(r.subject?.name || '').replace(/"/g, '""')}"`,
+        r.subject?.name || '',
         r.periodNumber,
         r.status
       ]);
 
-      const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', 'attachment; filename="attendance-report.csv"');
-      return res.status(HTTP_STATUS.OK).send(csv);
+      return sendFormattedReport(res, {
+        title: 'Institutional Attendance Report',
+        filenameBase: 'attendance-report',
+        headers,
+        rows,
+        format
+      });
     }
 
-    if (reportType === 'finance') {
+    // 3. Finance & Dues Report
+    if (reportType === 'finance' || reportType === 'fee') {
       const invoices = await Invoice.find().populate({
         path: 'student',
         select: 'rollNumber',
@@ -730,15 +790,131 @@ async function exportReportCsv(req, res, next) {
         inv.derivedStatus
       ]);
 
-      const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', 'attachment; filename="finance-dues-report.csv"');
-      return res.status(HTTP_STATUS.OK).send(csv);
+      return sendFormattedReport(res, {
+        title: 'Institutional Finance & Student Dues Report',
+        filenameBase: 'finance-dues-report',
+        headers,
+        rows,
+        format
+      });
+    }
+
+    // 4. Academic Summary Report
+    if (reportType === 'academic_summary' || reportType === 'academic') {
+      const [totalStudents, totalFaculty, totalDepartments, totalCourses] = await Promise.all([
+        Student.countDocuments(),
+        Faculty.countDocuments(),
+        Department.countDocuments(),
+        Course.countDocuments()
+      ]);
+
+      const headers = ['Academic Metric', 'Current Count', 'Institutional Target', 'Ratio / Capacity Utilization'];
+      const rows = [
+        ['Total Enrolled Students', totalStudents, 1000, `${((totalStudents / 1000) * 100).toFixed(1)}% Capacity`],
+        ['Total Faculty Strength', totalFaculty, 100, `Ratio: 1:${totalFaculty > 0 ? (totalStudents / totalFaculty).toFixed(1) : 0}`],
+        ['Active Departments', totalDepartments, 6, '100% Operational'],
+        ['Accredited Academic Courses', totalCourses, 10, 'Governed by Academic Council']
+      ];
+
+      return sendFormattedReport(res, {
+        title: 'Academic Performance & Capacity Overview',
+        filenameBase: 'academic-summary-report',
+        headers,
+        rows,
+        format
+      });
+    }
+
+    // 5. Department Summaries
+    if (reportType === 'departments' || reportType === 'department') {
+      const departments = await Department.find().populate('hod', 'name email');
+      const rows = [];
+
+      for (const d of departments) {
+        const [studentCount, facultyCount] = await Promise.all([
+          Student.countDocuments({ department: d._id }),
+          Faculty.countDocuments({ department: d._id })
+        ]);
+        const capacity = d.intakeCapacity || 120;
+        const util = Math.round((studentCount / capacity) * 100);
+
+        rows.push([
+          d.name,
+          d.code,
+          d.hod?.name || 'Unassigned',
+          capacity,
+          studentCount,
+          facultyCount,
+          `${util}%`
+        ]);
+      }
+
+      const headers = ['Department Name', 'Code', 'Head of Department (HOD)', 'Intake Capacity', 'Enrolled Students', 'Faculty Strength', 'Utilization'];
+      return sendFormattedReport(res, {
+        title: 'Department-Wise Enrollment & Capacity Report',
+        filenameBase: 'department-summaries-report',
+        headers,
+        rows,
+        format
+      });
+    }
+
+    // 6. Examinations Report
+    if (reportType === 'examinations' || reportType === 'exam') {
+      const exams = await Examination.find().sort({ semester: 1, startDate: -1 });
+      const headers = ['Examination Name', 'Exam Type', 'Academic Year', 'Semester', 'Timeline Status', 'Published', 'Start Date'];
+      const rows = exams.map((ex) => [
+        ex.name,
+        (ex.examType || 'regular').toUpperCase(),
+        ex.academicYear || '',
+        ex.semester || '',
+        ex.timelineStatus || 'Scheduled',
+        ex.isPublished ? 'Published' : 'Tabulating',
+        ex.startDate ? new Date(ex.startDate).toISOString().split('T')[0] : ''
+      ]);
+
+      return sendFormattedReport(res, {
+        title: 'Institutional Examinations Status Report',
+        filenameBase: 'examinations-report',
+        headers,
+        rows,
+        format
+      });
+    }
+
+    // 7. Results Report
+    if (reportType === 'results' || reportType === 'result') {
+      const results = await Result.find()
+        .populate('examination', 'name academicYear semester')
+        .populate('student', 'rollNumber')
+        .populate('subject', 'name code')
+        .limit(1000);
+
+      const headers = ['Exam Series', 'Roll Number', 'Subject Code', 'Subject Name', 'Internal Marks', 'External Marks', 'Total Marks', 'Grade', 'Status'];
+      const rows = results.map((r) => [
+        r.examination?.name || '',
+        r.student?.rollNumber || '',
+        r.subject?.code || '',
+        r.subject?.name || '',
+        r.internalMarks,
+        r.externalMarks,
+        r.totalMarks,
+        r.grade,
+        r.status
+      ]);
+
+      return sendFormattedReport(res, {
+        title: 'Published Academic Examination Results',
+        filenameBase: 'results-summary-report',
+        headers,
+        rows,
+        format
+      });
     }
 
     return sendError(res, {
       statusCode: HTTP_STATUS.BAD_REQUEST,
-      message: 'Unknown or missing export report type. Allowed: enrollment, attendance, finance.',
+      message: 'Unknown or missing export report type. Allowed: enrollment, attendance, finance, academic_summary, departments, examinations, results.',
       code: 'INVALID_REPORT_TYPE'
     });
   } catch (error) {
