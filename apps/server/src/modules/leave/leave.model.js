@@ -2,6 +2,12 @@ const mongoose = require('mongoose');
 
 const leaveSchema = new mongoose.Schema(
   {
+    applicationId: {
+      type: String,
+      trim: true,
+      index: true,
+      sparse: true
+    },
     faculty: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Faculty',
@@ -82,4 +88,3 @@ leaveSchema.index({ startDate: 1, endDate: 1 });
 const Leave = mongoose.model('Leave', leaveSchema);
 
 module.exports = Leave;
-

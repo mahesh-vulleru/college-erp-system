@@ -22,6 +22,7 @@ const Student = require('../modules/students/student.model');
 const Faculty = require('../modules/faculty/faculty.model');
 const FeeStructure = require('../modules/fees/fee.model');
 const Notice = require('../modules/notices/notice.model');
+const Leave = require('../modules/leave/leave.model');
 const {
   BookCategory,
   Book,
@@ -48,7 +49,8 @@ async function seed() {
     Student.deleteMany({}),
     Faculty.deleteMany({}),
     FeeStructure.deleteMany({}),
-    Notice.deleteMany({})
+    Notice.deleteMany({}),
+    Leave.deleteMany({})
   ]);
 
   console.log('[Seed] Creating institutional users with role-based credentials...');
@@ -150,7 +152,7 @@ async function seed() {
   const librarianUser = await upsertUser({
     name: 'Mrs. Evelyn Reed',
     email: 'librarian@college.edu',
-    password: commonPassword,
+    password: process.env.SEED_LIBRARIAN_PASSWORD || 'Library@2026#',
     role: ROLES.LIBRARIAN,
     department: 'Central Library',
     status: USER_STATUS.ACTIVE
@@ -378,6 +380,44 @@ async function seed() {
     isPinned: true
   });
 
+
+  
+  console.log('[Seed] Seeding sample faculty leave applications...');
+  await Leave.create([
+    {
+      applicationId: 'LV-101',
+      faculty: facultyUser1._id,
+      user: facultyUser1._id,
+      department: cseDept._id,
+      leaveType: 'duty',
+      startDate: new Date('2026-11-05'),
+      endDate: new Date('2026-11-08'),
+      reason: 'Keynote Speaker at IEEE International Computing Conference',
+      status: 'pending'
+    },
+    {
+      applicationId: 'LV-102',
+      faculty: facultyUser2._id,
+      user: facultyUser2._id,
+      department: cseDept._id,
+      leaveType: 'sick',
+      startDate: new Date('2026-11-02'),
+      endDate: new Date('2026-11-04'),
+      reason: 'Scheduled diagnostic surgery recovery',
+      status: 'pending'
+    },
+    {
+      applicationId: 'LV-103',
+      faculty: facultyUser3._id,
+      user: facultyUser3._id,
+      department: eceDept._id,
+      leaveType: 'casual',
+      startDate: new Date('2026-11-10'),
+      endDate: new Date('2026-11-14'),
+      reason: 'Personal family obligations',
+      status: 'pending'
+    }
+  ]);
 
   console.log('[Seed] Seeding Central Library initial catalog & settings...');
   try {

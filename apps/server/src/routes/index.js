@@ -34,10 +34,11 @@ router.use('/health', healthRoutes);
 // Versioned API v1 Router
 const v1Router = express.Router();
 
+v1Router.use('/health', healthRoutes);
 v1Router.use('/auth', authRoutes);
 v1Router.use('/users', usersRoutes);
-v1Router.use('/departments', departmentRoutes);
 v1Router.get('/department-summaries', authenticate, authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD), getDepartmentSummaries);
+v1Router.use('/departments', departmentRoutes);
 v1Router.use('/courses', courseRoutes);
 v1Router.use('/subjects', subjectRoutes);
 v1Router.use('/students', studentRoutes);
