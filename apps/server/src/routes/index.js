@@ -20,6 +20,7 @@ const leaveRoutes = require('../modules/leave/leave.routes');
 const accreditationRoutes = require('../modules/accreditation/accreditation.routes');
 const goalRoutes = require('../modules/goals/goal.routes');
 const eventRoutes = require('../modules/events/institutionalEvent.routes');
+const libraryRoutes = require('../modules/library/library.routes');
 const { getAttendanceOverview, getDepartmentSummaries, getExaminationsReport } = require('../modules/reports/report.controller');
 const authenticate = require('../middleware/auth');
 const { authorizeRoles } = require('../middleware/rbac');
@@ -66,7 +67,11 @@ v1Router.use('/leaves', leaveRoutes);
 v1Router.use('/accreditation', accreditationRoutes);
 v1Router.use('/institutional-goals', goalRoutes);
 v1Router.use('/institutional-events', eventRoutes);
+v1Router.use('/library', libraryRoutes);
 
 router.use('/v1', v1Router);
+
+// Direct /api/library alias
+router.use('/library', libraryRoutes);
 
 module.exports = router;

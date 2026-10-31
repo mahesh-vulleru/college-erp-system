@@ -821,6 +821,180 @@ class ApiClient {
   markEventCompleted(id, data = {}) {
     return this.patch(`/v1/institutional-events/${id}/complete`, data);
   }
+
+  // -------------------------------------------------------------
+  // Library Management System APIs
+  // -------------------------------------------------------------
+  getLibraryDashboard() {
+    return this.get('/v1/library/dashboard');
+  }
+
+  getBooks(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.search) searchParams.append('search', params.search);
+    if (params.category) searchParams.append('category', params.category);
+    if (params.author) searchParams.append('author', params.author);
+    if (params.status) searchParams.append('status', params.status);
+    if (params.page) searchParams.append('page', params.page);
+    if (params.limit) searchParams.append('limit', params.limit);
+    const qs = searchParams.toString();
+    return this.get(`/v1/library/books${qs ? `?${qs}` : ''}`);
+  }
+
+  getBookById(id) {
+    return this.get(`/v1/library/books/${id}`);
+  }
+
+  createBook(data) {
+    return this.post('/v1/library/books', data);
+  }
+
+  updateBook(id, data) {
+    return this.put(`/v1/library/books/${id}`, data);
+  }
+
+  addBookCopies(id, data) {
+    return this.post(`/v1/library/books/${id}/copies`, data);
+  }
+
+  archiveBook(id) {
+    return this.delete(`/v1/library/books/${id}`);
+  }
+
+  getBookCategories() {
+    return this.get('/v1/library/categories');
+  }
+
+  createBookCategory(data) {
+    return this.post('/v1/library/categories', data);
+  }
+
+  getLibraryMembers(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.search) searchParams.append('search', params.search);
+    if (params.role) searchParams.append('role', params.role);
+    if (params.status) searchParams.append('status', params.status);
+    if (params.page) searchParams.append('page', params.page);
+    if (params.limit) searchParams.append('limit', params.limit);
+    const qs = searchParams.toString();
+    return this.get(`/v1/library/members${qs ? `?${qs}` : ''}`);
+  }
+
+  registerLibraryMember(data) {
+    return this.post('/v1/library/members', data);
+  }
+
+  getLibraryMemberDetails(id) {
+    return this.get(`/v1/library/members/${id}`);
+  }
+
+  issueBook(data) {
+    return this.post('/v1/library/issues', data);
+  }
+
+  getCirculationIssues(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.status) searchParams.append('status', params.status);
+    if (params.memberId) searchParams.append('memberId', params.memberId);
+    if (params.search) searchParams.append('search', params.search);
+    if (params.page) searchParams.append('page', params.page);
+    if (params.limit) searchParams.append('limit', params.limit);
+    const qs = searchParams.toString();
+    return this.get(`/v1/library/issues${qs ? `?${qs}` : ''}`);
+  }
+
+  returnBook(data) {
+    return this.post('/v1/library/returns', data);
+  }
+
+  renewBook(data) {
+    return this.post('/v1/library/renewals', data);
+  }
+
+  getBookReservations(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.status) searchParams.append('status', params.status);
+    if (params.page) searchParams.append('page', params.page);
+    if (params.limit) searchParams.append('limit', params.limit);
+    const qs = searchParams.toString();
+    return this.get(`/v1/library/reservations${qs ? `?${qs}` : ''}`);
+  }
+
+  createBookReservation(data) {
+    return this.post('/v1/library/reservations', data);
+  }
+
+  cancelBookReservation(id) {
+    return this.delete(`/v1/library/reservations/${id}`);
+  }
+
+  getLibraryFines(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.status) searchParams.append('status', params.status);
+    if (params.memberId) searchParams.append('memberId', params.memberId);
+    if (params.page) searchParams.append('page', params.page);
+    if (params.limit) searchParams.append('limit', params.limit);
+    const qs = searchParams.toString();
+    return this.get(`/v1/library/fines${qs ? `?${qs}` : ''}`);
+  }
+
+  payLibraryFine(data) {
+    return this.post('/v1/library/fines/pay', data);
+  }
+
+  waiveLibraryFine(data) {
+    return this.post('/v1/library/fines/waive', data);
+  }
+
+  getDigitalResources(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.search) searchParams.append('search', params.search);
+    if (params.category) searchParams.append('category', params.category);
+    if (params.page) searchParams.append('page', params.page);
+    if (params.limit) searchParams.append('limit', params.limit);
+    const qs = searchParams.toString();
+    return this.get(`/v1/library/digital-resources${qs ? `?${qs}` : ''}`);
+  }
+
+  createDigitalResource(data) {
+    return this.post('/v1/library/digital-resources', data);
+  }
+
+  recordDigitalDownload(id) {
+    return this.post(`/v1/library/digital-resources/${id}/download`, {});
+  }
+
+  getLibrarySettings() {
+    return this.get('/v1/library/settings');
+  }
+
+  updateLibrarySettings(data) {
+    return this.put('/v1/library/settings', data);
+  }
+
+  async downloadLibraryReport(type = 'inventory') {
+    const token = this.getToken();
+    const url = `${this.baseUrl}/v1/library/reports?type=${encodeURIComponent(type)}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` })
+      }
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to export report: ${response.statusText}`);
+    }
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = `library_${type}_report_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+    return true;
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL);

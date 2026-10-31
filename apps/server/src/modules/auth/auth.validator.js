@@ -5,9 +5,9 @@ function validateLoginInput(data = {}) {
   const { email, password, role } = data;
 
   if (!email || typeof email !== 'string' || !email.trim()) {
-    errors.push('Valid email address is required');
+    errors.push('Email address is required');
   } else if (!/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,})+$/.test(email.trim())) {
-    errors.push('Please provide a valid email format');
+    errors.push('Please enter a valid email address');
   }
 
   if (!password || typeof password !== 'string' || password.length < 6) {

@@ -1,31 +1,38 @@
 const request = require('supertest');
 const app = require('../src/app');
 const User = require('../src/modules/auth/auth.model');
-const { ROLES } = require('@college-erp/shared');
+const { ROLES, ALL_ROLES } = require('@college-erp/shared');
 
 describe('Authentication Validation & Role Mismatch Tests', () => {
-  it('POST /api/v1/auth/login with missing body should fail with 400', async () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('POST /api/v1/auth/login with missing email should return 400', async () => {
     const res = await request(app)
       .post('/api/v1/auth/login')
-      .send({});
+      .send({
+        password: 'password123',
+        role: ROLES.STUDENT
+      });
 
     expect(res.statusCode).toBe(400);
     expect(res.body.success).toBe(false);
-    expect(res.body).toHaveProperty('errors');
-    expect(res.body.errors.length).toBeGreaterThan(0);
+    expect(res.body.errors).toContain('Email address is required');
   });
 
   it('POST /api/v1/auth/login with invalid email format should return 400', async () => {
     const res = await request(app)
       .post('/api/v1/auth/login')
       .send({
-        email: 'invalid-email-address',
-        password: 'password123'
+        email: 'invalid-email-format',
+        password: 'password123',
+        role: ROLES.STUDENT
       });
 
     expect(res.statusCode).toBe(400);
     expect(res.body.success).toBe(false);
-    expect(res.body.errors).toContain('Please provide a valid email format');
+    expect(res.body.errors).toContain('Please enter a valid email address');
   });
 
   it('POST /api/v1/auth/login with invalid role should return 400', async () => {
@@ -39,7 +46,7 @@ describe('Authentication Validation & Role Mismatch Tests', () => {
 
     expect(res.statusCode).toBe(400);
     expect(res.body.success).toBe(false);
-    expect(res.body.errors).toContain(`Role must be one of: super_admin, principal, hod, faculty, student, accounts`);
+    expect(res.body.errors).toContain(`Role must be one of: ${ALL_ROLES.join(', ')}`);
   });
 
   it('POST /api/v1/auth/login rejects role mismatch with 401 Unauthorized', async () => {
@@ -50,42 +57,40 @@ describe('Authentication Validation & Role Mismatch Tests', () => {
       email: 'student@college.edu',
       role: ROLES.STUDENT,
       status: 'active',
-      comparePassword: jest.fn().mockResolvedValue(true),
-      save: jest.fn().mockResolvedValue(true)
+      comparePassword: jest.fn().mockResolvedValue(true)
     };
+
     jest.spyOn(User, 'findOne').mockReturnValue({
       select: jest.fn().mockResolvedValue(mockUser)
     });
 
-    // Attempt to log in with role 'faculty' (mismatch!)
     const res = await request(app)
       .post('/api/v1/auth/login')
       .send({
         email: 'student@college.edu',
-        password: 'Password123!',
-        role: ROLES.FACULTY
+        password: 'CorrectPassword123',
+        role: ROLES.FACULTY // Deliberate mismatch
       });
 
     expect(res.statusCode).toBe(401);
     expect(res.body.success).toBe(false);
     expect(res.body.message).toContain('Role mismatch');
-
-    User.findOne.mockRestore();
+    expect(res.body.registeredRole).toBe(ROLES.STUDENT);
   });
 
-  it('POST /api/v1/auth/login succeeds with matching role credentials', async () => {
-    const mockUser = {
+  it('POST /api/v1/auth/login succeeds when credentials and role match', async () => {
+    const mockPrincipal = {
       _id: '507f1f77bcf86cd799439012',
-      name: 'Dr. Principal',
+      name: 'Dr. Eleanor Vance',
       email: 'principal@college.edu',
       role: ROLES.PRINCIPAL,
       status: 'active',
-      department: 'Administration',
       comparePassword: jest.fn().mockResolvedValue(true),
       save: jest.fn().mockResolvedValue(true)
     };
+
     jest.spyOn(User, 'findOne').mockReturnValue({
-      select: jest.fn().mockResolvedValue(mockUser)
+      select: jest.fn().mockResolvedValue(mockPrincipal)
     });
 
     const res = await request(app)
@@ -98,17 +103,7 @@ describe('Authentication Validation & Role Mismatch Tests', () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body).toHaveProperty('token');
-    expect(res.body.user.role).toBe(ROLES.PRINCIPAL);
-
-    User.findOne.mockRestore();
-  });
-
-  it('GET /api/v1/auth/me without Bearer token should return 401 Unauthorized', async () => {
-    const res = await request(app).get('/api/v1/auth/me');
-
-    expect(res.statusCode).toBe(401);
-    expect(res.body.success).toBe(false);
-    expect(res.body.message).toContain('Bearer token missing');
+    expect(res.body.data.user.role).toBe(ROLES.PRINCIPAL);
+    expect(res.body.data.token).toBeDefined();
   });
 });

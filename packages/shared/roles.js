@@ -8,7 +8,8 @@ const ROLES = Object.freeze({
   HOD: 'hod',
   FACULTY: 'faculty',
   STUDENT: 'student',
-  ACCOUNTS: 'accounts'
+  ACCOUNTS: 'accounts',
+  LIBRARIAN: 'librarian'
 });
 
 const ROLE_LABELS = Object.freeze({
@@ -17,7 +18,8 @@ const ROLE_LABELS = Object.freeze({
   [ROLES.HOD]: 'Head of Department',
   [ROLES.FACULTY]: 'Faculty Member',
   [ROLES.STUDENT]: 'Student',
-  [ROLES.ACCOUNTS]: 'Accounts & Finance Officer'
+  [ROLES.ACCOUNTS]: 'Accounts & Finance Officer',
+  [ROLES.LIBRARIAN]: 'Chief Librarian'
 });
 
 const ALL_ROLES = Object.freeze(Object.values(ROLES));

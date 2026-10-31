@@ -121,20 +121,26 @@ async function login(req, res, next) {
       details: { email: user.email, role: user.role }
     });
 
+    const userObj = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      department: user.department,
+      status: user.status,
+      isTemporaryPassword: user.isTemporaryPassword || false,
+      lastLogin: user.lastLogin,
+      createdAt: user.createdAt
+    };
+
     res.status(HTTP_STATUS.OK).json({
       success: true,
       message: 'Login successful',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        department: user.department,
-        status: user.status,
-        isTemporaryPassword: user.isTemporaryPassword || false,
-        lastLogin: user.lastLogin,
-        createdAt: user.createdAt
+      user: userObj,
+      data: {
+        token,
+        user: userObj
       }
     });
   } catch (error) {

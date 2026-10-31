@@ -22,6 +22,13 @@ const Student = require('../modules/students/student.model');
 const Faculty = require('../modules/faculty/faculty.model');
 const FeeStructure = require('../modules/fees/fee.model');
 const Notice = require('../modules/notices/notice.model');
+const {
+  BookCategory,
+  Book,
+  BookCopy,
+  LibraryMember,
+  LibrarySetting
+} = require('../modules/library/models');
 
 async function seed() {
   if (env.NODE_ENV === 'production') {
@@ -139,6 +146,15 @@ async function seed() {
     status: USER_STATUS.ACTIVE
   });
 
+
+  const librarianUser = await upsertUser({
+    name: 'Mrs. Evelyn Reed',
+    email: 'librarian@college.edu',
+    password: commonPassword,
+    role: ROLES.LIBRARIAN,
+    department: 'Central Library',
+    status: USER_STATUS.ACTIVE
+  });
   const accountsUser = await upsertUser({
     name: 'Mr. Robert Sterling',
     email: 'accounts@college.edu',
@@ -362,6 +378,89 @@ async function seed() {
     isPinned: true
   });
 
+
+  console.log('[Seed] Seeding Central Library initial catalog & settings...');
+  try {
+    let defaultSetting = await LibrarySetting.findOne({ isDefault: true });
+    if (!defaultSetting) {
+      await LibrarySetting.create({
+        finePerDay: 5,
+        defaultLoanPeriodDays: 14,
+        facultyLoanPeriodDays: 30,
+        maxBooksAllowedStudent: 3,
+        maxBooksAllowedFaculty: 6,
+        maxRenewalsAllowed: 2,
+        isDefault: true
+      });
+    }
+
+    const catCse = await BookCategory.findOneAndUpdate(
+      { code: 'CSE-01' },
+      { name: 'Computer Science & Engineering', code: 'CSE-01', description: 'Core CS and Software Engineering' },
+      { upsert: true, new: true }
+    );
+
+    const catAi = await BookCategory.findOneAndUpdate(
+      { code: 'AI-02' },
+      { name: 'Artificial Intelligence & ML', code: 'AI-02', description: 'Deep learning, neural networks and algorithms' },
+      { upsert: true, new: true }
+    );
+
+    const sampleBook1 = await Book.findOneAndUpdate(
+      { isbn: '978-0131103627' },
+      {
+        title: 'The C Programming Language',
+        author: 'Brian W. Kernighan, Dennis M. Ritchie',
+        isbn: '978-0131103627',
+        publisher: 'Prentice Hall',
+        publicationYear: 1988,
+        edition: '2nd Edition',
+        category: catCse._id,
+        shelfLocation: 'Stack A-01',
+        totalCopies: 4,
+        availableCopies: 4,
+        status: 'active'
+      },
+      { upsert: true, new: true }
+    );
+
+    // Create copies for sampleBook1 if not exist
+    const copyCount = await BookCopy.countDocuments({ book: sampleBook1._id });
+    if (copyCount === 0) {
+      for (let i = 1; i <= 4; i++) {
+        await BookCopy.create({
+          book: sampleBook1._id,
+          accessionNumber: `LIB-2025-000${i}`,
+          copyNumber: i,
+          status: 'available',
+          condition: 'good',
+          shelfLocation: 'Stack A-01'
+        });
+      }
+    }
+
+    // Enroll sample student member
+    if (studentUser1) {
+      await LibraryMember.findOneAndUpdate(
+        { user: studentUser1._id },
+        {
+          user: studentUser1._id,
+          name: studentUser1.name,
+          email: studentUser1.email,
+          role: 'student',
+          department: studentUser1.department,
+          rollNumber: 'CS2023001',
+          membershipCardNumber: 'LIB-STU-0001',
+          maxBooksAllowed: 3,
+          status: 'active'
+        },
+        { upsert: true }
+      );
+    }
+  } catch (err) {
+    console.error('[Seed] Non-fatal error seeding library catalog:', err.message);
+  }
+
   console.log('\n======================================================');
   console.log(' SEED DATA COMPLETED SUCCESSFULLY');
   console.log('======================================================');
@@ -375,7 +474,8 @@ async function seed() {
   console.log(' 5. Faculty CSE:  faculty01@college.edu (or faculty.turing@college.edu)');
   console.log(' 6. Student CSE:  student01@college.edu (or student.aarav@college.edu)');
   console.log(' 7. Accounts:     accounts@college.edu');
-  console.log(' 8. Disabled Demo: disabled.user@college.edu (status: disabled)');
+  console.log(' 8. Librarian:    librarian@college.edu');
+  console.log(' 9. Disabled Demo: disabled.user@college.edu (status: disabled)');
   console.log('======================================================\n');
 
   await mongoose.connection.close();
