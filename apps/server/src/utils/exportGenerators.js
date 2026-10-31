@@ -278,9 +278,39 @@ function generateTextPdf(title, subtitle, headers, rows) {
   return Buffer.from(pdf, 'utf8');
 }
 
+
+/**
+ * Express Response Dispatcher for Multi-Format Reports (CSV, XLSX, PDF)
+ */
+function sendFormattedReport(res, { title, filenameBase, headers, rows, format }) {
+  const timestamp = new Date().toISOString().split('T')[0];
+  const fmt = (format || 'csv').toLowerCase();
+
+  if (fmt === 'xlsx' || fmt === 'excel') {
+    const xml = generateSpreadsheetML(title, headers, rows);
+    res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filenameBase}-${timestamp}.xlsx"`);
+    return res.status(200).send(xml);
+  }
+
+  if (fmt === 'pdf') {
+    const pdfBuf = generateTextPdf(title, 'Apex Engineering College - Central Report', headers, rows);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filenameBase}-${timestamp}.pdf"`);
+    return res.status(200).send(pdfBuf);
+  }
+
+  // Default: CSV
+  const csv = generateCsv(headers, rows);
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="${filenameBase}-${timestamp}.csv"`);
+  return res.status(200).send(csv);
+}
+
 module.exports = {
   generateCsv,
   generateSpreadsheetML,
-  generateTextPdf
+  generateTextPdf,
+  sendFormattedReport
 };
 

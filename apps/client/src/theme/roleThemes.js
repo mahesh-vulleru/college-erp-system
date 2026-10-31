@@ -115,6 +115,24 @@ export const ROLE_THEMES = {
     accentColor: 'amber',
     badgeVariant: 'warning',
     statAccent: 'bg-amber-50 text-amber-800 border-amber-100'
+  },
+  librarian: {
+    id: 'librarian',
+    name: 'Burgundy & Rose Theme',
+    primary: 'rose',
+    sidebarBg: 'bg-[#230914]',
+    sidebarBorder: 'border-rose-950',
+    sidebarActive: 'bg-rose-600 text-white shadow-md shadow-rose-600/30',
+    sidebarHover: 'hover:bg-rose-950/60 hover:text-white',
+    sidebarText: 'text-rose-200/80',
+    sidebarActiveText: 'text-white',
+    avatarBg: 'bg-rose-700 text-white',
+    bannerGradient: 'bg-gradient-to-r from-[#230914] via-[#350d1e] to-[#1d0610] text-white border border-rose-900/40 shadow-lg shadow-rose-950/20',
+    bannerTitleColor: 'text-white',
+    bannerSubtitleColor: 'text-rose-200 font-light',
+    accentColor: 'rose',
+    badgeVariant: 'danger',
+    statAccent: 'bg-rose-50 text-rose-800 border-rose-100'
   }
 };
 
@@ -141,7 +159,8 @@ export function getRoleTheme(role, pathname = '') {
   if (pathname.startsWith('/hod')) return ROLE_THEMES.hod;
   if (pathname.startsWith('/faculty')) return ROLE_THEMES.faculty;
   if (pathname.startsWith('/student')) return ROLE_THEMES.student;
-  if (pathname.startsWith('/accounts') || pathname.startsWith('/fees')) return ROLE_THEMES.accounts;
+    if (pathname.startsWith('/accounts') || pathname.startsWith('/fees')) return ROLE_THEMES.accounts;
+  if (pathname.startsWith('/library')) return ROLE_THEMES.librarian;
 
   return ROLE_THEMES.super_admin;
 }

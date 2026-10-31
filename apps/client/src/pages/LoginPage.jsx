@@ -14,7 +14,8 @@ import {
   Eye,
   EyeOff,
   Sparkles,
-  RefreshCw
+  RefreshCw,
+  BookOpen
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/common/Button';
@@ -47,6 +48,8 @@ export const LoginPage = () => {
       case 'accountant':
       case 'finance':
         return '/accounts';
+      case 'librarian':
+        return '/library';
       default:
         return '/admin';
     }
@@ -138,6 +141,14 @@ export const LoginPage = () => {
       desc: 'Fee structures, receipts, and collection ledgers',
       icon: CreditCard,
       dashboard: '/accounts'
+    },
+    {
+      id: ROLES.LIBRARIAN,
+      label: 'Librarian',
+      title: ROLE_LABELS[ROLES.LIBRARIAN] || 'Chief Librarian',
+      desc: 'Catalog, book issues, returns, and fines',
+      icon: BookOpen,
+      dashboard: '/library'
     }
   ];
 
@@ -148,7 +159,8 @@ export const LoginPage = () => {
     [ROLES.HOD]: 'hod.cse@college.edu',
     [ROLES.FACULTY]: 'faculty.turing@college.edu',
     [ROLES.STUDENT]: 'student.aarav@college.edu',
-    [ROLES.ACCOUNTS]: 'accounts@college.edu'
+    [ROLES.ACCOUNTS]: 'accounts@college.edu',
+    [ROLES.LIBRARIAN]: 'librarian@college.edu'
   };
 
   const handleRoleSelect = (roleId) => {

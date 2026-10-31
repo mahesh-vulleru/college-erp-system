@@ -4,7 +4,8 @@ export const ROLES = Object.freeze({
   HOD: 'hod',
   FACULTY: 'faculty',
   STUDENT: 'student',
-  ACCOUNTS: 'accounts'
+  ACCOUNTS: 'accounts',
+  LIBRARIAN: 'librarian'
 });
 
 export const ROLE_LABELS = Object.freeze({
@@ -13,7 +14,8 @@ export const ROLE_LABELS = Object.freeze({
   [ROLES.HOD]: 'Head of Department',
   [ROLES.FACULTY]: 'Faculty Member',
   [ROLES.STUDENT]: 'Student',
-  [ROLES.ACCOUNTS]: 'Accounts & Finance Officer'
+  [ROLES.ACCOUNTS]: 'Accounts & Finance Officer',
+  [ROLES.LIBRARIAN]: 'Chief Librarian'
 });
 
 export const ALL_ROLES = Object.freeze(Object.values(ROLES));
@@ -37,6 +39,14 @@ export const PERMISSIONS = Object.freeze({
   FEE_PAYMENT_COLLECT: 'fee:collect',
   FEE_REPORTS_VIEW: 'fee:view_reports',
   FEE_VIEW_SELF: 'fee:view_self',
+  LIBRARY_MANAGE_BOOKS: 'library:manage_books',
+  LIBRARY_MANAGE_MEMBERS: 'library:manage_members',
+  LIBRARY_CIRCULATION: 'library:circulation',
+  LIBRARY_RESERVATIONS: 'library:reservations',
+  LIBRARY_FINES: 'library:fines',
+  LIBRARY_DIGITAL: 'library:digital',
+  LIBRARY_REPORTS: 'library:reports',
+  LIBRARY_SETTINGS: 'library:settings',
   SYSTEM_AUDIT_LOGS: 'system:audit_logs',
   SYSTEM_SETTINGS: 'system:settings'
 });
@@ -51,6 +61,7 @@ export const ROLE_PERMISSIONS = Object.freeze({
     PERMISSIONS.ATTENDANCE_VIEW_DEPT,
     PERMISSIONS.MARKS_APPROVE,
     PERMISSIONS.FEE_REPORTS_VIEW,
+    PERMISSIONS.LIBRARY_REPORTS,
     PERMISSIONS.SYSTEM_AUDIT_LOGS
   ],
   [ROLES.HOD]: [
@@ -78,6 +89,17 @@ export const ROLE_PERMISSIONS = Object.freeze({
     PERMISSIONS.FEE_STRUCTURE_MANAGE,
     PERMISSIONS.FEE_PAYMENT_COLLECT,
     PERMISSIONS.FEE_REPORTS_VIEW
+  ],
+  [ROLES.LIBRARIAN]: [
+    PERMISSIONS.USER_READ,
+    PERMISSIONS.LIBRARY_MANAGE_BOOKS,
+    PERMISSIONS.LIBRARY_MANAGE_MEMBERS,
+    PERMISSIONS.LIBRARY_CIRCULATION,
+    PERMISSIONS.LIBRARY_RESERVATIONS,
+    PERMISSIONS.LIBRARY_FINES,
+    PERMISSIONS.LIBRARY_DIGITAL,
+    PERMISSIONS.LIBRARY_REPORTS,
+    PERMISSIONS.LIBRARY_SETTINGS
   ]
 });
 
@@ -91,37 +113,23 @@ export const HTTP_STATUS = Object.freeze({
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   CONFLICT: 409,
-  UNPROCESSABLE_ENTITY: 422,
-  TOO_MANY_REQUESTS: 429,
-  INTERNAL_SERVER_ERROR: 500
+  UNPROCESSABLE: 422,
+  INTERNAL_ERROR: 500
 });
-
-export const DEPARTMENTS = Object.freeze([
-  'Computer Science & Engineering',
-  'Electronics & Communication Engineering',
-  'Electrical & Electronics Engineering',
-  'Mechanical Engineering',
-  'Civil Engineering',
-  'Information Technology'
-]);
-
-export const ACADEMIC_SEMESTERS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8]);
 
 export const USER_STATUS = Object.freeze({
   ACTIVE: 'active',
-  DISABLED: 'disabled',
   INACTIVE: 'inactive',
   SUSPENDED: 'suspended'
 });
 
-export default {
-  ROLES,
-  ROLE_LABELS,
-  ALL_ROLES,
-  PERMISSIONS,
-  ROLE_PERMISSIONS,
-  HTTP_STATUS,
-  DEPARTMENTS,
-  ACADEMIC_SEMESTERS,
-  USER_STATUS
-};
+export const DEPARTMENTS = Object.freeze([
+  'Computer Science & Engineering',
+  'Electronics & Communication',
+  'Mechanical Engineering',
+  'Civil Engineering',
+  'Electrical & Electronics',
+  'Information Technology'
+]);
+
+export const ACADEMIC_SEMESTERS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8]);

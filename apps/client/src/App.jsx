@@ -24,6 +24,7 @@ import HodDashboard from './pages/hod/HodDashboard';
 import FacultyDashboard from './pages/faculty/FacultyDashboard';
 import StudentDashboard from './pages/student/StudentDashboard';
 import AccountsDashboard from './pages/accounts/AccountsDashboard';
+import LibrarianDashboard from './pages/library/LibrarianDashboard';
 
 // Phase 2 Academic Subsystems
 import DepartmentsPage from './pages/academics/DepartmentsPage';
@@ -77,6 +78,8 @@ const DashboardRedirect = () => {
     case 'accountant':
     case 'finance':
       return <Navigate to="/accounts" replace />;
+    case 'librarian':
+      return <Navigate to="/library" replace />;
     default:
       return <Navigate to="/" replace />;
   }
@@ -225,6 +228,14 @@ export const App = () => {
                 element={
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, 'admin']}>
                     <AccountsDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="library"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, 'admin']}>
+                    <LibrarianDashboard />
                   </ProtectedRoute>
                 }
               />

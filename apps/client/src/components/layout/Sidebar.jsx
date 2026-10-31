@@ -250,6 +250,44 @@ const ROLE_NAV_CONFIGS = {
         { path: '/notices', label: 'Notice Board', icon: Bell }
       ]
     }
+  ],
+  // 7. Librarian: Overview, Catalog Management, Circulation Desk, Patrons & Accounts, Digital & Governance
+  [ROLES.LIBRARIAN]: [
+    {
+      title: 'Overview',
+      items: [
+        { path: '/library', label: 'Library Dashboard', icon: LayoutDashboard }
+      ]
+    },
+    {
+      title: 'Catalog Management',
+      items: [
+        { path: '/library?tab=books', label: 'Books & Physical Copies', icon: BookOpen },
+        { path: '/library?tab=categories', label: 'Categories & Classification', icon: Layers }
+      ]
+    },
+    {
+      title: 'Circulation Desk',
+      items: [
+        { path: '/library?tab=circulation', label: 'Issues & Checkouts', icon: Clock },
+        { path: '/library?tab=reservations', label: 'Reservations Queue', icon: CalendarCheck }
+      ]
+    },
+    {
+      title: 'Patrons & Accounts',
+      items: [
+        { path: '/library?tab=members', label: 'Student & Faculty Members', icon: Users },
+        { path: '/library?tab=fines', label: 'Overdue Books & Fines', icon: CreditCard }
+      ]
+    },
+    {
+      title: 'Digital & Governance',
+      items: [
+        { path: '/library?tab=digital', label: 'Digital Library Resources', icon: FileText },
+        { path: '/library?tab=reports', label: 'Reports & Analytics', icon: BarChart3 },
+        { path: '/library?tab=settings', label: 'Library Rules & Settings', icon: ShieldCheck }
+      ]
+    }
   ]
 };
 
@@ -272,6 +310,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       case ROLES.FACULTY: return '/faculty';
       case ROLES.STUDENT: return '/student';
       case ROLES.ACCOUNTS: return '/accounts';
+      case ROLES.LIBRARIAN: return '/library';
       default: return '/';
     }
   };
@@ -314,7 +353,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
     }
 
     // If current location has query params, do not match parent dashboard path
-    if (location.search && (itemPath === '/student' || itemPath === '/faculty' || itemPath === '/hod' || itemPath === '/accounts' || itemPath === '/fees' || itemPath === '/reports')) {
+    if (location.search && (itemPath === '/student' || itemPath === '/faculty' || itemPath === '/hod' || itemPath === '/accounts' || itemPath === '/fees' || itemPath === '/reports' || itemPath === '/library')) {
       return false;
     }
     return location.pathname === itemPath;
