@@ -49,14 +49,16 @@ function validateLeaveApplyInput(data = {}) {
 
 function validateLeaveReviewInput(data = {}) {
   const errors = [];
-  const { status, rejectionReason } = data;
+  const rawStatus = (data.status || data.decision || data.action || '').toString().toLowerCase().trim();
+  const status = rawStatus === 'approve' ? 'approved' : rawStatus === 'reject' ? 'rejected' : rawStatus;
 
   if (!status || !['approved', 'rejected'].includes(status)) {
     errors.push("Decision status must be either 'approved' or 'rejected'");
   }
 
+  const reason = data.rejectionReason || data.reason || data.remarks || data.comments;
   if (status === 'rejected') {
-    if (!rejectionReason || typeof rejectionReason !== 'string' || !rejectionReason.trim()) {
+    if (!reason || typeof reason !== 'string' || !reason.trim()) {
       errors.push('Rejection reason is mandatory when rejecting a leave request');
     }
   }
@@ -71,4 +73,3 @@ module.exports = {
   validateLeaveApplyInput,
   validateLeaveReviewInput
 };
-

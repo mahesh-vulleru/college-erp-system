@@ -172,7 +172,13 @@ export const LoginPage = () => {
   const handleFillDevCredentials = () => {
     const devEmail = devCredentials[selectedRole] || '';
     setEmail(devEmail);
-    setPassword(selectedRole === ROLES.SUPER_ADMIN ? 'Admin@12345' : 'Password123!');
+    if (selectedRole === ROLES.SUPER_ADMIN) {
+      setPassword('Admin@12345');
+    } else if (selectedRole === ROLES.LIBRARIAN) {
+      setPassword('Library@2026#');
+    } else {
+      setPassword('Password123!');
+    }
     setDetectedRole(null);
     setError('');
   };
@@ -194,6 +200,8 @@ export const LoginPage = () => {
       if (selectedRole !== ROLES.STUDENT) setSelectedRole(ROLES.STUDENT);
     } else if (lower.startsWith('account')) {
       if (selectedRole !== ROLES.ACCOUNTS) setSelectedRole(ROLES.ACCOUNTS);
+    } else if (lower.startsWith('librarian')) {
+      if (selectedRole !== ROLES.LIBRARIAN) setSelectedRole(ROLES.LIBRARIAN);
     }
   };
 

@@ -113,6 +113,10 @@ export const App = () => {
             <Route path="/hod-dashboard" element={<Navigate to="/hod" replace />} />
             <Route path="/hoddashboard" element={<Navigate to="/hod" replace />} />
 
+            {/* Library Dashboard URL Aliases */}
+            <Route path="/library-dashboard" element={<Navigate to="/library" replace />} />
+            <Route path="/librarydashboard" element={<Navigate to="/library" replace />} />
+
             {/* 3. Protected Institutional Portals & Subsystems inside AppLayout */}
             <Route element={<AppLayout />}>
               {/* Optional System Diagnostics & Team Allocation Hub */}
@@ -233,6 +237,15 @@ export const App = () => {
               />
               <Route
                 path="library"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, 'admin']}>
+                    <LibrarianDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="library/dashboard" element={<Navigate to="/library" replace />} />
+              <Route
+                path="library/*"
                 element={
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, 'admin']}>
                     <LibrarianDashboard />
