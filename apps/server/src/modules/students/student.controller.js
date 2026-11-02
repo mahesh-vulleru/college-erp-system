@@ -57,7 +57,6 @@ async function listStudents(req, res, next) {
           });
         }
       }
-
     }
     if (req.query.semester) query.currentSemester = parseInt(req.query.semester, 10);
     if (req.query.batch) query.batchYear = req.query.batch;

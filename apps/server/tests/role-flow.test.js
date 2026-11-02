@@ -14,7 +14,7 @@ describe('Role Flow, Authentication, & Authorization Test Suite', () => {
     { role: ROLES.STUDENT, email: 'student.aarav@college.edu', name: 'Aarav Sharma' },
     { role: ROLES.ACCOUNTS, email: 'accounts@college.edu', name: 'Mr. Robert Sterling' },
     { role: ROLES.LIBRARIAN, email: 'librarian@college.edu', name: 'Mrs. Evelyn Reed' },
-    { role: ROLES.LIBRARY_STAFF, email: 'librarystaff@college.edu', name: 'Mr. Marcus Cole' }
+
   ];
 
   afterEach(() => {

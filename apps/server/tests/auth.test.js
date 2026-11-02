@@ -87,8 +87,6 @@ describe('Authentication Validation & Role Mismatch Tests', () => {
     expect(res.body.success).toBe(true);
     expect(res.body).toHaveProperty('token');
     expect(res.body.user.role).toBe(ROLES.LIBRARIAN);
-
-    User.findOne.mockRestore();
   });
 
   it('POST /api/v1/auth/login supports institutionalRole alias and Chief Librarian title', async () => {
@@ -117,8 +115,6 @@ describe('Authentication Validation & Role Mismatch Tests', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.user.role).toBe(ROLES.LIBRARIAN);
-
-    User.findOne.mockRestore();
   });
 
   it('POST /api/v1/auth/login rejects role mismatch with 401 Unauthorized', async () => {
@@ -178,8 +174,8 @@ describe('Authentication Validation & Role Mismatch Tests', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body).toHaveProperty('token');
-    expect(res.body.user.role).toBe(ROLES.PRINCIPAL);
     expect(res.body.data.user.role).toBe(ROLES.PRINCIPAL);
+    expect(res.body.user.role).toBe(ROLES.PRINCIPAL);
     expect(res.body.data.token).toBeDefined();
   });
 

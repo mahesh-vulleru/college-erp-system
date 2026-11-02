@@ -7,6 +7,7 @@ dns.setServers(["8.8.8.8", "1.1.1.1"]);
 const app = require("./app");
 const env = require("./config/env");
 const { connectDB, closeDB } = require("./config/db");
+const { ensureDevAccounts } = require("./scripts/seed-dev-accounts");
 const logger = require("./utils/logger");
 
 let server;
@@ -18,6 +19,11 @@ async function startServer() {
     await connectDB();
 
     logger.info("MongoDB connected successfully");
+
+    // Idempotently ensure required development test accounts exist
+    if (env.NODE_ENV !== "production") {
+      await ensureDevAccounts();
+    }
 
     server = app.listen(env.PORT, () => {
       logger.info("===================================================");

@@ -26,7 +26,17 @@ function validateLoginInput(data = {}) {
     'library staff',
     'librarystaff',
     'accountant',
-    'finance'
+    'finance',
+    'transport_admin',
+    'transport admin',
+    'transportadmin',
+    'transport_supervisor',
+    'transport supervisor',
+    'bus_driver',
+    'bus driver',
+    'bus_attendant',
+    'bus attendant',
+    'parent'
   ];
   if (role) {
     const normalizedRole = String(role).toLowerCase().trim().replace(/[\s-]+/g, '_');
@@ -68,7 +78,17 @@ function validateRegisterInput(data = {}) {
     'library staff',
     'librarystaff',
     'accountant',
-    'finance'
+    'finance',
+    'transport_admin',
+    'transport admin',
+    'transportadmin',
+    'transport_supervisor',
+    'transport supervisor',
+    'bus_driver',
+    'bus driver',
+    'bus_attendant',
+    'bus attendant',
+    'parent'
   ];
   if (role) {
     const normalizedRole = String(role).toLowerCase().trim().replace(/[\s-]+/g, '_');

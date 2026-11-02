@@ -69,6 +69,7 @@ async function login(req, res, next) {
       if (s === 'chief_librarian' || s === 'chieflibrarian' || s === 'librarian') return ROLES.LIBRARIAN;
       if (s === 'library_staff' || s === 'librarystaff') return ROLES.LIBRARY_STAFF;
       if (s === 'accountant' || s === 'finance') return ROLES.ACCOUNTS;
+
       return s;
     };
     if (role && normalizeAuthRole(user.role) !== normalizeAuthRole(role)) {

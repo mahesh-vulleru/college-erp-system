@@ -54,6 +54,12 @@ export const Sidebar = ({ isOpen, onClose }) => {
         return '/library-staff';
       case 'librarian':
         return '/library';
+      case 'transport_admin':
+      case 'transport_supervisor':
+      case 'bus_driver':
+      case 'bus_attendant':
+      case 'parent':
+        return '/transport';
       default:
         return '/principal';
     }
@@ -75,7 +81,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
     { path: '/subjects', label: 'Curriculum', icon: Layers, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'faculty'] },
     { path: '/fees', label: 'Fee & Accounts', icon: CreditCard, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'accounts', 'student'] },
     { path: '/library', label: 'Library', icon: BookMarked, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'librarian', 'library_staff', 'student', 'faculty'] },
-    { path: '/transport', label: 'Transport', icon: Bus, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'student'] },
+    { path: '/transport', label: 'Transport', icon: Bus, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'student', 'transport_admin', 'transport_supervisor', 'bus_driver', 'bus_attendant', 'parent'] },
     { path: '/hostel', label: 'Hostel', icon: BedDouble, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'student'] },
     { path: '/placements', label: 'Placements', icon: Briefcase, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'student'] },
     { path: '/notices', label: 'Communications', icon: MessageSquare, roles: '*' },
@@ -98,7 +104,8 @@ export const Sidebar = ({ isOpen, onClose }) => {
         (location.pathname === '/student' && item.path === '/student') ||
         (location.pathname === '/accounts' && item.path === '/accounts') ||
         (location.pathname === '/library' && item.path === '/library') ||
-        (location.pathname === '/library-staff' && item.path === '/library-staff');
+        (location.pathname === '/library-staff' && item.path === '/library-staff') ||
+        (location.pathname === '/transport' && item.path === '/transport');
     }
     return location.pathname.startsWith(item.path);
   };

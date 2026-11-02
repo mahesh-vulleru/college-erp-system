@@ -40,6 +40,7 @@ async function getCourseById(req, res, next) {
 async function createCourse(req, res, next) {
   try {
     const { name, code, department, degreeType, durationSemesters, totalCredits } = req.body;
+
     if (req.user?.role === ROLES.HOD && department) {
       const matches = await isHodDepartment(req.user, department);
       if (!matches) {
@@ -103,6 +104,7 @@ async function updateCourse(req, res, next) {
         });
       }
     }
+
     if (code && code.toUpperCase().trim() !== course.code) {
       const cleanCode = code.toUpperCase().trim();
       const existing = await Course.findOne({ code: cleanCode, _id: { $ne: course._id } });

@@ -12,6 +12,13 @@ try {
 
 const mongoose = require('mongoose');
 const env = require('../config/env');
+const {
+  Bus,
+  Route,
+  Driver,
+  StudentTransportAllocation,
+  TransportSetting
+} = require('../modules/transport/models');
 const { ROLES, USER_STATUS } = require('@college-erp/shared');
 
 const User = require('../modules/auth/auth.model');
@@ -191,6 +198,15 @@ async function seed() {
     password: process.env.SEED_LIBRARIAN_PASSWORD || 'Library@2026#',
     role: ROLES.LIBRARIAN,
     department: 'Central Library',
+    status: USER_STATUS.ACTIVE
+  });
+
+  const transportUser = await upsertUser({
+    name: 'Mr. Robert Hayes',
+    email: 'transport@college.edu',
+    password: process.env.SEED_TRANSPORT_PASSWORD || commonPassword,
+    role: ROLES.TRANSPORT_ADMIN,
+    department: 'Transport & Logistics',
     status: USER_STATUS.ACTIVE
   });
 
@@ -389,6 +405,7 @@ async function seed() {
     isPinned: true
   });
 
+
   console.log('[Seed] Seeding sample faculty leave applications...');
   await Leave.create([
     {
@@ -507,6 +524,7 @@ async function seed() {
   } catch (err) {
     console.error('[Seed] Non-fatal error seeding library catalog:', err.message);
   }
+
   console.log('\n======================================================');
   console.log(' SEED DATA COMPLETED SUCCESSFULLY');
   console.log('======================================================');
@@ -520,9 +538,7 @@ async function seed() {
   console.log(' 5. Faculty CSE:  faculty01@college.edu (or faculty.turing@college.edu)');
   console.log(' 6. Student CSE:  student01@college.edu (or student.aarav@college.edu)');
   console.log(' 7. Accounts:     accounts@college.edu');
-  console.log(' 8. Librarian:    librarian@college.edu');
-  console.log(' 9. Library Staff: librarystaff@college.edu');
-  console.log(' 10. Disabled Demo: disabled.user@college.edu (status: disabled)');
+
   console.log('======================================================\n');
 
   await mongoose.connection.close();

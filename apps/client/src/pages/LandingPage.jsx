@@ -60,10 +60,11 @@ export const LandingPage = () => {
 
   const getPortalPath = (role) => {
     const normalized = (role || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
-    switch (normalized) {
+switch (normalized) {
       case 'super_admin':
       case 'superadmin':
       case 'admin':
+      case 'super_administrator':
         return '/admin';
       case 'principal':
         return '/principal';
@@ -82,8 +83,15 @@ export const LandingPage = () => {
       case 'library_staff':
       case 'librarystaff':
         return '/library-staff';
+      case 'transport_admin':
+      case 'transportadmin':
+      case 'transport_supervisor':
+      case 'bus_driver':
+      case 'bus_attendant':
+      case 'parent':
+        return '/transport';
       default:
-        return '/principal';
+        return '/login';
     }
   };
 
