@@ -10,15 +10,11 @@ const router = express.Router();
 
 router.use(authenticate);
 
-<<<<<<< HEAD
 router.get(
   '/',
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
   getResults
 );
-=======
-router.get('/', getResults);
->>>>>>> feature/library-staff-portal
 
 // Marks entry restricted to Faculty, HOD, and Principal
 router.post(

@@ -699,7 +699,6 @@ async function exportReportCsv(req, res, next) {
     const reportType = (req.query.type || '').toLowerCase();
     const format = req.query.format || 'csv';
 
-<<<<<<< HEAD
     // Strict role scoping for report exports
     if (req.user.role === ROLES.ACCOUNTS) {
       if (reportType !== 'finance' && reportType !== 'fee') {
@@ -718,9 +717,6 @@ async function exportReportCsv(req, res, next) {
         });
       }
     }
-
-=======
->>>>>>> feature/library-staff-portal
     // 1. Enrollment Report
     if (reportType === 'enrollment') {
       const studentQuery = {};

@@ -19,12 +19,8 @@ function signToken(userId, role) {
  */
 async function login(req, res, next) {
   try {
-<<<<<<< HEAD
-    const { email, password, role } = req.body;
-=======
     const { email, password } = req.body;
     const role = req.body.role !== undefined ? req.body.role : req.body.institutionalRole;
->>>>>>> feature/library-staff-portal
     const normalizedEmail = (email || '').trim().toLowerCase();
 
     // Explicitly query password since it has select: false
@@ -70,12 +66,9 @@ async function login(req, res, next) {
     const normalizeAuthRole = (r) => {
       const s = String(r || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
       if (s === 'admin' || s === 'superadmin' || s === 'super_administrator') return ROLES.SUPER_ADMIN;
-<<<<<<< HEAD
-=======
       if (s === 'chief_librarian' || s === 'chieflibrarian' || s === 'librarian') return ROLES.LIBRARIAN;
       if (s === 'library_staff' || s === 'librarystaff') return ROLES.LIBRARY_STAFF;
       if (s === 'accountant' || s === 'finance') return ROLES.ACCOUNTS;
->>>>>>> feature/library-staff-portal
       return s;
     };
     if (role && normalizeAuthRole(user.role) !== normalizeAuthRole(role)) {
@@ -132,7 +125,6 @@ async function login(req, res, next) {
       details: { email: user.email, role: user.role }
     });
 
-<<<<<<< HEAD
     const userObj = {
       id: user._id,
       name: user.name,
@@ -145,29 +137,14 @@ async function login(req, res, next) {
       createdAt: user.createdAt
     };
 
-=======
->>>>>>> feature/library-staff-portal
     res.status(HTTP_STATUS.OK).json({
       success: true,
       message: 'Login successful',
       token,
-<<<<<<< HEAD
       user: userObj,
       data: {
         token,
         user: userObj
-=======
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        department: user.department,
-        status: user.status,
-        isTemporaryPassword: user.isTemporaryPassword || false,
-        lastLogin: user.lastLogin,
-        createdAt: user.createdAt
->>>>>>> feature/library-staff-portal
       }
     });
   } catch (error) {

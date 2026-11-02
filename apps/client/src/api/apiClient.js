@@ -823,23 +823,15 @@ class ApiClient {
   }
 
   // -------------------------------------------------------------
-<<<<<<< HEAD
-  // Library Management System APIs
-=======
   // Library Management System APIs (Phase 1 & Phase 2)
->>>>>>> feature/library-staff-portal
   // -------------------------------------------------------------
   getLibraryDashboard() {
     return this.get('/v1/library/dashboard');
   }
 
-<<<<<<< HEAD
-=======
   getStaffDashboard() {
     return this.get('/v1/library/staff-dashboard');
   }
-
->>>>>>> feature/library-staff-portal
   getBooks(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.search) searchParams.append('search', params.search);
@@ -907,11 +899,8 @@ class ApiClient {
     const searchParams = new URLSearchParams();
     if (params.status) searchParams.append('status', params.status);
     if (params.memberId) searchParams.append('memberId', params.memberId);
-<<<<<<< HEAD
-=======
     if (params.issuedBy) searchParams.append('issuedBy', params.issuedBy);
     if (params.filter) searchParams.append('filter', params.filter);
->>>>>>> feature/library-staff-portal
     if (params.search) searchParams.append('search', params.search);
     if (params.page) searchParams.append('page', params.page);
     if (params.limit) searchParams.append('limit', params.limit);
@@ -919,8 +908,6 @@ class ApiClient {
     return this.get(`/v1/library/issues${qs ? `?${qs}` : ''}`);
   }
 
-<<<<<<< HEAD
-=======
   getMyTransactions(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.status) searchParams.append('status', params.status);
@@ -945,8 +932,6 @@ class ApiClient {
   resetLibraryStaffPassword(id, newPassword) {
     return this.post(`/v1/library/staff/${id}/reset-password`, { newPassword });
   }
-
->>>>>>> feature/library-staff-portal
   returnBook(data) {
     return this.post('/v1/library/returns', data);
   }

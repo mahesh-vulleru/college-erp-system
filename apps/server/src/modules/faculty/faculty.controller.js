@@ -2,10 +2,7 @@ const Faculty = require('./faculty.model');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 const { recordAuditLog } = require('../../utils/auditLogger');
-<<<<<<< HEAD
 const { resolveHodDepartment, isHodDepartment } = require('../../utils/hodScoping');
-=======
->>>>>>> feature/library-staff-portal
 const Department = require('../departments/department.model');
 const mongoose = require('mongoose');
 
@@ -17,7 +14,6 @@ async function listFaculty(req, res, next) {
     if (req.query.user) query.user = req.query.user;
 
     // Enforce HOD department-level scoping to ensure cross-department data isolation
-<<<<<<< HEAD
     if (req.user?.role === ROLES.HOD) {
       const dept = await resolveHodDepartment(req.user);
       if (dept) {
@@ -33,22 +29,6 @@ async function listFaculty(req, res, next) {
         }
         query.department = dept._id;
       }
-=======
-    if (req.user?.role === ROLES.HOD && !query.department) {
-      const dept = await Department.findOne({
-        $or: [
-          { hod: req.user._id },
-          ...(req.user.department
-            ? [
-                ...(mongoose.Types.ObjectId.isValid(req.user.department) ? [{ _id: req.user.department }] : []),
-                { name: req.user.department },
-                { code: String(req.user.department).toUpperCase() }
-              ]
-            : [])
-        ]
-      });
-      if (dept) query.department = dept._id;
->>>>>>> feature/library-staff-portal
     }
 
     const facultyList = await Faculty.find(query)
@@ -109,7 +89,6 @@ async function createFacultyProfile(req, res, next) {
   try {
     const { user, employeeId, department, designation, qualification, specialization } = req.body;
 
-<<<<<<< HEAD
     if (req.user?.role === ROLES.HOD && department) {
       const matches = await isHodDepartment(req.user, department);
       if (!matches) {
@@ -120,9 +99,6 @@ async function createFacultyProfile(req, res, next) {
         });
       }
     }
-
-=======
->>>>>>> feature/library-staff-portal
     const existing = await Faculty.findOne({ $or: [{ employeeId }, { user }] });
     if (existing) {
       return sendError(res, {
@@ -171,7 +147,6 @@ async function updateFacultyProfile(req, res, next) {
       });
     }
 
-<<<<<<< HEAD
     if (req.user?.role === ROLES.HOD && faculty.department) {
       const matches = await isHodDepartment(req.user, faculty.department);
       if (!matches) {
@@ -182,9 +157,6 @@ async function updateFacultyProfile(req, res, next) {
         });
       }
     }
-
-=======
->>>>>>> feature/library-staff-portal
     if (department) faculty.department = department;
     if (designation) faculty.designation = designation;
     if (qualification !== undefined) faculty.qualification = qualification;

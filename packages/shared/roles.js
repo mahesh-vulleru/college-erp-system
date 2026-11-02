@@ -9,12 +9,8 @@ const ROLES = Object.freeze({
   FACULTY: 'faculty',
   STUDENT: 'student',
   ACCOUNTS: 'accounts',
-<<<<<<< HEAD
-  LIBRARIAN: 'librarian'
-=======
   LIBRARIAN: 'librarian',
   LIBRARY_STAFF: 'library_staff'
->>>>>>> feature/library-staff-portal
 });
 
 const ROLE_LABELS = Object.freeze({
@@ -24,12 +20,8 @@ const ROLE_LABELS = Object.freeze({
   [ROLES.FACULTY]: 'Faculty Member',
   [ROLES.STUDENT]: 'Student',
   [ROLES.ACCOUNTS]: 'Accounts & Finance Officer',
-<<<<<<< HEAD
-  [ROLES.LIBRARIAN]: 'Chief Librarian'
-=======
   [ROLES.LIBRARIAN]: 'Chief Librarian',
   [ROLES.LIBRARY_STAFF]: 'Library Staff'
->>>>>>> feature/library-staff-portal
 });
 
 const ALL_ROLES = Object.freeze(Object.values(ROLES));

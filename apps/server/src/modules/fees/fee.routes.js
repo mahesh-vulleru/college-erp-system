@@ -22,7 +22,6 @@ const router = express.Router();
 router.use(authenticate);
 
 // Fee Structures (Plans)
-<<<<<<< HEAD
 router.get(
   '/',
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT),
@@ -38,11 +37,6 @@ router.get(
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS, ROLES.STUDENT),
   getFeeStructureById
 );
-=======
-router.get('/', listFeeStructures);
-router.get('/structures', listFeeStructures);
-router.get('/structures/:id', getFeeStructureById);
->>>>>>> feature/library-staff-portal
 
 router.post(
   '/',

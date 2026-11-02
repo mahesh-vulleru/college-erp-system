@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-<<<<<<< HEAD
 import { useSearchParams } from 'react-router-dom';
-=======
->>>>>>> feature/library-staff-portal
 import {
   BarChart3,
   Download,
@@ -36,7 +33,6 @@ export const ExecutiveReportsPage = () => {
   const { user } = useAuth();
   const { addToast } = useToast();
 
-<<<<<<< HEAD
   const [searchParams] = useSearchParams();
   const queryTab = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState(queryTab || 'enrollment'); // 'enrollment' | 'faculty' | 'attendance' | 'results' | 'finance' | 'activity'
@@ -46,9 +42,6 @@ export const ExecutiveReportsPage = () => {
       setActiveTab(queryTab);
     }
   }, [queryTab]);
-=======
-  const [activeTab, setActiveTab] = useState('enrollment'); // 'enrollment' | 'faculty' | 'attendance' | 'results' | 'finance' | 'activity'
->>>>>>> feature/library-staff-portal
   const [isLoading, setIsLoading] = useState(true);
 
   // Report Data States

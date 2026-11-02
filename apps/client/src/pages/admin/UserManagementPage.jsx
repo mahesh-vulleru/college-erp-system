@@ -19,10 +19,7 @@ import {
 import api from '../../api/apiClient';
 import { useToast } from '../../context/ToastContext';
 import Card from '../../components/common/Card';
-<<<<<<< HEAD
 import StatWidget from '../../components/common/StatWidget';
-=======
->>>>>>> feature/library-staff-portal
 import Table from '../../components/common/Table';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';

@@ -15,12 +15,8 @@ import {
   EyeOff,
   Sparkles,
   RefreshCw,
-<<<<<<< HEAD
-  BookOpen
-=======
   BookOpen,
   BookCheck
->>>>>>> feature/library-staff-portal
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/common/Button';
@@ -55,12 +51,9 @@ export const LoginPage = () => {
         return '/accounts';
       case 'librarian':
         return '/library';
-<<<<<<< HEAD
-=======
       case 'library_staff':
       case 'librarystaff':
         return '/library-staff';
->>>>>>> feature/library-staff-portal
       default:
         return '/admin';
     }
@@ -160,8 +153,6 @@ export const LoginPage = () => {
       desc: 'Catalog, book issues, returns, and fines',
       icon: BookOpen,
       dashboard: '/library'
-<<<<<<< HEAD
-=======
     },
     {
       id: ROLES.LIBRARY_STAFF,
@@ -170,7 +161,6 @@ export const LoginPage = () => {
       desc: 'Book circulation, issue, return and reservation operations.',
       icon: BookCheck,
       dashboard: '/library-staff'
->>>>>>> feature/library-staff-portal
     }
   ];
 
@@ -182,12 +172,8 @@ export const LoginPage = () => {
     [ROLES.FACULTY]: 'faculty.turing@college.edu',
     [ROLES.STUDENT]: 'student.aarav@college.edu',
     [ROLES.ACCOUNTS]: 'accounts@college.edu',
-<<<<<<< HEAD
-    [ROLES.LIBRARIAN]: 'librarian@college.edu'
-=======
     [ROLES.LIBRARIAN]: 'librarian@college.edu',
     [ROLES.LIBRARY_STAFF]: 'librarystaff@college.edu'
->>>>>>> feature/library-staff-portal
   };
 
   const handleRoleSelect = (roleId) => {
@@ -227,13 +213,9 @@ export const LoginPage = () => {
       if (selectedRole !== ROLES.STUDENT) setSelectedRole(ROLES.STUDENT);
     } else if (lower.startsWith('account')) {
       if (selectedRole !== ROLES.ACCOUNTS) setSelectedRole(ROLES.ACCOUNTS);
-<<<<<<< HEAD
-    } else if (lower.startsWith('librarian')) {
-=======
     } else if (lower.startsWith('librarystaff') || lower.startsWith('libstaff') || lower === 'librarystaff@college.edu') {
       if (selectedRole !== ROLES.LIBRARY_STAFF) setSelectedRole(ROLES.LIBRARY_STAFF);
     } else if (lower.startsWith('librarian') || lower === 'librarian@college.edu') {
->>>>>>> feature/library-staff-portal
       if (selectedRole !== ROLES.LIBRARIAN) setSelectedRole(ROLES.LIBRARIAN);
     }
   };
@@ -295,11 +277,7 @@ export const LoginPage = () => {
       <div className="absolute top-0 left-1/3 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-navy-700/20 rounded-full blur-3xl pointer-events-none" />
 
-<<<<<<< HEAD
-      <div className="sm:mx-auto sm:w-full sm:max-w-2xl z-10">
-=======
       <div className="sm:mx-auto sm:w-full sm:max-w-3xl z-10">
->>>>>>> feature/library-staff-portal
         {/* Brand Header */}
         <div className="text-center space-y-2 mb-8">
           <Link to="/" className="inline-block group">
@@ -352,11 +330,7 @@ export const LoginPage = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-<<<<<<< HEAD
-            {/* 1. Six Selectable Roles Grid */}
-=======
             {/* 1. Eight Selectable Institutional Roles Grid */}
->>>>>>> feature/library-staff-portal
             <div>
               <div className="flex items-center justify-between mb-2.5">
                 <label className="block text-xs font-bold text-navy-800 uppercase tracking-wider">
@@ -367,11 +341,7 @@ export const LoginPage = () => {
                 </span>
               </div>
 
-<<<<<<< HEAD
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-=======
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
->>>>>>> feature/library-staff-portal
                 {rolesList.map((role) => {
                   const Icon = role.icon;
                   const isSelected = selectedRole === role.id;
@@ -491,11 +461,7 @@ export const LoginPage = () => {
                 </button>
               </div>
               <p className="text-[10px] text-navy-500 mt-1.5 font-mono">
-<<<<<<< HEAD
-                Email: <code>{devCredentials[selectedRole]}</code> &bull; Password: <code>{selectedRole === ROLES.SUPER_ADMIN ? 'Admin@12345' : 'Password123!'}</code>
-=======
                 Email: <code>{devCredentials[selectedRole]}</code> &bull; Password: <code>{selectedRole === ROLES.SUPER_ADMIN ? 'Admin@12345' : selectedRole === ROLES.LIBRARIAN ? 'Library@2026#' : 'Password123!'}</code>
->>>>>>> feature/library-staff-portal
               </p>
             </div>
           )}

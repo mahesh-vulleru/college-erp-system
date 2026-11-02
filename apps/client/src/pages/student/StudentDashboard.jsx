@@ -58,14 +58,11 @@ export const StudentDashboard = () => {
   const [myInvoices, setMyInvoices] = useState([]);
   const [myNotices, setMyNotices] = useState([]);
   const [myExams, setMyExams] = useState([]);
-<<<<<<< HEAD
   const [selectedHallTicketExam, setSelectedHallTicketExam] = useState(null);
   const [payNowInvoice, setPayNowInvoice] = useState(null);
   const [isPayNowOpen, setIsPayNowOpen] = useState(false);
   const [payNowMethod, setPayNowMethod] = useState('UPI');
   const [payNowTxnRef, setPayNowTxnRef] = useState('');
-=======
->>>>>>> feature/library-staff-portal
   const [searchParams, setSearchParams] = useSearchParams();
   const queryTab = searchParams.get('tab');
   const [studentActiveTab, setStudentActiveTab] = useState(queryTab || 'courses');
@@ -316,7 +313,6 @@ export const StudentDashboard = () => {
   };
 
   // Toggle Status
-<<<<<<< HEAD
   const handleExecutePayNow = async (e) => {
     e.preventDefault();
     if (!payNowInvoice) return;
@@ -351,9 +347,6 @@ export const StudentDashboard = () => {
       setIsSubmitting(false);
     }
   };
-
-=======
->>>>>>> feature/library-staff-portal
   const handleConfirmToggle = async () => {
     if (!confirmToggleUser?.user?._id) return;
     const currentStatus = confirmToggleUser.user.status;
@@ -891,7 +884,6 @@ export const StudentDashboard = () => {
                         <span>Academic Year: {exam.academicYear}</span>
                       </div>
                     </div>
-<<<<<<< HEAD
                     <div className="text-right flex flex-col items-end gap-1">
                       <Badge variant="navy" size="xs">
                         {exam.startDate ? new Date(exam.startDate).toLocaleDateString() : 'TBD'} - {exam.endDate ? new Date(exam.endDate).toLocaleDateString() : 'TBD'}
@@ -906,13 +898,6 @@ export const StudentDashboard = () => {
                         <FileText className="w-3 h-3" />
                         Digital Hall Ticket
                       </Button>
-=======
-                    <div className="text-right">
-                      <Badge variant="navy" size="xs">
-                        {exam.startDate ? new Date(exam.startDate).toLocaleDateString() : 'TBD'} - {exam.endDate ? new Date(exam.endDate).toLocaleDateString() : 'TBD'}
-                      </Badge>
-                      <span className="text-[10px] text-emerald-600 font-semibold block mt-1">Verified Published</span>
->>>>>>> feature/library-staff-portal
                     </div>
                   </div>
                 ))}
@@ -1014,7 +999,6 @@ export const StudentDashboard = () => {
                         <Badge variant={inv.paymentStatus === 'paid' ? 'success' : 'amber'} size="xs">
                           {inv.paymentStatus?.toUpperCase() || 'PENDING'}
                         </Badge>
-<<<<<<< HEAD
                         {inv.paymentStatus !== 'paid' && (
                           <Button
                             size="xs"
@@ -1032,10 +1016,6 @@ export const StudentDashboard = () => {
                         )}
                         <Link to="/fees" className="text-[10px] font-semibold text-blue-600 hover:text-blue-800 block mt-1">
                           View In Portal &rarr;
-=======
-                        <Link to="/fees" className="text-[10px] font-semibold text-blue-600 hover:text-blue-800 block mt-1">
-                          Pay / Receipt &rarr;
->>>>>>> feature/library-staff-portal
                         </Link>
                       </div>
                     </div>
@@ -1534,7 +1514,7 @@ export const StudentDashboard = () => {
         isDanger={confirmToggleUser?.user?.status === USER_STATUS.ACTIVE}
         isLoading={isSubmitting}
       />
-<<<<<<< HEAD
+
 
       {/* Modal 5: Digital Hall Ticket */}
       <Modal
@@ -1674,8 +1654,6 @@ export const StudentDashboard = () => {
           </form>
         )}
       </Modal>
-=======
->>>>>>> feature/library-staff-portal
     </div>
   );
 };

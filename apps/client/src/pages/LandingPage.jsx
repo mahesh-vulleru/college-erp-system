@@ -58,13 +58,10 @@ export const LandingPage = () => {
       case 'faculty': return '/faculty';
       case 'student': return '/student';
       case 'accounts': return '/accounts';
-<<<<<<< HEAD
-=======
       case 'librarian': return '/library';
       case 'library_staff':
       case 'librarystaff':
         return '/library-staff';
->>>>>>> feature/library-staff-portal
       default: return '/login';
     }
   };

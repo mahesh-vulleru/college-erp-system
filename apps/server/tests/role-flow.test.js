@@ -12,13 +12,9 @@ describe('Role Flow, Authentication, & Authorization Test Suite', () => {
     { role: ROLES.HOD, email: 'hod.cse@college.edu', name: 'Prof. David Kumar' },
     { role: ROLES.FACULTY, email: 'faculty.turing@college.edu', name: 'Dr. Alan Turing' },
     { role: ROLES.STUDENT, email: 'student.aarav@college.edu', name: 'Aarav Sharma' },
-<<<<<<< HEAD
-    { role: ROLES.ACCOUNTS, email: 'accounts@college.edu', name: 'Mr. Robert Sterling' }
-=======
     { role: ROLES.ACCOUNTS, email: 'accounts@college.edu', name: 'Mr. Robert Sterling' },
     { role: ROLES.LIBRARIAN, email: 'librarian@college.edu', name: 'Mrs. Evelyn Reed' },
     { role: ROLES.LIBRARY_STAFF, email: 'librarystaff@college.edu', name: 'Mr. Marcus Cole' }
->>>>>>> feature/library-staff-portal
   ];
 
   afterEach(() => {
