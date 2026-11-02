@@ -1520,6 +1520,62 @@ class ApiClient {
   updateTransportNotificationPreferences(data) {
     return this.put('/v1/transport/notifications/preferences', data);
   }
+
+  // Phase 5: Transport Analytics & Reports
+  getTransportExecutiveAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/executive${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportFleetAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/fleet${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportRouteAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/routes${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportDriverAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/drivers${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportStudentAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/students${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportTripAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/trips${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportFuelAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/fuel${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportFinancialAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/finance${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportSafetyAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/safety${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportReport(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/reports${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportExportUrl(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return `${API_BASE_URL}/v1/transport/reports/export${qs ? `?${qs}` : ''}`;
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL);

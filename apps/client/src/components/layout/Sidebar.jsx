@@ -400,6 +400,13 @@ const ROLE_NAV_CONFIGS = {
       ]
     },
     {
+      title: 'Reports & Intelligence',
+      items: [
+        { path: '/transport?tab=analytics', label: 'Executive Analytics', icon: TrendingUp },
+        { path: '/transport?tab=reports', label: 'Central Report Center', icon: BarChart3 }
+      ]
+    },
+    {
       title: 'Configuration',
       items: [
         { path: '/transport?tab=settings', label: 'Transport Settings', icon: ShieldCheck }
@@ -433,6 +440,13 @@ const ROLE_NAV_CONFIGS = {
       title: 'Passenger Operations',
       items: [
         { path: '/transport?tab=attendance', label: 'Student Attendance', icon: UserCheck }
+      ]
+    },
+    {
+      title: 'Reports & Intelligence',
+      items: [
+        { path: '/transport?tab=analytics', label: 'Operational Analytics', icon: TrendingUp },
+        { path: '/transport?tab=reports', label: 'Transport Reports', icon: BarChart3 }
       ]
     }
   ],
