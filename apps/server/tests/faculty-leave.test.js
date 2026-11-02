@@ -72,7 +72,6 @@ describe('Faculty Leave Management Test Suite (Feature 2)', () => {
       if (idStr === facultyUser._id) return { select: jest.fn().mockResolvedValue(facultyUser) };
       return { select: jest.fn().mockResolvedValue(null) };
     });
-<<<<<<< HEAD
     jest.spyOn(Leave, 'findById').mockImplementation((id) => {
       const idStr = id ? id.toString() : '';
       if (idStr === mockLeave._id) {
@@ -86,8 +85,6 @@ describe('Faculty Leave Management Test Suite (Feature 2)', () => {
         then: jest.fn((cb) => cb(null))
       };
     });
-=======
->>>>>>> feature/library-staff-portal
   });
 
   afterEach(() => {

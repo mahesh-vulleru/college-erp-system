@@ -5,10 +5,7 @@ const Student = require('../students/student.model');
 const Faculty = require('../faculty/faculty.model');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
-<<<<<<< HEAD
 const { resolveHodDepartment, isHodDepartment } = require('../../utils/hodScoping');
-=======
->>>>>>> feature/library-staff-portal
 
 async function getTimetable(req, res, next) {
   try {
@@ -173,7 +170,6 @@ async function createTimetableSlot(req, res, next) {
   try {
     const { department, course, semester, section = 'A', dayOfWeek, periodNumber, startTime, endTime, subject, faculty, roomNumber } = req.body;
 
-<<<<<<< HEAD
     if (req.user?.role === ROLES.HOD && department) {
       const matches = await isHodDepartment(req.user, department);
       if (!matches) {
@@ -184,9 +180,6 @@ async function createTimetableSlot(req, res, next) {
         });
       }
     }
-
-=======
->>>>>>> feature/library-staff-portal
     const conflictError = await checkTimetableConflicts({
       dayOfWeek,
       periodNumber,
@@ -249,7 +242,6 @@ async function updateTimetableSlot(req, res, next) {
       });
     }
 
-<<<<<<< HEAD
     if (req.user?.role === ROLES.HOD && slot.department) {
       const matches = await isHodDepartment(req.user, slot.department);
       if (!matches) {
@@ -260,9 +252,6 @@ async function updateTimetableSlot(req, res, next) {
         });
       }
     }
-
-=======
->>>>>>> feature/library-staff-portal
     const { department, course, semester, section, dayOfWeek, periodNumber, startTime, endTime, subject, faculty, roomNumber } = req.body;
 
     const conflictError = await checkTimetableConflicts({

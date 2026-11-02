@@ -1,15 +1,12 @@
 const express = require('express');
 const {
   getLibraryDashboard,
-<<<<<<< HEAD
-=======
   getStaffDashboard,
   getMyTransactions,
   listLibraryStaff,
   createOrAssignLibraryStaff,
   updateLibraryStaffStatus,
   resetLibraryStaffPassword,
->>>>>>> feature/library-staff-portal
   listBooks,
   getBookById,
   createBook,
@@ -59,11 +56,6 @@ router.use(authenticate);
 // 1. Dashboard summary
 router.get(
   '/dashboard',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN),
-  getLibraryDashboard
-);
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF),
   getLibraryDashboard
 );
@@ -77,25 +69,16 @@ router.get(
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF),
   getMyTransactions
 );
->>>>>>> feature/library-staff-portal
 
 // 2. Books Catalog
 router.get(
   '/books',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.LIBRARIAN),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF),
->>>>>>> feature/library-staff-portal
   listBooks
 );
 router.get(
   '/books/:id',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.LIBRARIAN),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF),
->>>>>>> feature/library-staff-portal
   getBookById
 );
 router.post(
@@ -123,11 +106,7 @@ router.delete(
 // 3. Categories
 router.get(
   '/categories',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.LIBRARIAN),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF),
->>>>>>> feature/library-staff-portal
   listCategories
 );
 router.post(
@@ -140,11 +119,7 @@ router.post(
 // 4. Members
 router.get(
   '/members',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF),
->>>>>>> feature/library-staff-portal
   listMembers
 );
 router.post(
@@ -155,100 +130,60 @@ router.post(
 );
 router.get(
   '/members/:id',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, ROLES.FACULTY, ROLES.STUDENT),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF, ROLES.FACULTY, ROLES.STUDENT),
->>>>>>> feature/library-staff-portal
   getMemberDetails
 );
 
 // 5. Circulation
 router.post(
   '/issues',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.LIBRARIAN),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF),
->>>>>>> feature/library-staff-portal
   validateRequest(validateIssueInput),
   issueBook
 );
 router.get(
   '/issues',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF),
->>>>>>> feature/library-staff-portal
   listIssues
 );
 router.post(
   '/returns',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.LIBRARIAN),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF),
->>>>>>> feature/library-staff-portal
   validateRequest(validateReturnInput),
   returnBook
 );
 router.post(
   '/renewals',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.LIBRARIAN, ROLES.FACULTY, ROLES.STUDENT),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF, ROLES.FACULTY, ROLES.STUDENT),
->>>>>>> feature/library-staff-portal
   renewBook
 );
 
 // 6. Reservations
 router.get(
   '/reservations',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF),
->>>>>>> feature/library-staff-portal
   listReservations
 );
 router.post(
   '/reservations',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.LIBRARIAN, ROLES.FACULTY, ROLES.STUDENT),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF, ROLES.FACULTY, ROLES.STUDENT),
->>>>>>> feature/library-staff-portal
   createReservation
 );
 router.delete(
   '/reservations/:id',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.LIBRARIAN),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF),
->>>>>>> feature/library-staff-portal
   cancelReservation
 );
 
 // 7. Fines
 router.get(
   '/fines',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, ROLES.ACCOUNTS),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF, ROLES.ACCOUNTS),
->>>>>>> feature/library-staff-portal
   listFines
 );
 router.post(
   '/fines/pay',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.LIBRARIAN, ROLES.ACCOUNTS),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF, ROLES.ACCOUNTS),
->>>>>>> feature/library-staff-portal
   payFine
 );
 router.post(
@@ -261,11 +196,7 @@ router.post(
 // 8. Digital Resources
 router.get(
   '/digital-resources',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.LIBRARIAN),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF),
->>>>>>> feature/library-staff-portal
   listDigitalResources
 );
 router.post(
@@ -276,22 +207,14 @@ router.post(
 );
 router.post(
   '/digital-resources/:id/download',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.LIBRARIAN),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF),
->>>>>>> feature/library-staff-portal
   recordDownload
 );
 
 // 9. Settings
 router.get(
   '/settings',
-<<<<<<< HEAD
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN),
-=======
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF),
->>>>>>> feature/library-staff-portal
   getLibrarySettings
 );
 router.put(
@@ -307,8 +230,6 @@ router.get(
   exportLibraryReportCsv
 );
 
-<<<<<<< HEAD
-=======
 // 11. Staff Management (Librarian / Super Admin only)
 router.get(
   '/staff',
@@ -330,7 +251,5 @@ router.post(
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.LIBRARIAN),
   resetLibraryStaffPassword
 );
-
->>>>>>> feature/library-staff-portal
 module.exports = router;
 

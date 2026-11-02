@@ -1510,10 +1510,7 @@ async function exportLibraryReportCsv(req, res, next) {
   }
 }
 
-<<<<<<< HEAD
-module.exports = {
-  getLibraryDashboard,
-=======
+
 // ----------------------------------------------------
 // 11. LIBRARY STAFF SPECIFIC ANALYTICS & ACTIVITY
 // ----------------------------------------------------
@@ -1844,7 +1841,6 @@ module.exports = {
   createOrAssignLibraryStaff,
   updateLibraryStaffStatus,
   resetLibraryStaffPassword,
->>>>>>> feature/library-staff-portal
   listBooks,
   getBookById,
   createBook,

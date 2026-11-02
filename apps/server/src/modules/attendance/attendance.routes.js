@@ -15,7 +15,6 @@ const router = express.Router();
 
 router.use(authenticate);
 
-<<<<<<< HEAD
 router.get(
   '/',
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
@@ -31,11 +30,6 @@ router.get(
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
   getAttendanceOverview
 );
-=======
-router.get('/', getAttendanceRecords);
-router.get('/summary', getAttendanceSummary);
-router.get('/overview', getAttendanceOverview);
->>>>>>> feature/library-staff-portal
 
 // Only faculty, HOD, and principal can mark attendance
 router.post(
