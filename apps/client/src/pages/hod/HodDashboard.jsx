@@ -63,6 +63,7 @@ import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Notification from '../../components/common/Notification';
+import RoleLeaveManagement from '../../components/leave/RoleLeaveManagement';
 import api from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -167,6 +168,8 @@ export const HodDashboard = () => {
       ? 'syllabus'
       : queryTab === 'alerts' || queryTab === 'academic-alerts' || queryTab === 'insights'
       ? 'alerts'
+      : queryTab === 'leaves' || queryTab === 'leave' || queryTab === 'leave-approvals'
+      ? 'leaves'
       : (queryTab || 'faculty')
   );
 
@@ -288,6 +291,9 @@ export const HodDashboard = () => {
       } else if (queryTab === 'exams') {
         targetTab = 'exams';
         targetSectionId = 'hod-exams-section';
+      } else if (queryTab === 'leaves' || queryTab === 'leave' || queryTab === 'leave-approvals') {
+        targetTab = 'leaves';
+        targetSectionId = 'hod-leaves-section';
       } else {
         targetTab = queryTab;
       }
@@ -350,6 +356,9 @@ export const HodDashboard = () => {
     } else if (tab === 'exams' || tab === 'examination') {
       canonicalTab = 'exams';
       targetSectionId = 'hod-exams-section';
+    } else if (tab === 'leaves' || tab === 'leave' || tab === 'leave-approvals' || tab === 'leave-management') {
+      canonicalTab = 'leaves';
+      targetSectionId = 'hod-leaves-section';
     }
 
     setHodActiveTab(canonicalTab);
@@ -2392,15 +2401,15 @@ export const HodDashboard = () => {
           ]}
           quickActions={[
             { label: 'Faculty Roster', icon: Users, color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+            { label: 'Leave Approvals', icon: CalendarCheck, color: 'bg-teal-50 text-teal-800 border-teal-200' },
             { label: 'Timetable', icon: Clock, color: 'bg-sky-50 text-sky-800 border-sky-200' },
-            { label: 'Examinations', icon: Award, color: 'bg-amber-50 text-amber-800 border-amber-200' },
-            { label: 'Notice Board', icon: Bell, color: 'bg-purple-50 text-purple-800 border-purple-200' }
+            { label: 'Examinations', icon: Award, color: 'bg-amber-50 text-amber-800 border-amber-200' }
           ]}
           onActionClick={(label) => {
             if (label === 'Faculty Roster') handleTabChange('faculty');
+            else if (label === 'Leave Approvals') handleTabChange('leaves');
             else if (label === 'Timetable') handleTabChange('timetable');
             else if (label === 'Examinations') navigate('/examinations');
-            else if (label === 'Notice Board') navigate('/notices');
           }}
         />
 
@@ -2600,88 +2609,6 @@ export const HodDashboard = () => {
           </div>
         </div>
 
-        {/* Row 3: Recent Department Activities & Upcoming Events */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm sm:text-base font-bold text-slate-900">Recent Department Activities</h2>
-                <button
-                  onClick={() => handleTabChange('faculty')}
-                  className="text-xs font-semibold text-amber-600 hover:text-amber-700 cursor-pointer"
-                >
-                  View Faculty
-                </button>
-              </div>
-              {recentActivities.length === 0 ? (
-                <div className="py-8 text-center">
-                  <Clock className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                  <p className="text-xs text-slate-400">No recent department activities recorded.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {recentActivities.slice(0, 4).map((log, i) => {
-                    const display = getAuditLogDisplay(log);
-                    const DisplayIcon = display.icon;
-                    return (
-                      <div key={log._id || log.id || i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${display.color.split(' ')[1]}`}>
-                            <DisplayIcon className={`w-4 h-4 ${display.color.split(' ')[0]}`} />
-                          </div>
-                          <div>
-                            <p className="text-xs sm:text-sm font-semibold text-slate-800">{display.title}</p>
-                            <p className="text-[11px] text-slate-400 mt-0.5">{formatTimeAgo(log.createdAt)}</p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm sm:text-base font-bold text-slate-900">Upcoming Events</h2>
-                <button
-                  onClick={() => handleTabChange('timetable')}
-                  className="text-xs font-semibold text-amber-600 hover:text-amber-700 cursor-pointer"
-                >
-                  View Timetable
-                </button>
-              </div>
-              {upcomingEvents.length === 0 ? (
-                <div className="py-8 text-center">
-                  <CalendarCheck className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                  <p className="text-xs text-slate-400">No upcoming examinations or scheduled events.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {upcomingEvents.slice(0, 4).map((ev, i) => {
-                    const EvIcon = ev.icon;
-                    return (
-                      <div key={ev.id || i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${ev.color.split(' ')[1]}`}>
-                            <EvIcon className={`w-4 h-4 ${ev.color.split(' ')[0]}`} />
-                          </div>
-                          <div>
-                            <p className="text-xs sm:text-sm font-semibold text-slate-800">{ev.title}</p>
-                            <p className="text-[11px] text-slate-400 mt-0.5">{ev.subtitle} &bull; {ev.date}</p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
         {/* Navigation Tabs */}
         <div id="hod-tabs-nav" className="flex border-b border-navy-200 bg-white px-4 rounded-xl shadow-subtle overflow-x-auto">
           <button
@@ -2760,6 +2687,19 @@ export const HodDashboard = () => {
                 {pendingAlertsCount}
               </span>
             ) : null}
+          </button>
+
+          {/* TAB 7: Department Leave Approvals & History */}
+          <button
+            onClick={() => handleTabChange('leaves')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              hodActiveTab === 'leaves'
+                ? 'border-emerald-600 text-emerald-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <CalendarCheck className="w-4 h-4" />
+            <span>Leave Approvals</span>
           </button>
         </div>
 
@@ -4129,9 +4069,13 @@ export const HodDashboard = () => {
             </Card>
 
             {/* Slot Details Modal */}
-            {selectedTimetableSlot && (
-              <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-                <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-5 animate-in fade-in duration-200">
+            <Modal
+              isOpen={!!selectedTimetableSlot}
+              onClose={() => setSelectedTimetableSlot(null)}
+              maxWidth="max-w-lg"
+            >
+              {selectedTimetableSlot && (
+                <div className="space-y-5">
                   <div className="flex items-start justify-between border-b border-slate-100 pb-4">
                     <div>
                       <div className="flex items-center space-x-2">
@@ -4148,7 +4092,7 @@ export const HodDashboard = () => {
                     </div>
                     <button
                       onClick={() => setSelectedTimetableSlot(null)}
-                      className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                      className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -4240,8 +4184,8 @@ export const HodDashboard = () => {
                     </Button>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </Modal>
           </div>
         )}
 
@@ -4665,9 +4609,13 @@ export const HodDashboard = () => {
             </Card>
 
             {/* Subject Details Modal */}
-            {selectedSubjectDetails && (
-              <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-                <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 space-y-5 animate-in fade-in duration-200">
+            <Modal
+              isOpen={!!selectedSubjectDetails}
+              onClose={() => setSelectedSubjectDetails(null)}
+              maxWidth="max-w-xl"
+            >
+              {selectedSubjectDetails && (
+                <div className="space-y-5">
                   <div className="flex items-start justify-between border-b border-slate-100 pb-4">
                     <div>
                       <div className="flex items-center space-x-2">
@@ -4885,8 +4833,8 @@ export const HodDashboard = () => {
                     </Button>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </Modal>
           </div>
         )}
 
@@ -5206,9 +5154,13 @@ export const HodDashboard = () => {
             </Card>
 
             {/* Alert Details Modal */}
-            {selectedAlertDetails && (
-              <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-                <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-5 animate-in fade-in duration-200">
+            <Modal
+              isOpen={!!selectedAlertDetails}
+              onClose={() => setSelectedAlertDetails(null)}
+              maxWidth="max-w-lg"
+            >
+              {selectedAlertDetails && (
+                <div className="space-y-5">
                   <div className="flex items-start justify-between border-b border-slate-100 pb-4">
                     <div>
                       <div className="flex items-center space-x-2">
@@ -5344,8 +5296,8 @@ export const HodDashboard = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </Modal>
           </div>
         )}
 
@@ -5439,6 +5391,13 @@ export const HodDashboard = () => {
               </div>
             )}
           </Card>
+          </div>
+        )}
+
+        {/* TAB 7: Department Leave Approvals & History */}
+        {hodActiveTab === 'leaves' && (
+          <div id="hod-leaves-section" className="space-y-6">
+            <RoleLeaveManagement defaultTab="approvals" />
           </div>
         )}
 

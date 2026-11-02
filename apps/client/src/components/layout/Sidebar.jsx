@@ -60,27 +60,33 @@ export const Sidebar = ({ isOpen, onClose }) => {
   };
 
   const dashboardPath = getRoleDashboardPath();
+  const role = (user?.role || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
 
-  // Navigation Items exactly matching the Reference Design (Image 2)
-  const navItems = [
-    { path: dashboardPath, label: 'Dashboard', icon: LayoutDashboard, exact: true },
-    { path: '/departments', label: 'Institution', icon: Building2 },
-    { path: '/courses', label: 'Academics', icon: GraduationCap },
-    { path: '/students', label: 'Students', icon: Users },
-    { path: '/faculty', label: 'Faculty', icon: UserCheck },
-    { path: '/examinations', label: 'Examinations', icon: FileEdit },
-    { path: '/attendance', label: 'Attendance', icon: CalendarCheck },
-    { path: '/timetable', label: 'Timetable', icon: Clock },
-    { path: '/subjects', label: 'Curriculum', icon: Layers },
-    { path: '/fees', label: 'Fee & Accounts', icon: CreditCard },
-    { path: '/library', label: 'Library', icon: BookMarked },
-    { path: '/transport', label: 'Transport', icon: Bus },
-    { path: '/hostel', label: 'Hostel', icon: BedDouble },
-    { path: '/placements', label: 'Placements', icon: Briefcase },
-    { path: '/notices', label: 'Communications', icon: MessageSquare },
-    { path: '/reports', label: 'Reports & Analytics', icon: BarChart3 },
-    { path: '/settings', label: 'Settings', icon: Settings }
+  // Navigation Items with strict Role-Based visibility matching responsibilities
+  const allNavItems = [
+    { path: dashboardPath, label: 'Dashboard', icon: LayoutDashboard, exact: true, roles: '*' },
+    { path: '/departments', label: 'Institution', icon: Building2, roles: ['super_admin', 'admin', 'superadmin', 'principal'] },
+    { path: '/courses', label: 'Academics', icon: GraduationCap, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'faculty', 'student'] },
+    { path: '/students', label: 'Students', icon: Users, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'faculty', 'accounts', 'librarian'] },
+    { path: '/faculty', label: 'Faculty', icon: UserCheck, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'faculty'] },
+    { path: '/examinations', label: 'Examinations', icon: FileEdit, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'faculty', 'student'] },
+    { path: '/attendance', label: 'Attendance', icon: CalendarCheck, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'faculty', 'student'] },
+    { path: '/timetable', label: 'Timetable', icon: Clock, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'faculty', 'student'] },
+    { path: '/subjects', label: 'Curriculum', icon: Layers, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'faculty'] },
+    { path: '/fees', label: 'Fee & Accounts', icon: CreditCard, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'accounts', 'student'] },
+    { path: '/library', label: 'Library', icon: BookMarked, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'librarian', 'library_staff', 'student', 'faculty'] },
+    { path: '/transport', label: 'Transport', icon: Bus, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'student'] },
+    { path: '/hostel', label: 'Hostel', icon: BedDouble, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'student'] },
+    { path: '/placements', label: 'Placements', icon: Briefcase, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'student'] },
+    { path: '/notices', label: 'Communications', icon: MessageSquare, roles: '*' },
+    { path: '/reports', label: 'Reports & Analytics', icon: BarChart3, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'accounts'] },
+    { path: '/settings', label: 'Settings', icon: Settings, roles: ['super_admin', 'admin', 'superadmin', 'principal'] }
   ];
+
+  const navItems = allNavItems.filter((item) => {
+    if (item.roles === '*') return true;
+    return item.roles.includes(role);
+  });
 
   const isItemActive = (item) => {
     if (item.exact) {

@@ -51,6 +51,7 @@ import Table from '../../components/common/Table';
 import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Notification from '../../components/common/Notification';
+import RoleLeaveManagement from '../../components/leave/RoleLeaveManagement';
 import api from '../../api/apiClient';
 import { useToast } from '../../context/ToastContext';
 import {
@@ -617,14 +618,14 @@ export const AdminDashboard = () => {
         quickActions={[
           { label: 'Add User', icon: UserPlus, color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
           { label: 'Manage Roles', icon: ShieldCheck, color: 'bg-sky-50 text-sky-800 border-sky-200' },
-          { label: 'Audit Trail', icon: Activity, color: 'bg-amber-50 text-amber-800 border-amber-200' },
-          { label: 'System Settings', icon: Settings, color: 'bg-purple-50 text-purple-800 border-purple-200' }
+          { label: 'Leave Matrix', icon: CalendarCheck, color: 'bg-teal-50 text-teal-800 border-teal-200' },
+          { label: 'Audit Trail', icon: Activity, color: 'bg-amber-50 text-amber-800 border-amber-200' }
         ]}
         onActionClick={(label) => {
           if (label === 'Add User') handleOpenCreate();
           else if (label === 'Manage Roles') setActiveTab('roles');
+          else if (label === 'Leave Matrix') setActiveTab('leaves');
           else if (label === 'Audit Trail') setActiveTab('audit');
-          else if (label === 'System Settings') setActiveTab('settings');
         }}
       />
 
@@ -685,15 +686,15 @@ export const AdminDashboard = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('modules')}
+          onClick={() => setActiveTab('leaves')}
           className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 ${
-            activeTab === 'modules'
+            activeTab === 'leaves'
               ? 'border-teal-600 text-teal-800'
               : 'border-transparent text-navy-500 hover:text-navy-900'
           }`}
         >
-          <Layers className="w-4 h-4" />
-          <span>All 17 ERP Modules</span>
+          <CalendarCheck className="w-4 h-4" />
+          <span>Leave & Workflow Matrix</span>
         </button>
       </div>
 
@@ -887,48 +888,11 @@ export const AdminDashboard = () => {
         </div>
       )}
 
-      {/* TAB 5: All 17 Institutional Modules */}
-      {activeTab === 'modules' && (
-        <Card
-          title="Institutional Modules & Subsystems Directory"
-          subtitle="Direct quick access to all 17 college operational portals, academic engines, and financial ledgers"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {allModules.map((mod) => {
-              const ModIcon = mod.icon;
-              return (
-                <Link
-                  key={mod.id}
-                  to={mod.path}
-                  className="group p-4 rounded-xl bg-warm-50 border border-navy-100 hover:border-teal-500 hover:bg-white hover:shadow-subtle transition-all duration-200 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="p-2 rounded-lg bg-teal-500/10 text-teal-700 group-hover:bg-teal-600 group-hover:text-white transition-colors">
-                        <ModIcon className="w-5 h-5" />
-                      </div>
-                      <Badge variant="teal" size="xs">
-                        {mod.badge}
-                      </Badge>
-                    </div>
-                    <h3 className="font-bold text-navy-900 group-hover:text-teal-700 text-sm mb-1 transition-colors">
-                      {mod.name}
-                    </h3>
-                    <p className="text-xs text-navy-600 line-clamp-2 mb-3">
-                      {mod.desc}
-                    </p>
-                  </div>
-                  <div className="pt-2 border-t border-navy-100/60 flex items-center justify-between text-[11px] text-navy-400">
-                    <span className="font-mono text-teal-800 font-semibold">{mod.path}</span>
-                    <span className="inline-flex items-center font-medium text-teal-700 group-hover:translate-x-0.5 transition-transform">
-                      Open <ExternalLink className="w-3 h-3 ml-1" />
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </Card>
+      {/* TAB 5: Institutional Leave & Workflow Matrix */}
+      {activeTab === 'leaves' && (
+        <div className="space-y-6">
+          <RoleLeaveManagement defaultTab="config" />
+        </div>
       )}
 
       {/* 1. Modal: Create Account */}

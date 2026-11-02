@@ -12,6 +12,7 @@ import {
   FileText,
   Layers,
   CalendarCheck,
+  CreditCard,
   RotateCw,
   Archive,
   Eye,
@@ -36,6 +37,7 @@ import Select from '../../components/common/Select';
 import Table from '../../components/common/Table';
 import Modal from '../../components/common/Modal';
 import EmptyState from '../../components/common/EmptyState';
+import RoleLeaveManagement from '../../components/leave/RoleLeaveManagement';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import api from '../../api/apiClient';
@@ -686,13 +688,13 @@ export const LibraryStaffDashboard = () => {
         quickActions={[
           { label: 'Issue Book', icon: Clock, color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
           { label: 'Return Book', icon: CheckCircle, color: 'bg-sky-50 text-sky-800 border-sky-200' },
-          { label: 'Patron Check', icon: Users, color: 'bg-amber-50 text-amber-800 border-amber-200' },
+          { label: 'Apply Leave', icon: CalendarCheck, color: 'bg-teal-50 text-teal-800 border-teal-200' },
           { label: 'Fine Payment', icon: CreditCard, color: 'bg-purple-50 text-purple-800 border-purple-200' }
         ]}
         onActionClick={(label) => {
           if (label === 'Issue Book') setActiveTab('issue-books');
           else if (label === 'Return Book') setActiveTab('return-books');
-          else if (label === 'Patron Check') setActiveTab('patron-lookup');
+          else if (label === 'Apply Leave') setActiveTab('leaves');
           else if (label === 'Fine Payment') setActiveTab('fine-collection');
         }}
       />
@@ -708,52 +710,6 @@ export const LibraryStaffDashboard = () => {
       {/* -------------------------------------------------------------------- */}
       {currentTab === 'dashboard' && (
         <div className="space-y-6">
-          {/* Top Real-time Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            <StatWidget
-              title="Issued Today"
-              value={dashboardData?.summary?.booksIssuedToday ?? 0}
-              icon={CheckCircle}
-              trend={{ direction: 'up', label: 'Daily checkouts' }}
-              accentColor="indigo"
-            />
-            <StatWidget
-              title="Returned Today"
-              value={dashboardData?.summary?.booksReturnedToday ?? 0}
-              icon={Clock}
-              trend={{ direction: 'neutral', label: 'Returns recorded' }}
-              accentColor="teal"
-            />
-            <StatWidget
-              title="Active Loans"
-              value={dashboardData?.summary?.activeTransactions ?? 0}
-              icon={BookOpen}
-              trend={{ direction: 'neutral', label: 'Total checked-out' }}
-              accentColor="blue"
-            />
-            <StatWidget
-              title="Pending Returns"
-              value={dashboardData?.summary?.pendingReturns ?? 0}
-              icon={Layers}
-              trend={{ direction: 'neutral', label: 'Expected returns' }}
-              accentColor="purple"
-            />
-            <StatWidget
-              title="Overdue Books"
-              value={dashboardData?.summary?.overdueBooks ?? 0}
-              icon={AlertTriangle}
-              trend={{ direction: 'down', label: 'Overdue loans' }}
-              accentColor="rose"
-            />
-            <StatWidget
-              title="Pending Reservations"
-              value={dashboardData?.summary?.pendingReservations ?? 0}
-              icon={CalendarCheck}
-              trend={{ direction: 'neutral', label: 'Patron requests' }}
-              accentColor="amber"
-            />
-          </div>
-
           {/* Staff Daily Activity Card & Fast Circulation Bar */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-1 p-5 border border-indigo-100 bg-gradient-to-br from-indigo-50/50 via-white to-slate-50 shadow-sm">
@@ -2426,6 +2382,15 @@ export const LibraryStaffDashboard = () => {
             </div>
           </div>
         </Card>
+      )}
+
+      {/* -------------------------------------------------------------------- */}
+      {/* 14. LEAVE APPLICATION TAB */}
+      {/* -------------------------------------------------------------------- */}
+      {currentTab === 'leaves' && (
+        <div className="space-y-6">
+          <RoleLeaveManagement defaultTab="my-leaves" />
+        </div>
       )}
 
       {/* -------------------------------------------------------------------- */}
