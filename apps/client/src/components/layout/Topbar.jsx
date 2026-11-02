@@ -3,6 +3,7 @@ import { Menu, Search, Bell, Calendar } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ProfileMenu from './ProfileMenu';
+import NotificationDropdown from './NotificationDropdown';
 import { getRoleTheme } from '../../theme/roleThemes';
 import api from '../../api/apiClient';
 
@@ -116,26 +117,17 @@ export const Topbar = ({ onToggleSidebar }) => {
 
       {/* Right: Notifications, status, and profile avatar */}
       <div className="flex items-center space-x-3 sm:space-x-4">
-        {/* Calendar / Schedule quick link - role-aware */}
+        {/* Calendar / Schedule quick link */}
         <Link
-          to={getTimetablePath()}
+          to="/calendar"
           className="p-2 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors hidden sm:inline-flex"
-          title="Class Schedule"
+          title="Institutional Calendar & Events"
         >
           <Calendar className="w-4 h-4" />
         </Link>
 
-        {/* Notices notification bell */}
-        <Link
-          to="/notices"
-          className="p-2 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors relative"
-          title={unreadNoticesCount > 0 ? `${unreadNoticesCount} Active Notice(s)` : 'Circulars & Notices'}
-        >
-          <Bell className="w-4 h-4" />
-          {unreadNoticesCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
-          )}
-        </Link>
+        {/* Universal Notifications Dropdown */}
+        <NotificationDropdown />
 
         {/* User initials avatar circle matching the reference image */}
         {isAuthenticated && user && (

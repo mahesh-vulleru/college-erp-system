@@ -71,6 +71,7 @@ const ROLE_NAV_CONFIGS = {
         { path: '/courses', label: 'Programs & Courses', icon: BookOpen },
         { path: '/subjects', label: 'Curriculum Subjects', icon: Layers },
         { path: '/timetable', label: 'Class Timetables', icon: Clock },
+        { path: '/calendar', label: 'Academic Calendar', icon: CalendarCheck },
         { path: '/attendance', label: 'Daily Attendance', icon: CalendarCheck },
         { path: '/examinations', label: 'Examinations System', icon: FileText },
         { path: '/results', label: 'Results & Performance', icon: Award }
@@ -152,6 +153,7 @@ const ROLE_NAV_CONFIGS = {
       title: 'Timetable & Operations',
       items: [
         { path: '/timetable', label: 'Department Timetable', icon: Clock },
+        { path: '/calendar', label: 'Academic Calendar', icon: CalendarCheck },
         { path: '/attendance', label: 'Attendance Register', icon: CalendarCheck }
       ]
     },
@@ -183,7 +185,8 @@ const ROLE_NAV_CONFIGS = {
       title: 'Teaching & Schedule',
       items: [
         { path: '/courses', label: 'Assigned Courses & Syllabus', icon: BookOpen },
-        { path: '/timetable', label: 'Teaching Schedule', icon: Clock }
+        { path: '/timetable', label: 'Teaching Schedule', icon: Clock },
+        { path: '/calendar', label: 'Academic Calendar', icon: CalendarCheck }
       ]
     },
     {
@@ -220,7 +223,8 @@ const ROLE_NAV_CONFIGS = {
       title: 'Academics & Schedule',
       items: [
         { path: '/courses', label: 'Enrolled Courses & Syllabus', icon: BookOpen },
-        { path: '/timetable', label: 'Semester Timetable', icon: Clock }
+        { path: '/timetable', label: 'Semester Timetable', icon: Clock },
+        { path: '/calendar', label: 'Academic Calendar', icon: CalendarCheck }
       ]
     },
     {
@@ -261,6 +265,7 @@ const ROLE_NAV_CONFIGS = {
       title: 'Reports & Notices',
       items: [
         { path: '/reports', label: 'Financial Reports', icon: BarChart3 },
+        { path: '/calendar', label: 'Academic Calendar', icon: CalendarCheck },
         { path: '/notices', label: 'Notice Board', icon: Bell }
       ]
     }
@@ -409,6 +414,7 @@ const ROLE_NAV_CONFIGS = {
     {
       title: 'Configuration',
       items: [
+        { path: '/calendar', label: 'Institutional Calendar', icon: CalendarCheck },
         { path: '/transport?tab=settings', label: 'Transport Settings', icon: ShieldCheck }
       ]
     }

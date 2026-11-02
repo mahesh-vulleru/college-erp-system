@@ -94,6 +94,8 @@ const DashboardRedirect = () => {
       return <Navigate to="/transport?tab=driver_portal" replace />;
     case 'bus_attendant':
       return <Navigate to="/transport?tab=attendance" replace />;
+    case 'parent':
+      return <Navigate to="/transport?tab=parent" replace />;
     default:
       return <Navigate to="/" replace />;
   }
@@ -360,6 +362,16 @@ export const App = () => {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="calendar"
+                element={
+                  <ProtectedRoute>
+                    <DeadlineEventTrackerPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="events" element={<Navigate to="/calendar" replace />} />
+              <Route path="academic-calendar" element={<Navigate to="/calendar" replace />} />
               <Route
                 path="attendance"
                 element={

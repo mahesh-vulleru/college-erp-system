@@ -58,8 +58,19 @@ export const LoginPage = () => {
       case 'transport_admin':
       case 'transportadmin':
         return '/transport';
+      case 'transport_supervisor':
+      case 'transportsupervisor':
+        return '/transport?tab=supervisor';
+      case 'bus_driver':
+      case 'driver':
+        return '/transport?tab=driver_portal';
+      case 'bus_attendant':
+      case 'attendant':
+        return '/transport?tab=attendance';
+      case 'parent':
+        return '/transport?tab=parent';
       default:
-        return '/admin';
+        return '/dashboard';
     }
   };
 
