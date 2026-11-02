@@ -99,6 +99,7 @@ async function createFacultyProfile(req, res, next) {
         });
       }
     }
+
     const existing = await Faculty.findOne({ $or: [{ employeeId }, { user }] });
     if (existing) {
       return sendError(res, {
@@ -157,6 +158,7 @@ async function updateFacultyProfile(req, res, next) {
         });
       }
     }
+
     if (department) faculty.department = department;
     if (designation) faculty.designation = designation;
     if (qualification !== undefined) faculty.qualification = qualification;

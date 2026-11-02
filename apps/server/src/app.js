@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -12,17 +13,29 @@ const notFound = require('./middleware/notFound');
 
 const app = express();
 
-// 1. Security Headers via Helmet
+// 1. Security Headers
 app.use(helmet({
-  contentSecurityPolicy: env.NODE_ENV === 'production' ? undefined : false
+  contentSecurityPolicy:
+    env.NODE_ENV === 'production' ? undefined : false
 }));
 
-// 2. CORS setup for Client Origin
+// 2. CORS Configuration
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || origin === env.CLIENT_URL || origin === 'http://localhost:5173' || origin === 'http://127.0.0.1:5173' || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+    const allowedOrigins = [
+      env.CLIENT_URL,
+      'http://localhost:5173',
+      'http://127.0.0.1:5173'
+    ];
+
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)
+    ) {
       return callback(null, true);
     }
+
     return callback(new Error('Blocked by CORS policy'));
   },
   credentials: true,
@@ -30,7 +43,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// 3. Rate Limiting for DoS protection
+// 3. Rate Limiting
 const limiter = rateLimit({
   windowMs: env.RATE_LIMIT_WINDOW_MS,
   max: env.RATE_LIMIT_MAX,
@@ -41,27 +54,30 @@ const limiter = rateLimit({
     message: 'Too many requests from this IP address, please try again later.'
   }
 });
+
 app.use('/api', limiter);
 
 // 4. Request Logging
 if (env.NODE_ENV !== 'test') {
-  app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+  app.use(morgan(
+    env.NODE_ENV === 'production' ? 'combined' : 'dev'
+  ));
 }
 
-// 5. Body Parsers with payload limits
+// 5. Body Parsers
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// 6. Direct Root Health Route
+
 app.use('/health', healthRoutes);
 
-// 7. Mount API routes
+// 7. API Routes
 app.use('/api', apiRoutes);
 
-// 8. Fallback 404 handler
+// 8. 404 Handler
 app.use(notFound);
 
-// 9. Global Centralized Error Handler
+
 app.use(errorHandler);
 
 module.exports = app;

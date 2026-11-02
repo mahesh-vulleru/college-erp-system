@@ -26,6 +26,7 @@ import StudentDashboard from './pages/student/StudentDashboard';
 import AccountsDashboard from './pages/accounts/AccountsDashboard';
 import LibrarianDashboard from './pages/library/LibrarianDashboard';
 import LibraryStaffDashboard from './pages/library/LibraryStaffDashboard';
+import TransportAdminDashboard from './pages/transport/TransportAdminDashboard';
 
 // Phase 2 Academic Subsystems
 import DepartmentsPage from './pages/academics/DepartmentsPage';
@@ -90,6 +91,17 @@ const DashboardRedirect = () => {
     case 'library_staff':
     case 'librarystaff':
       return <Navigate to="/library-staff" replace />;
+    case 'transport_admin':
+    case 'transportadmin':
+      return <Navigate to="/transport" replace />;
+    case 'transport_supervisor':
+      return <Navigate to="/transport?tab=supervisor" replace />;
+    case 'bus_driver':
+      return <Navigate to="/transport?tab=driver_portal" replace />;
+    case 'bus_attendant':
+      return <Navigate to="/transport?tab=attendance" replace />;
+    case 'parent':
+      return <Navigate to="/transport?tab=parent_portal" replace />;
     default:
       return <Navigate to="/" replace />;
   }
@@ -256,6 +268,7 @@ export const App = () => {
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="library/*"
                 element={
@@ -270,6 +283,48 @@ export const App = () => {
                 element={
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF, 'admin']}>
                     <LibraryStaffDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="transport"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={[
+                      ROLES.SUPER_ADMIN,
+                      ROLES.ACCOUNTS,
+                      ROLES.TRANSPORT_ADMIN,
+                      ROLES.TRANSPORT_SUPERVISOR,
+                      ROLES.BUS_DRIVER,
+                      ROLES.BUS_ATTENDANT,
+                      ROLES.PARENT,
+                      'admin'
+                    ]}
+                  >
+                    <TransportAdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="transport/dashboard" element={<Navigate to="/transport" replace />} />
+              <Route path="transport-supervisor" element={<Navigate to="/transport?tab=supervisor" replace />} />
+              <Route path="transport-driver" element={<Navigate to="/transport?tab=driver_portal" replace />} />
+              <Route path="transport-parent" element={<Navigate to="/transport?tab=parent" replace />} />
+              <Route
+                path="transport/*"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={[
+                      ROLES.SUPER_ADMIN,
+                      ROLES.ACCOUNTS,
+                      ROLES.TRANSPORT_ADMIN,
+                      ROLES.TRANSPORT_SUPERVISOR,
+                      ROLES.BUS_DRIVER,
+                      ROLES.BUS_ATTENDANT,
+                      ROLES.PARENT,
+                      'admin'
+                    ]}
+                  >
+                    <TransportAdminDashboard />
                   </ProtectedRoute>
                 }
               />

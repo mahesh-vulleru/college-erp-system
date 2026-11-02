@@ -89,6 +89,7 @@ async function listAuditLogs(req, res, next) {
         query.$or = financeConditions;
       }
     }
+
     const [logs, total] = await Promise.all([
       AuditLog.find(query)
         .populate('user', 'name email role department')
@@ -139,6 +140,7 @@ async function getAuditLogById(req, res, next) {
         });
       }
     }
+
     return sendSuccess(res, {
       message: 'Audit log record retrieved',
       data: log
@@ -165,6 +167,7 @@ async function exportAuditLogsCsv(req, res, next) {
         { action: { $regex: /FEE|INVOICE|PAYMENT|REFUND/i } }
       ];
     }
+
     const logs = await AuditLog.find(query)
       .populate('user', 'name email role')
       .sort({ createdAt: -1 })

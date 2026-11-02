@@ -24,7 +24,9 @@ import {
   DollarSign,
   Bell,
   ArrowRight,
-  ExternalLink
+  ExternalLink,
+  Bus,
+  Radio
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import CampusBuildingGraphic from '../../components/common/CampusBuildingGraphic';
@@ -64,6 +66,7 @@ export const StudentDashboard = () => {
   const [myInvoices, setMyInvoices] = useState([]);
   const [myNotices, setMyNotices] = useState([]);
   const [myExams, setMyExams] = useState([]);
+  const [myTransport, setMyTransport] = useState(null);
   const [selectedHallTicketExam, setSelectedHallTicketExam] = useState(null);
   const [payNowInvoice, setPayNowInvoice] = useState(null);
   const [isPayNowOpen, setIsPayNowOpen] = useState(false);
@@ -130,7 +133,7 @@ export const StudentDashboard = () => {
     try {
       if (isStudentRole) {
         // Load student self data
-        const [profRes, attRes, resRes, payRes, subjRes, timeRes, invRes, notRes, examRes] = await Promise.all([
+        const [profRes, attRes, resRes, payRes, subjRes, timeRes, invRes, notRes, examRes, transRes] = await Promise.all([
           api.getMyStudentProfile().catch(() => ({ data: null })),
           api.getAttendance().catch(() => ({ data: [] })),
           api.getResults().catch(() => ({ data: [] })),
@@ -139,7 +142,8 @@ export const StudentDashboard = () => {
           api.getTimetable().catch(() => ({ data: [] })),
           api.getFeeInvoices().catch(() => ({ data: [] })),
           api.getNotices().catch(() => ({ data: [] })),
-          api.getExams().catch(() => ({ data: [] }))
+          api.getExams().catch(() => ({ data: [] })),
+          api.getMyStudentTransport().catch(() => ({ data: null }))
         ]);
 
         if (profRes?.data) setMyProfile(profRes.data);
@@ -151,6 +155,7 @@ export const StudentDashboard = () => {
         if (invRes?.data) setMyInvoices(invRes.data);
         if (notRes?.data) setMyNotices(notRes.data);
         if (examRes?.data) setMyExams(Array.isArray(examRes.data) ? examRes.data : []);
+        if (transRes?.data) setMyTransport(transRes.data);
       } else {
         // Load administrative directory
         const [studRes, deptRes] = await Promise.all([
@@ -353,6 +358,8 @@ export const StudentDashboard = () => {
       setIsSubmitting(false);
     }
   };
+
+
   const handleConfirmToggle = async () => {
     if (!confirmToggleUser?.user?._id) return;
     const currentStatus = confirmToggleUser.user.status;
@@ -704,6 +711,18 @@ export const StudentDashboard = () => {
           </button>
 
           <button
+            onClick={() => setStudentActiveTab('transport')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              studentActiveTab === 'transport'
+                ? 'border-amber-500 text-amber-700'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <Bus className="w-4 h-4" />
+            <span>Campus Transport</span>
+          </button>
+
+          <button
             onClick={() => setStudentActiveTab('profile')}
             className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
               studentActiveTab === 'profile'
@@ -1032,7 +1051,143 @@ export const StudentDashboard = () => {
           </Card>
         )}
 
-        {/* TAB 6: Campus Notices */}
+        {/* TAB 7: Campus Transport Pass & Transit Status (Phase 2) */}
+        {studentActiveTab === 'transport' && (
+          <Card
+            title="My Campus Transport Pass & Transit Status"
+            subtitle="Real-time bus allocation, stop schedules, boarding verification, and live tracking"
+          >
+            {myTransport?.hasAllocation ? (
+              <div className="space-y-4 text-xs">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Bus Pass Details */}
+                  <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-amber-950 text-sm flex items-center gap-2">
+                        <Bus className="w-4 h-4 text-amber-600" />
+                        {myTransport.allocation?.bus?.busName || 'Campus Bus'}
+                      </span>
+                      <Badge variant="warning" size="xs">
+                        {myTransport.allocation?.transportFeeStatus === 'paid' ? 'Active Pass' : 'Fee Pending'}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between py-1 border-b border-amber-200/50">
+                        <span className="text-amber-800">Vehicle Registration</span>
+                        <span className="font-mono font-bold text-navy-950">
+                          {myTransport.allocation?.bus?.registrationNumber || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-amber-200/50">
+                        <span className="text-amber-800">Transit Route</span>
+                        <span className="font-semibold text-navy-900">
+                          {myTransport.allocation?.route?.routeName} ({myTransport.allocation?.route?.routeCode})
+                        </span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-amber-200/50">
+                        <span className="text-amber-800">Designated Boarding Stop</span>
+                        <span className="font-semibold text-navy-950">
+                          {myTransport.allocation?.pickupStop}
+                        </span>
+                      </div>
+                      <div className="flex justify-between py-1">
+                        <span className="text-amber-800">Designated Drop Stop</span>
+                        <span className="font-semibold text-navy-950">
+                          {myTransport.allocation?.dropStop}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Today's Trip & Commuter Attendance */}
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                    <h4 className="font-bold text-navy-950 text-xs flex items-center justify-between">
+                      <span>Today's Transit Trip</span>
+                      {myTransport.todayTrip ? (
+                        <Badge variant="info" size="xs">{myTransport.todayTrip.tripStatus?.toUpperCase()}</Badge>
+                      ) : (
+                        <Badge variant="neutral" size="xs">No Active Run</Badge>
+                      )}
+                    </h4>
+
+                    {myTransport.todayTrip && (
+                      <div className="p-3 bg-white rounded-lg border border-navy-100 flex items-center justify-between">
+                        <div>
+                          <span className="text-navy-400 text-[10px] block">SCHEDULED DEPARTURE</span>
+                          <span className="font-mono font-bold text-navy-900 text-sm">
+                            {myTransport.todayTrip.scheduledDeparture} &rarr; {myTransport.todayTrip.scheduledArrival}
+                          </span>
+                        </div>
+                        <span className="text-xs font-semibold capitalize text-amber-700">
+                          {myTransport.todayTrip.tripType?.replace('_', ' ')}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Attendance Verification Badges */}
+                    <div className="grid grid-cols-2 gap-2 text-center pt-1">
+                      <div className="p-2.5 bg-white rounded-lg border border-navy-100">
+                        <span className="text-[11px] text-navy-500 block">Boarding Status</span>
+                        <Badge
+                          variant={myTransport.todayAttendance?.boardingStatus === 'boarded' ? 'success' : 'warning'}
+                          size="xs"
+                          className="mt-1"
+                        >
+                          {myTransport.todayAttendance?.boardingStatus?.toUpperCase() || 'PENDING'}
+                        </Badge>
+                      </div>
+                      <div className="p-2.5 bg-white rounded-lg border border-navy-100">
+                        <span className="text-[11px] text-navy-500 block">Drop-off Status</span>
+                        <Badge
+                          variant={myTransport.todayAttendance?.dropStatus === 'dropped' ? 'info' : 'neutral'}
+                          size="xs"
+                          className="mt-1"
+                        >
+                          {myTransport.todayAttendance?.dropStatus?.toUpperCase() || 'PENDING'}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Live GPS Status */}
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-navy-50 text-[11px]">
+                      <span className="text-navy-600 flex items-center gap-1.5">
+                        <Radio className="w-3.5 h-3.5 text-amber-500" />
+                        Live Vehicle GPS
+                      </span>
+                      <span className="font-semibold text-navy-900">
+                        {myTransport.gps?.isOnline ? (
+                          <span className="text-emerald-600 font-bold">ONLINE &bull; On Road</span>
+                        ) : (
+                          <span className="text-navy-400">Offline / Standby</span>
+                        )}
+                      </span>
+                    </div>
+
+                    {/* Safety Helpline & Complaint Link */}
+                    <div className="pt-3 border-t border-navy-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-[11px]">
+                      <span className="text-navy-500">
+                        <strong className="text-navy-700">Safety Helpline:</strong> +91 98765 43210 &bull; Emergency Response Desk
+                      </span>
+                      <Link
+                        to="/transport?tab=complaints"
+                        className="font-bold text-teal-700 hover:text-teal-900 inline-flex items-center gap-1"
+                      >
+                        Submit Transit Feedback / Complaint &rarr;
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-8 text-center text-navy-400 space-y-2">
+                <Bus className="w-8 h-8 mx-auto text-navy-300" />
+                <p className="text-xs">You do not currently have an active campus transport allocation.</p>
+                <p className="text-[11px] text-navy-400">Contact the Transport Administration office to register for bus transit services.</p>
+              </div>
+            )}
+          </Card>
+        )}
         {studentActiveTab === 'notices' && (
           <Card
             title="Campus Announcements & Circulars"
@@ -1465,6 +1620,7 @@ export const StudentDashboard = () => {
         isDanger={confirmToggleUser?.user?.status === USER_STATUS.ACTIVE}
         isLoading={isSubmitting}
       />
+
 
 
       {/* Modal 5: Digital Hall Ticket */}

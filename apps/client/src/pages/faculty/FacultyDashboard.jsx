@@ -346,6 +346,7 @@ export const FacultyDashboard = () => {
       setIsSubmitting(false);
     }
   };
+
   const handleConfirmToggle = async () => {
     if (!confirmToggleUser?.user?._id) return;
     const currentStatus = confirmToggleUser.user.status;

@@ -140,6 +140,7 @@ async function getExamById(req, res, next) {
         });
       }
     }
+
     return sendSuccess(res, { data: exam });
   } catch (error) {
     next(error);
@@ -237,6 +238,7 @@ async function updateExam(req, res, next) {
         });
       }
     }
+
     const { name, examType, academicYear, semester, department, course, venue, startDate, endDate, isPublished, status } = req.body;
 
     const newStart = startDate ? new Date(startDate) : exam.startDate;

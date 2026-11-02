@@ -6,7 +6,7 @@
  * - White and light-cream workspace (#f4f7f5)
  * - Emerald-green primary buttons (bg-emerald-600 hover:bg-emerald-700)
  * - Clean cards, subtle shadows and borders
- * - Consistent icons and spacing across all 8 roles
+ * - Consistent icons and spacing across all institutional roles
  */
 
 export const ROLE_THEMES = {
@@ -145,6 +145,91 @@ export const ROLE_THEMES = {
     badgeVariant: 'success',
     statAccent: 'bg-emerald-50 text-emerald-700 border-emerald-100',
     tagColor: 'bg-teal-100 text-teal-800'
+  },
+  transport_admin: {
+    id: 'transport_admin',
+    name: 'Transport Administrator',
+    roleLabel: 'Transport Administrator',
+    primary: 'emerald',
+    sidebarBg: 'bg-[#062a1e]',
+    sidebarBorder: 'border-emerald-950/60',
+    sidebarActive: 'bg-[#a7f3d0] text-[#064e3b] font-bold shadow-xs',
+    sidebarHover: 'hover:bg-white/10 hover:text-white',
+    sidebarText: 'text-emerald-100/75',
+    sidebarActiveText: 'text-[#064e3b]',
+    avatarBg: 'bg-emerald-700 text-white',
+    accentColor: 'emerald',
+    badgeVariant: 'success',
+    statAccent: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    tagColor: 'bg-amber-100 text-amber-800'
+  },
+  transport_supervisor: {
+    id: 'transport_supervisor',
+    name: 'Transport Supervisor',
+    roleLabel: 'Transport Supervisor',
+    primary: 'emerald',
+    sidebarBg: 'bg-[#062a1e]',
+    sidebarBorder: 'border-emerald-950/60',
+    sidebarActive: 'bg-[#a7f3d0] text-[#064e3b] font-bold shadow-xs',
+    sidebarHover: 'hover:bg-white/10 hover:text-white',
+    sidebarText: 'text-emerald-100/75',
+    sidebarActiveText: 'text-[#064e3b]',
+    avatarBg: 'bg-emerald-700 text-white',
+    accentColor: 'emerald',
+    badgeVariant: 'success',
+    statAccent: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    tagColor: 'bg-teal-100 text-teal-800'
+  },
+  bus_driver: {
+    id: 'bus_driver',
+    name: 'Bus Driver',
+    roleLabel: 'Bus Driver',
+    primary: 'emerald',
+    sidebarBg: 'bg-[#062a1e]',
+    sidebarBorder: 'border-emerald-950/60',
+    sidebarActive: 'bg-[#a7f3d0] text-[#064e3b] font-bold shadow-xs',
+    sidebarHover: 'hover:bg-white/10 hover:text-white',
+    sidebarText: 'text-emerald-100/75',
+    sidebarActiveText: 'text-[#064e3b]',
+    avatarBg: 'bg-emerald-700 text-white',
+    accentColor: 'emerald',
+    badgeVariant: 'success',
+    statAccent: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    tagColor: 'bg-sky-100 text-sky-800'
+  },
+  bus_attendant: {
+    id: 'bus_attendant',
+    name: 'Bus Attendant',
+    roleLabel: 'Bus Attendant',
+    primary: 'emerald',
+    sidebarBg: 'bg-[#062a1e]',
+    sidebarBorder: 'border-emerald-950/60',
+    sidebarActive: 'bg-[#a7f3d0] text-[#064e3b] font-bold shadow-xs',
+    sidebarHover: 'hover:bg-white/10 hover:text-white',
+    sidebarText: 'text-emerald-100/75',
+    sidebarActiveText: 'text-[#064e3b]',
+    avatarBg: 'bg-emerald-700 text-white',
+    accentColor: 'emerald',
+    badgeVariant: 'success',
+    statAccent: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    tagColor: 'bg-sky-100 text-sky-800'
+  },
+  parent: {
+    id: 'parent',
+    name: 'Parent / Guardian',
+    roleLabel: 'Parent',
+    primary: 'emerald',
+    sidebarBg: 'bg-[#062a1e]',
+    sidebarBorder: 'border-emerald-950/60',
+    sidebarActive: 'bg-[#a7f3d0] text-[#064e3b] font-bold shadow-xs',
+    sidebarHover: 'hover:bg-white/10 hover:text-white',
+    sidebarText: 'text-emerald-100/75',
+    sidebarActiveText: 'text-[#064e3b]',
+    avatarBg: 'bg-emerald-700 text-white',
+    accentColor: 'emerald',
+    badgeVariant: 'success',
+    statAccent: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    tagColor: 'bg-purple-100 text-purple-800'
   }
 };
 
@@ -154,6 +239,10 @@ export const normalizeRoleKey = (role) => {
   if (r === 'superadmin' || r === 'admin' || r === 'super_administrator') return 'super_admin';
   if (r === 'finance' || r === 'accountant') return 'accounts';
   if (r === 'librarystaff') return 'library_staff';
+  if (r === 'transportadmin') return 'transport_admin';
+  if (r === 'transportsupervisor') return 'transport_supervisor';
+  if (r === 'busdriver') return 'bus_driver';
+  if (r === 'busattendant') return 'bus_attendant';
   return ROLE_THEMES[r] ? r : 'principal';
 };
 
