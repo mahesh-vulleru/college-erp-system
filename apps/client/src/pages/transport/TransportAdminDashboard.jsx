@@ -33,7 +33,8 @@ import {
   DollarSign,
   Receipt,
   MessageSquare,
-  Megaphone
+  Megaphone,
+  FileSpreadsheet
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import StatWidget from '../../components/common/StatWidget';
