@@ -26,6 +26,11 @@ import {
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import CampusBuildingGraphic from '../../components/common/CampusBuildingGraphic';
+import DashboardHeaderBanner from '../../components/dashboard/DashboardHeaderBanner';
+import DashboardKPICard from '../../components/dashboard/DashboardKPICard';
+import DashboardAnalyticsRow from '../../components/dashboard/DashboardAnalyticsRow';
+import DashboardWidgetsRow from '../../components/dashboard/DashboardWidgetsRow';
+import DashboardModulesNav from '../../components/dashboard/DashboardModulesNav';
 import SimpleDonutChart from '../../components/common/SimpleDonutChart';
 import StatWidget from '../../components/common/StatWidget';
 import Badge from '../../components/common/Badge';
@@ -555,76 +560,80 @@ export const FacultyDashboard = () => {
 
     return (
       <div className="space-y-6">
-        {/* Modern Purple Hero Banner */}
-        <div className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 rounded-2xl p-6 sm:p-7 text-white shadow-card relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="relative z-10 max-w-xl">
-            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-black/20 text-purple-200 text-xs font-medium mb-3 backdrop-blur-sm border border-white/10">
-              <span>{myDeptName || 'Biotechnology Department'}</span>
-              <span>&darr;</span>
-            </div>
-            <p className="text-xs sm:text-sm font-medium text-purple-100 tracking-wide">
-              Welcome, {user?.name || 'Prof. Neelima'}
-            </p>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
-              Faculty Dashboard
-            </h1>
-            <p className="mt-1.5 text-xs sm:text-sm text-purple-100/90 font-normal">
-              Teaching schedule, student management and academic activities
-            </p>
-          </div>
-          <div className="flex items-center gap-3 relative z-10">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setIsMarkAttendanceOpen(true)}
-              icon={CalendarCheck}
-              className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
-            >
-              Mark Attendance
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={loadData}
-              icon={RefreshCw}
-              isLoading={isLoading}
-              className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
-            />
-            <CampusBuildingGraphic className="w-48 h-24 sm:w-56 sm:h-28 opacity-90 text-white pointer-events-none drop-shadow-md hidden md:block" />
-          </div>
-        </div>
+        {/* 1. Header Banner */}
+        <DashboardHeaderBanner
+          title="Faculty Academic Portal"
+          subtitle="Teaching schedules, period attendance registers, internal marks entry, and leave applications."
+          academicYear="2026 – 2027"
+        />
 
-        {/* Real KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatWidget
+        {/* 2. 5-KPI Cards Row */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <DashboardKPICard
+            title="Total Students Taught"
+            value={myStudents.length || 184}
+            icon={Users}
+            trend="+3.2%"
+            trendDirection="up"
+            color="emerald"
+          />
+          <DashboardKPICard
             title="Assigned Subjects"
             value={mySubjects.length || 3}
-            subtitle="Assigned Subjects"
             icon={BookOpen}
-            color="purple"
+            trend="Active"
+            trendDirection="up"
+            color="blue"
           />
-          <StatWidget
-            title="Classes This Week"
-            value={mySlots.length || 4}
-            subtitle="Classes This Week"
+          <DashboardKPICard
+            title="Weekly Classes"
+            value={mySlots.length ? `${mySlots.length} Slots` : '18 Slots'}
             icon={Clock}
-            color="purple"
+            color="amber"
           />
-          <StatWidget
-            title="Total Students"
-            value={myStudents.length || 48}
-            subtitle="Total Students"
-            icon={Users}
-            color="purple"
+          <DashboardKPICard
+            title="Class Attendance"
+            value="91%"
+            icon={CalendarCheck}
+            trend="+2.0%"
+            trendDirection="up"
+            color="rose"
           />
-          <StatWidget
-            title="Pending Tasks"
-            value="2"
-            subtitle="Pending Tasks"
-            icon={AlertTriangle}
+          <DashboardKPICard
+            title="Leave Balance"
+            value={`${user?.leaveBalance ?? 12} Days`}
+            icon={ShieldCheck}
+            trend="Available"
+            trendDirection="up"
             color="purple"
           />
         </div>
+
+        {/* 3. Analytics Row */}
+        <DashboardAnalyticsRow
+          chartTitle="Weekly Attendance Average"
+          donutTitle="Subject Teaching Load"
+          totalCount={String(myStudents.length || 184)}
+          totalCountLabel="Students"
+          quickActions={[
+            { label: 'Mark Attendance', icon: CalendarCheck, color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+            { label: 'Apply Leave', icon: Clock, color: 'bg-sky-50 text-sky-800 border-sky-200' },
+            { label: 'Enter Marks', icon: Award, color: 'bg-amber-50 text-amber-800 border-amber-200' },
+            { label: 'Timetable', icon: Calendar, color: 'bg-purple-50 text-purple-800 border-purple-200' }
+          ]}
+          onActionClick={(label) => {
+            if (label === 'Mark Attendance') setIsMarkAttendanceOpen(true);
+            else if (label === 'Apply Leave') setIsApplyLeaveOpen(true);
+            else if (label === 'Enter Marks') setFacultyActiveTab('marks');
+            else if (label === 'Timetable') setFacultyActiveTab('timetable');
+          }}
+        />
+
+        {/* 4. Lower Widgets Row */}
+        <DashboardWidgetsRow />
+
+        {/* 5. Modules Grid */}
+        <DashboardModulesNav />
 
         {/* Row 2: Today's Timetable & Student Attendance (This Month) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

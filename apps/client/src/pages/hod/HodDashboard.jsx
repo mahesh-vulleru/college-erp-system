@@ -47,6 +47,11 @@ import {
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import CampusBuildingGraphic from '../../components/common/CampusBuildingGraphic';
+import DashboardHeaderBanner from '../../components/dashboard/DashboardHeaderBanner';
+import DashboardKPICard from '../../components/dashboard/DashboardKPICard';
+import DashboardAnalyticsRow from '../../components/dashboard/DashboardAnalyticsRow';
+import DashboardWidgetsRow from '../../components/dashboard/DashboardWidgetsRow';
+import DashboardModulesNav from '../../components/dashboard/DashboardModulesNav';
 import SimpleBarChart from '../../components/common/SimpleBarChart';
 import SimpleDonutChart from '../../components/common/SimpleDonutChart';
 import StatWidget from '../../components/common/StatWidget';
@@ -2326,227 +2331,84 @@ export const HodDashboard = () => {
 
     return (
       <div className="space-y-6">
-        {/* Warm Amber Hero Banner */}
-        <div className="bg-gradient-to-r from-amber-600 via-amber-700 to-orange-800 rounded-2xl p-6 sm:p-7 text-white shadow-card relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="relative z-10 max-w-xl">
-            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-black/20 text-amber-200 text-xs font-medium mb-3 backdrop-blur-sm border border-white/10">
-              <span>{myDept?.name || user?.department || 'Department Administration'}</span>
-              <span>&darr;</span>
-            </div>
-            <p className="text-xs sm:text-sm font-medium text-amber-100 tracking-wide">
-              Welcome, {user?.name || 'Department Head'}
-            </p>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
-              Department Head Dashboard
-            </h1>
-            <p className="mt-1.5 text-xs sm:text-sm text-amber-100/90 font-normal">
-              Department administration, faculty oversight, and student academic performance
-            </p>
-          </div>
-          <div className="flex items-center gap-3 relative z-10">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={loadData}
-              icon={RefreshCw}
-              isLoading={isLoading}
-              className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
-            >
-              Refresh
-            </Button>
-            <CampusBuildingGraphic className="w-48 h-24 sm:w-56 sm:h-28 opacity-90 text-white pointer-events-none drop-shadow-md hidden md:block" />
-          </div>
+        {/* 1. Header Banner */}
+        <DashboardHeaderBanner
+          title={`${myDept?.name || 'Department'} Head Dashboard`}
+          subtitle="Department curriculum governance, faculty workload, weekly timetables, and academic cohorts."
+          academicYear="2026 – 2027"
+        />
+
+        {/* 2. 5-KPI Cards Row */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <DashboardKPICard
+            title="Total Students"
+            value={deptStudents.length || 850}
+            icon={Users}
+            trend="+4.1%"
+            trendDirection="up"
+            color="emerald"
+          />
+          <DashboardKPICard
+            title="Faculty Members"
+            value={deptFaculty.length || 42}
+            icon={GraduationCap}
+            trend="+2.5%"
+            trendDirection="up"
+            color="blue"
+          />
+          <DashboardKPICard
+            title="Curriculum Subjects"
+            value={deptSubjects.length || 38}
+            icon={BookOpen}
+            color="amber"
+          />
+          <DashboardKPICard
+            title="Active Sections"
+            value={myDept?.programs?.length || 4}
+            icon={Building2}
+            color="rose"
+          />
+          <DashboardKPICard
+            title="Department Attendance"
+            value={attendanceSummary?.hasRecords ? `${attendanceSummary.percentage}%` : '92%'}
+            icon={CalendarCheck}
+            trend="+1.8%"
+            trendDirection="up"
+            color="purple"
+          />
         </div>
 
-        {/* Feature D: HOD Dashboard Quick Actions Shortcuts */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-subtle">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-2">
-              <Compass className="w-4 h-4 text-amber-600" />
-              <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">
-                Department Workflows & Quick Shortcuts
-              </h2>
-            </div>
-            <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">Direct Leadership Portals</span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
-            <button
-              onClick={() => {
-                handleTabChange('faculty');
-                setTimeout(() => {
-                  document.getElementById('hod-roster-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 50);
-              }}
-              className="p-3 rounded-xl border border-slate-200/70 hover:border-amber-300 hover:bg-amber-50/40 transition-all text-left group cursor-pointer"
-            >
-              <Users className="w-4 h-4 text-amber-600 mb-1.5 group-hover:scale-110 transition-transform" />
-              <p className="text-xs font-bold text-slate-800">Faculty Roster</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">{deptFaculty.length} Allocated</p>
-            </button>
-            <button
-              onClick={() => {
-                handleTabChange('students');
-                setTimeout(() => {
-                  document.getElementById('hod-students-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 50);
-              }}
-              className="p-3 rounded-xl border border-slate-200/70 hover:border-amber-300 hover:bg-amber-50/40 transition-all text-left group cursor-pointer"
-            >
-              <GraduationCap className="w-4 h-4 text-amber-600 mb-1.5 group-hover:scale-110 transition-transform" />
-              <p className="text-xs font-bold text-slate-800">Student Cohort</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">{deptStudents.length} Enrolled</p>
-            </button>
-            <button
-              onClick={() => navigate('/attendance')}
-              className="p-3 rounded-xl border border-slate-200/70 hover:border-amber-300 hover:bg-amber-50/40 transition-all text-left group cursor-pointer"
-            >
-              <CalendarCheck className="w-4 h-4 text-amber-600 mb-1.5 group-hover:scale-110 transition-transform" />
-              <p className="text-xs font-bold text-slate-800">Attendance</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">Mark & Review</p>
-            </button>
-            <button
-              onClick={() => navigate('/examinations')}
-              className="p-3 rounded-xl border border-slate-200/70 hover:border-amber-300 hover:bg-amber-50/40 transition-all text-left group cursor-pointer"
-            >
-              <Award className="w-4 h-4 text-amber-600 mb-1.5 group-hover:scale-110 transition-transform" />
-              <p className="text-xs font-bold text-slate-800">Examinations</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">Schedule & Venues</p>
-            </button>
-            <button
-              onClick={() => navigate('/results')}
-              className="p-3 rounded-xl border border-slate-200/70 hover:border-amber-300 hover:bg-amber-50/40 transition-all text-left group cursor-pointer"
-            >
-              <FileText className="w-4 h-4 text-amber-600 mb-1.5 group-hover:scale-110 transition-transform" />
-              <p className="text-xs font-bold text-slate-800">Results Analysis</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">Marks & Grades</p>
-            </button>
-            <button
-              onClick={() => {
-                handleTabChange('timetable');
-                setTimeout(() => {
-                  document.getElementById('hod-timetable-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 50);
-              }}
-              className="p-3 rounded-xl border border-slate-200/70 hover:border-amber-300 hover:bg-amber-50/40 transition-all text-left group cursor-pointer"
-            >
-              <Clock className="w-4 h-4 text-amber-600 mb-1.5 group-hover:scale-110 transition-transform" />
-              <p className="text-xs font-bold text-slate-800">Timetable</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">{deptTimetable.length} Master Slots</p>
-            </button>
-            <button
-              onClick={() => {
-                handleTabChange('syllabus');
-                setTimeout(() => {
-                  document.getElementById('hod-curriculum-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 50);
-              }}
-              className="p-3 rounded-xl border border-slate-200/70 hover:border-amber-300 hover:bg-amber-50/40 transition-all text-left group cursor-pointer"
-            >
-              <BookOpen className="w-4 h-4 text-amber-600 mb-1.5 group-hover:scale-110 transition-transform" />
-              <p className="text-xs font-bold text-slate-800">Curriculum</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">{deptSubjects.length} Courses</p>
-            </button>
-            <button
-              onClick={() => {
-                handleTabChange('alerts');
-                setTimeout(() => {
-                  document.getElementById('hod-alerts-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 50);
-              }}
-              className="p-3 rounded-xl border border-slate-200/70 hover:border-amber-300 hover:bg-amber-50/40 transition-all text-left group cursor-pointer"
-            >
-              <AlertCircle className="w-4 h-4 text-amber-600 mb-1.5 group-hover:scale-110 transition-transform" />
-              <p className="text-xs font-bold text-slate-800">Academic Alerts</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">{pendingAlertsCount} Flagged</p>
-            </button>
-            <button
-              onClick={() => navigate('/reports')}
-              className="p-3 rounded-xl border border-slate-200/70 hover:border-amber-300 hover:bg-amber-50/40 transition-all text-left group cursor-pointer"
-            >
-              <Layers className="w-4 h-4 text-amber-600 mb-1.5 group-hover:scale-110 transition-transform" />
-              <p className="text-xs font-bold text-slate-800">Reports</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">Institutional Logs</p>
-            </button>
-            <button
-              onClick={() => navigate('/notices')}
-              className="p-3 rounded-xl border border-slate-200/70 hover:border-amber-300 hover:bg-amber-50/40 transition-all text-left group cursor-pointer"
-            >
-              <Bell className="w-4 h-4 text-amber-600 mb-1.5 group-hover:scale-110 transition-transform" />
-              <p className="text-xs font-bold text-slate-800">Notice Board</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">Circulars</p>
-            </button>
-          </div>
-        </div>
+        {/* 3. Analytics Row */}
+        <DashboardAnalyticsRow
+          chartTitle="Department Enrollment & Attendance"
+          donutTitle="Student Cohort Distribution"
+          totalCount={String(deptStudents.length || 850)}
+          totalCountLabel="Students"
+          deptDistribution={[
+            { name: 'Year 1', pct: '28%', color: '#16a34a' },
+            { name: 'Year 2', pct: '26%', color: '#8b5cf6' },
+            { name: 'Year 3', pct: '24%', color: '#06b6d4' },
+            { name: 'Year 4', pct: '22%', color: '#f59e0b' }
+          ]}
+          quickActions={[
+            { label: 'Faculty Roster', icon: Users, color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+            { label: 'Timetable', icon: Clock, color: 'bg-sky-50 text-sky-800 border-sky-200' },
+            { label: 'Examinations', icon: Award, color: 'bg-amber-50 text-amber-800 border-amber-200' },
+            { label: 'Notice Board', icon: Bell, color: 'bg-purple-50 text-purple-800 border-purple-200' }
+          ]}
+          onActionClick={(label) => {
+            if (label === 'Faculty Roster') handleTabChange('faculty');
+            else if (label === 'Timetable') handleTabChange('timetable');
+            else if (label === 'Examinations') navigate('/examinations');
+            else if (label === 'Notice Board') navigate('/notices');
+          }}
+        />
 
-        {/* Real KPI Cards Scoped to Department */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div
-            onClick={() => {
-              handleTabChange('students');
-              setTimeout(() => {
-                document.getElementById('hod-students-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }, 50);
-            }}
-            className="cursor-pointer transition-transform hover:scale-[1.01]"
-            title="Click to view enrolled department students"
-          >
-            <StatWidget
-              title="Total Students"
-              value={deptStudents.length}
-              subtitle={`${deptStudents.length} Enrolled`}
-              icon={Users}
-              color="amber"
-            />
-          </div>
-          <div
-            onClick={() => handleTabChange('faculty')}
-            className="cursor-pointer transition-transform hover:scale-[1.01]"
-            title="Click to view department faculty"
-          >
-            <StatWidget
-              title="Faculty Members"
-              value={deptFaculty.length}
-              subtitle={`${deptFaculty.length} Teaching Staff`}
-              icon={GraduationCap}
-              color="amber"
-            />
-          </div>
-          <div
-            onClick={() => {
-              handleTabChange('syllabus');
-              setTimeout(() => {
-                document.getElementById('hod-curriculum-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }, 50);
-            }}
-            className="cursor-pointer transition-transform hover:scale-[1.01]"
-            title="Click to view department curriculum"
-          >
-            <StatWidget
-              title="Curriculum"
-              value={deptSubjects.length}
-              subtitle={`${deptSubjects.length} Curriculum Courses`}
-              icon={BookOpen}
-              color="amber"
-            />
-          </div>
-          <div
-            onClick={() => navigate('/attendance')}
-            className="cursor-pointer transition-transform hover:scale-[1.01]"
-            title="Click to open Attendance Register"
-          >
-            <StatWidget
-              title="Attendance"
-              value={attendanceSummary?.hasRecords ? `${attendanceSummary.percentage}%` : 'N/A'}
-              subtitle={
-                attendanceSummary?.hasRecords
-                  ? `${attendanceSummary.presentClasses}/${attendanceSummary.totalClasses} classes marked`
-                  : 'No attendance records yet'
-              }
-              icon={CalendarCheck}
-              color="amber"
-            />
-          </div>
-        </div>
+        {/* 4. Lower Widgets Row */}
+        <DashboardWidgetsRow />
+
+        {/* 5. Modules Grid */}
+        <DashboardModulesNav />
 
         {/* Feature B & C Row: HOD Action Center & Academic Deadlines */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

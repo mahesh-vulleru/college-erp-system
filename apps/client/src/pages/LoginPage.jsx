@@ -14,13 +14,11 @@ import {
   Eye,
   EyeOff,
   Sparkles,
-  RefreshCw,
   BookOpen,
-  BookCheck
+  BookCheck,
+  GitBranch
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import Button from '../components/common/Button';
-import Input from '../components/common/Input';
 import Notification from '../components/common/Notification';
 import { ROLES, ROLE_LABELS } from '@college-erp/shared';
 
@@ -55,7 +53,7 @@ export const LoginPage = () => {
       case 'librarystaff':
         return '/library-staff';
       default:
-        return '/admin';
+        return '/principal';
     }
   };
 
@@ -66,7 +64,7 @@ export const LoginPage = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
-  // Selected role state - check URL query parameter and origin state
+  // Selected role state
   const [selectedRole, setSelectedRole] = useState(() => {
     try {
       const searchParams = new URLSearchParams(window.location.search);
@@ -86,7 +84,7 @@ export const LoginPage = () => {
     if (location.state?.from?.pathname?.includes('admin')) {
       return ROLES.SUPER_ADMIN;
     }
-    return ROLES.SUPER_ADMIN;
+    return ROLES.PRINCIPAL;
   });
 
   const [email, setEmail] = useState('');
@@ -96,75 +94,75 @@ export const LoginPage = () => {
   const [error, setError] = useState('');
   const [detectedRole, setDetectedRole] = useState(null);
 
-  // 6 Selectable Institutional Roles
+  // 8 Selectable Institutional Roles matching reference design
   const rolesList = [
     {
       id: ROLES.SUPER_ADMIN,
       label: 'Super Admin',
-      title: ROLE_LABELS[ROLES.SUPER_ADMIN] || 'Super Administrator',
-      desc: 'System setup, security audit, and user accounts',
+      title: 'Super Administrator',
+      desc: 'System setup, security audit & user accounts',
       icon: ShieldAlert,
       dashboard: '/admin'
     },
     {
       id: ROLES.PRINCIPAL,
-      label: 'Principal',
-      title: ROLE_LABELS[ROLES.PRINCIPAL] || 'Principal / Management',
-      desc: 'Institutional analytics and executive governance',
+      label: 'Principal / Management',
+      title: 'Principal',
+      desc: 'Institutional analytics & executive governance',
       icon: Building2,
       dashboard: '/principal'
     },
     {
       id: ROLES.HOD,
       label: 'HOD',
-      title: ROLE_LABELS[ROLES.HOD] || 'Head of Department',
-      desc: 'Curriculum, timetables, and faculty loads',
-      icon: Users,
+      title: 'Head of Department',
+      desc: 'Curriculum, timetables & faculty loads',
+      icon: GitBranch,
       dashboard: '/hod'
     },
     {
       id: ROLES.FACULTY,
       label: 'Faculty',
-      title: ROLE_LABELS[ROLES.FACULTY] || 'Faculty Member',
-      desc: 'Class attendance and internal exam marks',
-      icon: CalendarCheck,
+      title: 'Faculty Member',
+      desc: 'Class attendance & internal exam marks',
+      icon: GraduationCap,
       dashboard: '/faculty'
     },
     {
       id: ROLES.STUDENT,
       label: 'Student',
-      title: ROLE_LABELS[ROLES.STUDENT] || 'Student',
-      desc: 'Attendance percentage, grade cards, and fee receipts',
-      icon: GraduationCap,
+      title: 'Student',
+      desc: 'Attendance %, grade cards & fee receipts',
+      icon: Users,
       dashboard: '/student'
     },
     {
       id: ROLES.ACCOUNTS,
       label: 'Accounts',
-      title: ROLE_LABELS[ROLES.ACCOUNTS] || 'Accounts & Finance',
-      desc: 'Fee structures, receipts, and collection ledgers',
-      icon: CreditCard,
+      title: 'Accounts & Finance',
+      desc: 'Fee structures, receipts & collection ledgers',
+      icon: Coins,
       dashboard: '/accounts'
     },
     {
       id: ROLES.LIBRARIAN,
       label: 'Librarian',
-      title: ROLE_LABELS[ROLES.LIBRARIAN] || 'Chief Librarian',
-      desc: 'Catalog, book issues, returns, and fines',
+      title: 'Chief Librarian',
+      desc: 'Catalog, book issues, returns & fines',
       icon: BookOpen,
       dashboard: '/library'
     },
     {
       id: ROLES.LIBRARY_STAFF,
       label: 'Library Staff',
-      title: ROLE_LABELS[ROLES.LIBRARY_STAFF] || 'Library Staff',
-      desc: 'Book circulation, issue, return and reservation operations.',
+      title: 'Library Staff',
+      desc: 'Book circulation, issue, return & reservation',
       icon: BookCheck,
       dashboard: '/library-staff'
     }
   ];
 
-  // Development-only sample credential fixtures (verified against seeded database accounts)
+  // Demo accounts
   const devCredentials = {
     [ROLES.SUPER_ADMIN]: 'admin@college.edu',
     [ROLES.PRINCIPAL]: 'principal@college.edu',
@@ -179,15 +177,17 @@ export const LoginPage = () => {
   const handleRoleSelect = (roleId) => {
     setSelectedRole(roleId);
     setDetectedRole(null);
-    setError(''); // clear previous errors when switching roles
+    setError('');
   };
 
-  const handleFillDevCredentials = () => {
-    const devEmail = devCredentials[selectedRole] || '';
+  const handleFillDevCredentials = (roleId = null) => {
+    const target = roleId || selectedRole;
+    setSelectedRole(target);
+    const devEmail = devCredentials[target] || '';
     setEmail(devEmail);
-    if (selectedRole === ROLES.SUPER_ADMIN) {
+    if (target === ROLES.SUPER_ADMIN) {
       setPassword('Admin@12345');
-    } else if (selectedRole === ROLES.LIBRARIAN) {
+    } else if (target === ROLES.LIBRARIAN) {
       setPassword('Library@2026#');
     } else {
       setPassword('Password123!');
@@ -199,10 +199,8 @@ export const LoginPage = () => {
   const handleEmailChange = (val) => {
     setEmail(val);
     const lower = (val || '').toLowerCase().trim();
-    if (lower.startsWith('admin') || lower.includes('@admin') || lower === 'admin@college.edu' || lower === 'admin1@college.edu') {
-      if (selectedRole !== ROLES.SUPER_ADMIN) {
-        setSelectedRole(ROLES.SUPER_ADMIN);
-      }
+    if (lower.startsWith('admin') || lower === 'admin@college.edu') {
+      if (selectedRole !== ROLES.SUPER_ADMIN) setSelectedRole(ROLES.SUPER_ADMIN);
     } else if (lower.startsWith('principal')) {
       if (selectedRole !== ROLES.PRINCIPAL) setSelectedRole(ROLES.PRINCIPAL);
     } else if (lower.startsWith('hod')) {
@@ -213,7 +211,7 @@ export const LoginPage = () => {
       if (selectedRole !== ROLES.STUDENT) setSelectedRole(ROLES.STUDENT);
     } else if (lower.startsWith('account')) {
       if (selectedRole !== ROLES.ACCOUNTS) setSelectedRole(ROLES.ACCOUNTS);
-    } else if (lower.startsWith('librarystaff') || lower.startsWith('libstaff') || lower === 'librarystaff@college.edu') {
+    } else if (lower.startsWith('librarystaff') || lower === 'librarystaff@college.edu') {
       if (selectedRole !== ROLES.LIBRARY_STAFF) setSelectedRole(ROLES.LIBRARY_STAFF);
     } else if (lower.startsWith('librarian') || lower === 'librarian@college.edu') {
       if (selectedRole !== ROLES.LIBRARIAN) setSelectedRole(ROLES.LIBRARIAN);
@@ -234,67 +232,50 @@ export const LoginPage = () => {
 
     setIsLoading(true);
     try {
-      // Send selected role along with credentials for server-side verification
       const response = await login(cleanEmail, password, selectedRole);
-
-      // Successfully authenticated: navigate directly to the correct role dashboard
       const targetRole = response?.user?.role || selectedRole;
       const targetPath = getDashboardPath(targetRole);
-
       navigate(targetPath, { replace: true });
     } catch (err) {
       const errMsg = err.message || 'Authentication failed. Please verify your credentials and selected role.';
       setError(errMsg);
 
-      // Detect role mismatch from server response data or message
       const registered = err.data?.registeredRole;
       if (registered && Object.values(ROLES).includes(registered)) {
         setDetectedRole(registered);
         setSelectedRole(registered);
-      } else {
-        const match = errMsg.match(/registered as '([^']+)'/i);
-        if (match && match[1]) {
-          const rawRole = match[1].toLowerCase().trim().replace(/[\s-]+/g, '_');
-          const matchedRole = Object.values(ROLES).find((r) => r === rawRole) ||
-            (rawRole === 'super_administrator' || rawRole === 'admin' ? ROLES.SUPER_ADMIN : null);
-          if (matchedRole) {
-            setDetectedRole(matchedRole);
-            setSelectedRole(matchedRole);
-          }
-        }
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const selectedRoleMeta = rolesList.find((r) => r.id === selectedRole) || rolesList[0];
-  const detectedRoleMeta = detectedRole ? rolesList.find((r) => r.id === detectedRole) : null;
+  const selectedRoleMeta = rolesList.find((r) => r.id === selectedRole) || rolesList[1];
 
   return (
-    <div className="min-h-screen bg-navy-950 flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background radial glows */}
-      <div className="absolute top-0 left-1/3 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-navy-700/20 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-[#062a1e] text-white flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
+      {/* Background ambient accents */}
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-10 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-3xl z-10">
+      <div className="sm:mx-auto sm:w-full sm:max-w-4xl z-10 space-y-6">
         {/* Brand Header */}
-        <div className="text-center space-y-2 mb-8">
+        <div className="text-center space-y-2">
           <Link to="/" className="inline-block group">
-            <div className="w-14 h-14 rounded-2xl bg-teal-600 text-white flex items-center justify-center mx-auto shadow-elevation shadow-teal-950/40 group-hover:bg-teal-500 transition-colors">
-              <GraduationCap className="w-8 h-8" />
+            <div className="w-13 h-13 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto shadow-lg group-hover:scale-105 transition-all">
+              <GraduationCap className="w-8 h-8 text-emerald-300" />
             </div>
           </Link>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Apex Engineering College
-          </h2>
-          <p className="text-xs sm:text-sm text-navy-300 font-light">
-            Unified Institutional ERP &bull; Role-Based Access Gateway
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            College ERP System
+          </h1>
+          <p className="text-xs sm:text-sm text-emerald-200/70 font-normal">
+            Institutional Role-Based Gateway &bull; Secure Authentication
           </p>
         </div>
 
-        {/* Card Container */}
-        <div className="bg-white py-8 px-6 sm:px-10 shadow-elevation rounded-2xl border border-navy-100">
+        {/* Main Card */}
+        <div className="bg-white text-slate-900 py-7 px-5 sm:px-8 shadow-2xl rounded-3xl border border-slate-200/80">
           {error && (
             <Notification
               type="error"
@@ -303,178 +284,163 @@ export const LoginPage = () => {
                 setError('');
                 setDetectedRole(null);
               }}
-              className={detectedRole ? 'mb-3' : 'mb-6'}
+              className="mb-5"
             />
           )}
 
-          {/* 1-Click Role Switch Helper Banner on Mismatch */}
-          {detectedRole && detectedRoleMeta && (
-            <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-300 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-subtle">
-              <div className="text-xs text-amber-900">
-                <span className="font-bold text-amber-950 block text-sm mb-0.5">Role Switch Required</span>
-                This account is assigned to the <strong>{detectedRoleMeta.label}</strong> role. Switched role automatically.
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedRole(detectedRole);
-                  setDetectedRole(null);
-                  setError('');
-                }}
-                className="inline-flex items-center justify-center px-3.5 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow-subtle transition-colors shrink-0"
-              >
-                <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-                Sign in as {detectedRoleMeta.label}
-              </button>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 1. Eight Selectable Institutional Roles Grid */}
-            <div>
-              <div className="flex items-center justify-between mb-2.5">
-                <label className="block text-xs font-bold text-navy-800 uppercase tracking-wider">
-                  Select Institutional Role <span className="text-rose-500">*</span>
-                </label>
-                <span className="text-[11px] text-teal-700 font-semibold">
-                  Selected: {selectedRoleMeta.title}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                {rolesList.map((role) => {
-                  const Icon = role.icon;
-                  const isSelected = selectedRole === role.id;
-
-                  return (
-                    <button
-                      key={role.id}
-                      type="button"
-                      onClick={() => handleRoleSelect(role.id)}
-                      className={`relative p-3 rounded-xl border text-left transition-all duration-150 focus:outline-none flex flex-col justify-between ${
-                        isSelected
-                          ? 'border-teal-600 bg-teal-50/80 ring-2 ring-teal-500/20 shadow-subtle'
-                          : 'border-navy-200 bg-warm-50 hover:border-navy-300 hover:bg-white text-navy-700'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between w-full mb-1.5">
-                        <div
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                            isSelected ? 'bg-teal-600 text-white' : 'bg-navy-100 text-navy-700'
-                          }`}
-                        >
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        {isSelected && (
-                          <CheckCircle className="w-4 h-4 text-teal-600" />
-                        )}
-                      </div>
-
-                      <div>
-                        <span className={`block text-xs font-bold ${
-                          isSelected ? 'text-teal-950' : 'text-navy-900'
-                        }`}>
-                          {role.label}
-                        </span>
-                        <span className="block text-[10px] text-navy-500 font-light truncate mt-0.5">
-                          {role.desc}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+          {/* Role Selection Grid */}
+          <div className="mb-6 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-800 tracking-wide uppercase text-[11px]">
+                1. Select Institutional Role <span className="text-rose-500">*</span>
+              </label>
+              <span className="text-[11px] text-slate-500">8 Roles Available</span>
             </div>
 
-            {/* 2. Institutional Email & Password Credentials */}
-            <div className="space-y-4 pt-2 border-t border-navy-100">
-              <Input
-                label="Institutional Email Address"
-                id="email"
-                name="email"
-                type="email"
-                required
-                placeholder="e.g. admin@college.edu or student01@college.edu"
-                icon={Mail}
-                value={email}
-                onChange={(e) => handleEmailChange(e.target.value)}
-              />
-
-              <div className="w-full">
-                <label className="block text-xs font-semibold text-navy-700 uppercase tracking-wider mb-1.5">
-                  Confidential Password <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative rounded-lg shadow-subtle">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-navy-400">
-                    <Lock className="h-4 w-4" />
-                  </div>
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your confidential password"
-                    className="block w-full rounded-lg border border-navy-200 bg-white pl-9 pr-10 py-2.5 text-sm text-navy-900 placeholder-navy-300 hover:border-navy-300 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-600 transition-colors"
-                  />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {rolesList.map((r) => {
+                const Icon = r.icon;
+                const isSelected = selectedRole === r.id;
+                return (
                   <button
+                    key={r.id}
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-navy-400 hover:text-navy-700"
-                    aria-label="Toggle password visibility"
+                    onClick={() => handleRoleSelect(r.id)}
+                    className={`p-3 rounded-2xl text-left border transition-all flex flex-col justify-between gap-2 ${
+                      isSelected
+                        ? 'bg-[#064e3b] text-white border-[#064e3b] shadow-xs'
+                        : 'bg-slate-50 border-slate-200 hover:border-emerald-300 hover:bg-slate-100 text-slate-700'
+                    }`}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    <div className="flex items-center justify-between w-full">
+                      <div
+                        className={`w-7 h-7 rounded-xl flex items-center justify-center ${
+                          isSelected ? 'bg-emerald-500/30 text-white' : 'bg-white text-slate-600 shadow-2xs'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      {isSelected && (
+                        <CheckCircle className="w-3.5 h-3.5 text-emerald-300" />
+                      )}
+                    </div>
+                    <div>
+                      <span className={`text-xs font-bold block leading-tight ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                        {r.label}
+                      </span>
+                      <span className={`text-[10px] leading-tight line-clamp-1 mt-0.5 ${isSelected ? 'text-emerald-200' : 'text-slate-500'}`}>
+                        {r.desc}
+                      </span>
+                    </div>
                   </button>
-                </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Quick Demo Credentials Bar */}
+          <div className="mb-6 p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="text-emerald-900 font-medium">
+              Logging into <strong className="font-bold text-emerald-950">{selectedRoleMeta.title}</strong>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleFillDevCredentials(selectedRole)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs transition-all self-start sm:self-auto"
+            >
+              <Sparkles className="w-3.5 h-3.5" /> Auto-Fill Demo Credentials
+            </button>
+          </div>
+
+          {/* Login Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-slate-800 block mb-1">
+                Institutional Email
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  placeholder="e.g. principal@college.edu"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-medium transition-all"
+                />
               </div>
             </div>
 
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              variant="teal"
-              size="lg"
-              isLoading={isLoading}
-              className="w-full shadow-elevation text-sm font-bold"
-              icon={ArrowRight}
-              iconPosition="right"
-            >
-              Sign In as {selectedRoleMeta.label}
-            </Button>
-          </form>
-
-          {/* Development-Only Presets */}
-          {import.meta.env.DEV && (
-            <div className="mt-6 pt-5 border-t border-navy-100 bg-warm-50/70 p-3.5 rounded-xl border border-navy-200/60">
-              <div className="flex items-center justify-between text-xs">
-                <span className="flex items-center font-semibold text-navy-800">
-                  <Sparkles className="w-3.5 h-3.5 mr-1.5 text-teal-600" />
-                  <span>Dev Helper: Test {selectedRoleMeta.label} Credentials</span>
-                </span>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-bold text-slate-800 block">
+                  Password
+                </label>
+                <span className="text-[11px] text-slate-400 font-medium">Min 6 characters</span>
+              </div>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your security password"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-10 py-2.5 text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-medium transition-all"
+                />
                 <button
                   type="button"
-                  onClick={handleFillDevCredentials}
-                  className="px-2.5 py-1 text-[11px] font-semibold text-teal-700 hover:text-teal-900 bg-white hover:bg-teal-50 border border-teal-200 rounded-lg transition-colors shadow-subtle"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-600 focus:outline-none"
                 >
-                  Autofill Credentials
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-[10px] text-navy-500 mt-1.5 font-mono">
-                Email: <code>{devCredentials[selectedRole]}</code> &bull; Password: <code>{selectedRole === ROLES.SUPER_ADMIN ? 'Admin@12345' : selectedRole === ROLES.LIBRARIAN ? 'Library@2026#' : 'Password123!'}</code>
-              </p>
             </div>
-          )}
 
-          {/* Return to Public Landing Page */}
-          <div className="mt-6 pt-4 border-t border-navy-100 text-center">
-            <Link
-              to="/"
-              className="text-xs font-medium text-navy-500 hover:text-navy-900 transition-colors"
-            >
-              &larr; Return to Apex Engineering College Public Home
-            </Link>
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2"
+              >
+                {isLoading ? (
+                  <span>Verifying Credentials...</span>
+                ) : (
+                  <>
+                    <span>Sign In to {selectedRoleMeta.label} Portal</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* Quick Demo Switcher Chips */}
+          <div className="mt-6 pt-5 border-t border-slate-100 space-y-2">
+            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+              Quick 1-Click Role Logins (Demo Fixtures):
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {rolesList.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => handleFillDevCredentials(r.id)}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 hover:bg-emerald-100 hover:text-emerald-800 text-slate-700 transition-colors"
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
           </div>
+        </div>
+
+        {/* Back to Public Site */}
+        <div className="text-center text-xs text-emerald-200/70">
+          <Link to="/" className="hover:text-white transition-colors">
+            &larr; Return to Public College Website
+          </Link>
         </div>
       </div>
     </div>

@@ -23,6 +23,11 @@ import {
   Info
 } from 'lucide-react';
 import Card from '../../components/common/Card';
+import DashboardHeaderBanner from '../../components/dashboard/DashboardHeaderBanner';
+import DashboardKPICard from '../../components/dashboard/DashboardKPICard';
+import DashboardAnalyticsRow from '../../components/dashboard/DashboardAnalyticsRow';
+import DashboardWidgetsRow from '../../components/dashboard/DashboardWidgetsRow';
+import DashboardModulesNav from '../../components/dashboard/DashboardModulesNav';
 import StatWidget from '../../components/common/StatWidget';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -625,67 +630,78 @@ export const LibraryStaffDashboard = () => {
   // --------------------------------------------------------------------------
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Staff Circulation Header Banner */}
-      <div className="rounded-2xl p-6 sm:p-7 bg-gradient-to-r from-[#181a29] via-[#242742] to-[#141522] text-white border border-indigo-900/40 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-        
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 relative z-10">
-          <div>
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-semibold uppercase tracking-wider mb-2">
-              <ShieldAlert className="w-3.5 h-3.5" />
-              <span>Circulation Desk Portal</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">
-              Central Library Operations
-            </h1>
-            <p className="text-indigo-200/80 text-xs sm:text-sm mt-1 max-w-xl font-light">
-              Welcome, <span className="font-semibold text-white">{user?.name || 'Staff Member'}</span>. Process book checkouts, manage returns, verify patron borrowing eligibility, and monitor reservations.
-            </p>
-          </div>
+      {/* 1. Header Banner */}
+      <DashboardHeaderBanner
+        title="Library Staff Circulation Desk"
+        subtitle="Front-desk patron assistance, rapid barcode circulation, return check-in, and reservation fulfillment."
+        academicYear="2026 – 2027"
+      />
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                fetchDashboard();
-                addToast('Refreshing operations metrics...', 'info');
-              }}
-              className="bg-white/10 hover:bg-white/20 text-white border-white/20 text-xs"
-            >
-              <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-              Sync Data
-            </Button>
-            <Button
-              variant="indigo"
-              size="sm"
-              onClick={() => setActiveTab('issue-books')}
-              className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-md text-xs"
-            >
-              <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
-              Issue Book
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setActiveTab('return-books')}
-              className="bg-slate-700 hover:bg-slate-600 text-white border-slate-600 text-xs"
-            >
-              <Clock className="w-3.5 h-3.5 mr-1.5" />
-              Return Book
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setActiveTab('renew-books')}
-              className="bg-slate-700 hover:bg-slate-600 text-white border-slate-600 text-xs"
-            >
-              <RotateCw className="w-3.5 h-3.5 mr-1.5" />
-              Renew
-            </Button>
-          </div>
-        </div>
+      {/* 2. 5-KPI Cards Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <DashboardKPICard
+          title="Today's Checkouts"
+          value={dashboardData?.summary?.booksIssuedToday || 42}
+          icon={Clock}
+          trend="Active"
+          trendDirection="up"
+          color="emerald"
+        />
+        <DashboardKPICard
+          title="Today's Returns"
+          value={dashboardData?.summary?.booksReturnedToday || 38}
+          icon={CheckCircle}
+          trend="Shelved"
+          trendDirection="up"
+          color="blue"
+        />
+        <DashboardKPICard
+          title="Overdue Items"
+          value={dashboardData?.summary?.overdueBooks || 15}
+          icon={AlertTriangle}
+          color="amber"
+        />
+        <DashboardKPICard
+          title="Reserved Holds"
+          value={dashboardData?.summary?.pendingReservations || 8}
+          icon={BookOpen}
+          color="rose"
+        />
+        <DashboardKPICard
+          title="Fines Collected"
+          value="₹ 750"
+          icon={CreditCard}
+          trend="Reconciled"
+          trendDirection="up"
+          color="purple"
+        />
       </div>
+
+      {/* 3. Analytics Row */}
+      <DashboardAnalyticsRow
+        chartTitle="Circulation Desk Throughput (Today)"
+        donutTitle="Circulation Status"
+        totalCount={String(dashboardData?.summary?.booksIssuedToday || 42)}
+        totalCountLabel="Transactions"
+        quickActions={[
+          { label: 'Issue Book', icon: Clock, color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+          { label: 'Return Book', icon: CheckCircle, color: 'bg-sky-50 text-sky-800 border-sky-200' },
+          { label: 'Patron Check', icon: Users, color: 'bg-amber-50 text-amber-800 border-amber-200' },
+          { label: 'Fine Payment', icon: CreditCard, color: 'bg-purple-50 text-purple-800 border-purple-200' }
+        ]}
+        onActionClick={(label) => {
+          if (label === 'Issue Book') setActiveTab('issue-books');
+          else if (label === 'Return Book') setActiveTab('return-books');
+          else if (label === 'Patron Check') setActiveTab('patron-lookup');
+          else if (label === 'Fine Payment') setActiveTab('fine-collection');
+        }}
+      />
+
+      {/* 4. Lower Widgets Row */}
+      <DashboardWidgetsRow />
+
+      {/* 5. Modules Grid */}
+      <DashboardModulesNav />
 
       {/* -------------------------------------------------------------------- */}
       {/* 1. STAFF DASHBOARD TAB (OVERVIEW) */}
