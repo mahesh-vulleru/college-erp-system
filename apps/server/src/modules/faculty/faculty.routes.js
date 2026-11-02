@@ -17,7 +17,6 @@ const router = express.Router();
 router.use(authenticate);
 
 router.get('/me', authorizeRoles(ROLES.FACULTY, ROLES.HOD), getMyFacultyProfile);
-<<<<<<< HEAD
 router.get(
   '/',
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
@@ -28,10 +27,6 @@ router.get(
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
   getFacultyById
 );
-=======
-router.get('/', listFaculty);
-router.get('/:id', getFacultyById);
->>>>>>> feature/library-staff-portal
 
 router.post(
   '/',

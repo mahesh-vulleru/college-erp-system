@@ -54,7 +54,6 @@ export const FacultyDashboard = () => {
   const [students, setStudents] = useState([]);
   const [exams, setExams] = useState([]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
-<<<<<<< HEAD
   const [myLeaves, setMyLeaves] = useState([]);
   const [isApplyLeaveOpen, setIsApplyLeaveOpen] = useState(false);
   const [leaveForm, setLeaveForm] = useState({
@@ -63,8 +62,6 @@ export const FacultyDashboard = () => {
     endDate: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0],
     reason: ''
   });
-=======
->>>>>>> feature/library-staff-portal
   const [searchParams, setSearchParams] = useSearchParams();
   const queryTab = searchParams.get('tab');
   const [facultyActiveTab, setFacultyActiveTab] = useState(queryTab || 'timetable');
@@ -139,12 +136,9 @@ export const FacultyDashboard = () => {
         if (myProfRes?.data) setMyProfile(myProfRes.data);
         if (subjRes?.data) setSubjects(subjRes.data);
         if (timeRes?.data) setTimetableSlots(timeRes.data);
-<<<<<<< HEAD
         const leavesRes = await api.getLeaves().catch(() => ({ data: [] }));
         if (leavesRes?.data?.leaves) setMyLeaves(leavesRes.data.leaves);
         else if (Array.isArray(leavesRes?.data)) setMyLeaves(leavesRes.data);
-=======
->>>>>>> feature/library-staff-portal
         if (studRes?.data) {
           setStudents(studRes.data);
           if (studRes.data.length > 0) {
@@ -314,7 +308,6 @@ export const FacultyDashboard = () => {
   };
 
   // Toggle Status
-<<<<<<< HEAD
   const handleApplyLeaveSubmit = async (e) => {
     e.preventDefault();
     if (!leaveForm.reason.trim()) {
@@ -346,8 +339,6 @@ export const FacultyDashboard = () => {
     }
   };
 
-=======
->>>>>>> feature/library-staff-portal
   const handleConfirmToggle = async () => {
     if (!confirmToggleUser?.user?._id) return;
     const currentStatus = confirmToggleUser.user.status;

@@ -5,12 +5,13 @@ export const ROLES = Object.freeze({
   FACULTY: 'faculty',
   STUDENT: 'student',
   ACCOUNTS: 'accounts',
-<<<<<<< HEAD
-  LIBRARIAN: 'librarian'
-=======
   LIBRARIAN: 'librarian',
-  LIBRARY_STAFF: 'library_staff'
->>>>>>> feature/library-staff-portal
+  LIBRARY_STAFF: 'library_staff',
+  TRANSPORT_ADMIN: 'transport_admin',
+  TRANSPORT_SUPERVISOR: 'transport_supervisor',
+  BUS_DRIVER: 'bus_driver',
+  BUS_ATTENDANT: 'bus_attendant',
+  PARENT: 'parent'
 });
 
 export const ROLE_LABELS = Object.freeze({
@@ -20,12 +21,13 @@ export const ROLE_LABELS = Object.freeze({
   [ROLES.FACULTY]: 'Faculty Member',
   [ROLES.STUDENT]: 'Student',
   [ROLES.ACCOUNTS]: 'Accounts & Finance Officer',
-<<<<<<< HEAD
-  [ROLES.LIBRARIAN]: 'Chief Librarian'
-=======
   [ROLES.LIBRARIAN]: 'Chief Librarian',
-  [ROLES.LIBRARY_STAFF]: 'Library Staff'
->>>>>>> feature/library-staff-portal
+  [ROLES.LIBRARY_STAFF]: 'Library Staff',
+  [ROLES.TRANSPORT_ADMIN]: 'Transport Administrator',
+  [ROLES.TRANSPORT_SUPERVISOR]: 'Transport Supervisor',
+  [ROLES.BUS_DRIVER]: 'Bus Driver',
+  [ROLES.BUS_ATTENDANT]: 'Bus Attendant',
+  [ROLES.PARENT]: 'Parent / Guardian'
 });
 
 export const ALL_ROLES = Object.freeze(Object.values(ROLES));
@@ -38,17 +40,24 @@ export const PERMISSIONS = Object.freeze({
   ACADEMIC_SETUP: 'academic:setup',
   COURSE_MANAGE: 'course:manage',
   SUBJECT_MANAGE: 'subject:manage',
-  STUDENT_ENROLL: 'student:enroll',
+  TIMETABLE_MANAGE: 'timetable:manage',
   ATTENDANCE_MARK: 'attendance:mark',
-  ATTENDANCE_VIEW_DEPT: 'attendance:view_dept',
-  ATTENDANCE_VIEW_SELF: 'attendance:view_self',
+  ATTENDANCE_VIEW: 'attendance:view',
+  EXAM_MANAGE: 'exam:manage',
   MARKS_ENTRY: 'marks:entry',
-  MARKS_APPROVE: 'marks:approve',
-  MARKS_VIEW_SELF: 'marks:view_self',
-  FEE_STRUCTURE_MANAGE: 'fee:manage_structure',
-  FEE_PAYMENT_COLLECT: 'fee:collect',
-  FEE_REPORTS_VIEW: 'fee:view_reports',
-  FEE_VIEW_SELF: 'fee:view_self',
+  RESULT_VIEW: 'result:view',
+  RESULT_PUBLISH: 'result:publish',
+  FEE_STRUCTURE_MANAGE: 'fee:structure:manage',
+  FEE_COLLECT: 'fee:collect',
+  FEE_REPORTS_VIEW: 'fee:reports:view',
+  NOTICE_MANAGE: 'notice:manage',
+  REPORTS_EXECUTIVE: 'reports:executive',
+  REPORTS_ACADEMIC: 'reports:academic',
+  AUDIT_LOGS_VIEW: 'audit:logs:view',
+  SYSTEM_DIAGNOSTICS: 'system:diagnostics',
+  LEAVE_APPLY: 'leave:apply',
+  LEAVE_APPROVE: 'leave:approve',
+  LEAVE_VIEW_ALL: 'leave:view:all',
   LIBRARY_MANAGE_BOOKS: 'library:manage_books',
   LIBRARY_MANAGE_MEMBERS: 'library:manage_members',
   LIBRARY_CIRCULATION: 'library:circulation',
@@ -57,8 +66,31 @@ export const PERMISSIONS = Object.freeze({
   LIBRARY_DIGITAL: 'library:digital',
   LIBRARY_REPORTS: 'library:reports',
   LIBRARY_SETTINGS: 'library:settings',
-  SYSTEM_AUDIT_LOGS: 'system:audit_logs',
-  SYSTEM_SETTINGS: 'system:settings'
+  TRANSPORT_MANAGE_BUSES: 'transport:manage_buses',
+  TRANSPORT_MANAGE_ROUTES: 'transport:manage_routes',
+  TRANSPORT_MANAGE_DRIVERS: 'transport:manage_drivers',
+  TRANSPORT_MANAGE_ALLOCATIONS: 'transport:manage_allocations',
+  TRANSPORT_SETTINGS: 'transport:settings',
+  TRANSPORT_VIEW_OPERATIONS: 'transport:view_operations',
+  TRANSPORT_VIEW_SELF: 'transport:view_self',
+  TRANSPORT_MANAGE_TRIPS: 'transport:manage_trips',
+  TRANSPORT_TRACK_GPS: 'transport:track_gps',
+  TRANSPORT_RECORD_ATTENDANCE: 'transport:record_attendance',
+  TRANSPORT_CORRECT_ATTENDANCE: 'transport:correct_attendance',
+  TRANSPORT_MANAGE_MAINTENANCE: 'transport:manage_maintenance',
+  TRANSPORT_MANAGE_FUEL: 'transport:manage_fuel',
+  TRANSPORT_MANAGE_EXPENSES: 'transport:manage_expenses',
+  TRANSPORT_APPROVE_EXPENSES: 'transport:approve_expenses',
+  TRANSPORT_MANAGE_FEES: 'transport:manage_fees',
+  TRANSPORT_MANAGE_SAFETY: 'transport:manage_safety',
+  TRANSPORT_TRIGGER_SOS: 'transport:trigger_sos',
+  TRANSPORT_ACKNOWLEDGE_SOS: 'transport:acknowledge_sos',
+  TRANSPORT_MANAGE_INCIDENTS: 'transport:manage_incidents',
+  TRANSPORT_MANAGE_GEOFENCES: 'transport:manage_geofences',
+  TRANSPORT_MANAGE_COMPLAINTS: 'transport:manage_complaints',
+  TRANSPORT_SUBMIT_COMPLAINTS: 'transport:submit_complaints',
+  TRANSPORT_MANAGE_ANNOUNCEMENTS: 'transport:manage_announcements',
+  TRANSPORT_VIEW_NOTIFICATIONS: 'transport:view_notifications'
 });
 
 export const ROLE_PERMISSIONS = Object.freeze({
@@ -68,37 +100,52 @@ export const ROLE_PERMISSIONS = Object.freeze({
     PERMISSIONS.ACADEMIC_SETUP,
     PERMISSIONS.COURSE_MANAGE,
     PERMISSIONS.SUBJECT_MANAGE,
-    PERMISSIONS.ATTENDANCE_VIEW_DEPT,
-    PERMISSIONS.MARKS_APPROVE,
+    PERMISSIONS.TIMETABLE_MANAGE,
+    PERMISSIONS.ATTENDANCE_VIEW,
+    PERMISSIONS.EXAM_MANAGE,
+    PERMISSIONS.RESULT_VIEW,
+    PERMISSIONS.RESULT_PUBLISH,
     PERMISSIONS.FEE_REPORTS_VIEW,
+    PERMISSIONS.NOTICE_MANAGE,
+    PERMISSIONS.REPORTS_EXECUTIVE,
+    PERMISSIONS.REPORTS_ACADEMIC,
+    PERMISSIONS.AUDIT_LOGS_VIEW,
+    PERMISSIONS.LEAVE_APPROVE,
+    PERMISSIONS.LEAVE_VIEW_ALL,
     PERMISSIONS.LIBRARY_REPORTS,
-    PERMISSIONS.SYSTEM_AUDIT_LOGS
+    PERMISSIONS.TRANSPORT_VIEW_OPERATIONS
   ],
   [ROLES.HOD]: [
     PERMISSIONS.USER_READ,
     PERMISSIONS.COURSE_MANAGE,
     PERMISSIONS.SUBJECT_MANAGE,
-    PERMISSIONS.STUDENT_ENROLL,
+    PERMISSIONS.TIMETABLE_MANAGE,
+    PERMISSIONS.ATTENDANCE_VIEW,
     PERMISSIONS.ATTENDANCE_MARK,
-    PERMISSIONS.ATTENDANCE_VIEW_DEPT,
+    PERMISSIONS.EXAM_MANAGE,
     PERMISSIONS.MARKS_ENTRY,
-    PERMISSIONS.MARKS_APPROVE
+    PERMISSIONS.RESULT_VIEW,
+    PERMISSIONS.NOTICE_MANAGE,
+    PERMISSIONS.REPORTS_ACADEMIC,
+    PERMISSIONS.LEAVE_APPROVE
   ],
   [ROLES.FACULTY]: [
     PERMISSIONS.USER_READ,
     PERMISSIONS.ATTENDANCE_MARK,
-    PERMISSIONS.MARKS_ENTRY
+    PERMISSIONS.MARKS_ENTRY,
+    PERMISSIONS.LEAVE_APPLY
   ],
   [ROLES.STUDENT]: [
-    PERMISSIONS.ATTENDANCE_VIEW_SELF,
-    PERMISSIONS.MARKS_VIEW_SELF,
-    PERMISSIONS.FEE_VIEW_SELF
+    PERMISSIONS.RESULT_VIEW,
+    PERMISSIONS.TRANSPORT_VIEW_SELF
   ],
   [ROLES.ACCOUNTS]: [
     PERMISSIONS.USER_READ,
     PERMISSIONS.FEE_STRUCTURE_MANAGE,
-    PERMISSIONS.FEE_PAYMENT_COLLECT,
-    PERMISSIONS.FEE_REPORTS_VIEW
+    PERMISSIONS.FEE_COLLECT,
+    PERMISSIONS.FEE_REPORTS_VIEW,
+    PERMISSIONS.TRANSPORT_APPROVE_EXPENSES,
+    PERMISSIONS.TRANSPORT_MANAGE_FEES
   ],
   [ROLES.LIBRARIAN]: [
     PERMISSIONS.USER_READ,
@@ -110,8 +157,6 @@ export const ROLE_PERMISSIONS = Object.freeze({
     PERMISSIONS.LIBRARY_DIGITAL,
     PERMISSIONS.LIBRARY_REPORTS,
     PERMISSIONS.LIBRARY_SETTINGS
-<<<<<<< HEAD
-=======
   ],
   [ROLES.LIBRARY_STAFF]: [
     PERMISSIONS.USER_READ,
@@ -120,7 +165,72 @@ export const ROLE_PERMISSIONS = Object.freeze({
     PERMISSIONS.LIBRARY_CIRCULATION,
     PERMISSIONS.LIBRARY_RESERVATIONS,
     PERMISSIONS.LIBRARY_DIGITAL
->>>>>>> feature/library-staff-portal
+  ],
+  [ROLES.TRANSPORT_ADMIN]: [
+    PERMISSIONS.USER_READ,
+    PERMISSIONS.TRANSPORT_MANAGE_BUSES,
+    PERMISSIONS.TRANSPORT_MANAGE_ROUTES,
+    PERMISSIONS.TRANSPORT_MANAGE_DRIVERS,
+    PERMISSIONS.TRANSPORT_MANAGE_ALLOCATIONS,
+    PERMISSIONS.TRANSPORT_SETTINGS,
+    PERMISSIONS.TRANSPORT_VIEW_OPERATIONS,
+    PERMISSIONS.TRANSPORT_MANAGE_TRIPS,
+    PERMISSIONS.TRANSPORT_TRACK_GPS,
+    PERMISSIONS.TRANSPORT_RECORD_ATTENDANCE,
+    PERMISSIONS.TRANSPORT_CORRECT_ATTENDANCE,
+    PERMISSIONS.TRANSPORT_MANAGE_MAINTENANCE,
+    PERMISSIONS.TRANSPORT_MANAGE_FUEL,
+    PERMISSIONS.TRANSPORT_MANAGE_EXPENSES,
+    PERMISSIONS.TRANSPORT_MANAGE_FEES,
+    PERMISSIONS.TRANSPORT_MANAGE_SAFETY,
+    PERMISSIONS.TRANSPORT_TRIGGER_SOS,
+    PERMISSIONS.TRANSPORT_ACKNOWLEDGE_SOS,
+    PERMISSIONS.TRANSPORT_MANAGE_INCIDENTS,
+    PERMISSIONS.TRANSPORT_MANAGE_GEOFENCES,
+    PERMISSIONS.TRANSPORT_MANAGE_COMPLAINTS,
+    PERMISSIONS.TRANSPORT_MANAGE_ANNOUNCEMENTS,
+    PERMISSIONS.TRANSPORT_VIEW_NOTIFICATIONS
+  ],
+  [ROLES.TRANSPORT_SUPERVISOR]: [
+    PERMISSIONS.USER_READ,
+    PERMISSIONS.TRANSPORT_VIEW_OPERATIONS,
+    PERMISSIONS.TRANSPORT_MANAGE_ALLOCATIONS,
+    PERMISSIONS.TRANSPORT_MANAGE_TRIPS,
+    PERMISSIONS.TRANSPORT_TRACK_GPS,
+    PERMISSIONS.TRANSPORT_RECORD_ATTENDANCE,
+    PERMISSIONS.TRANSPORT_MANAGE_MAINTENANCE,
+    PERMISSIONS.TRANSPORT_MANAGE_FUEL,
+    PERMISSIONS.TRANSPORT_TRIGGER_SOS,
+    PERMISSIONS.TRANSPORT_ACKNOWLEDGE_SOS,
+    PERMISSIONS.TRANSPORT_MANAGE_INCIDENTS,
+    PERMISSIONS.TRANSPORT_MANAGE_COMPLAINTS,
+    PERMISSIONS.TRANSPORT_VIEW_NOTIFICATIONS
+  ],
+  [ROLES.BUS_DRIVER]: [
+    PERMISSIONS.TRANSPORT_VIEW_SELF,
+    PERMISSIONS.TRANSPORT_TRACK_GPS,
+    PERMISSIONS.TRANSPORT_TRIGGER_SOS,
+    PERMISSIONS.TRANSPORT_VIEW_NOTIFICATIONS
+  ],
+  [ROLES.BUS_ATTENDANT]: [
+    PERMISSIONS.TRANSPORT_VIEW_SELF,
+    PERMISSIONS.TRANSPORT_RECORD_ATTENDANCE,
+    PERMISSIONS.TRANSPORT_TRIGGER_SOS,
+    PERMISSIONS.TRANSPORT_VIEW_NOTIFICATIONS
+  ],
+  [ROLES.PARENT]: [
+    PERMISSIONS.TRANSPORT_VIEW_SELF,
+    PERMISSIONS.TRANSPORT_SUBMIT_COMPLAINTS,
+    PERMISSIONS.TRANSPORT_VIEW_NOTIFICATIONS
+  ],
+  [ROLES.STUDENT]: [
+    PERMISSIONS.ATTENDANCE_VIEW_SELF,
+    PERMISSIONS.RESULT_VIEW,
+    PERMISSIONS.TIMETABLE_MANAGE,
+    PERMISSIONS.FEE_REPORTS_VIEW,
+    PERMISSIONS.TRANSPORT_VIEW_SELF,
+    PERMISSIONS.TRANSPORT_SUBMIT_COMPLAINTS,
+    PERMISSIONS.TRANSPORT_VIEW_NOTIFICATIONS
   ]
 });
 
@@ -134,47 +244,35 @@ export const HTTP_STATUS = Object.freeze({
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   CONFLICT: 409,
-<<<<<<< HEAD
+  UNPROCESSABLE_ENTITY: 422,
   UNPROCESSABLE: 422,
+  TOO_MANY_REQUESTS: 429,
+  INTERNAL_SERVER_ERROR: 500,
   INTERNAL_ERROR: 500
 });
 
-export const USER_STATUS = Object.freeze({
-  ACTIVE: 'active',
-  INACTIVE: 'inactive',
-  SUSPENDED: 'suspended'
-=======
-  UNPROCESSABLE_ENTITY: 422,
-  TOO_MANY_REQUESTS: 429,
-  INTERNAL_SERVER_ERROR: 500
->>>>>>> feature/library-staff-portal
+export const DEPARTMENTS = Object.freeze({
+  CSE: 'Computer Science & Engineering',
+  ECE: 'Electronics & Communication Engineering',
+  MECH: 'Mechanical Engineering',
+  CIVIL: 'Civil Engineering',
+  EEE: 'Electrical & Electronics Engineering',
+  ADMIN: 'Administration',
+  FINANCE: 'Finance & Accounts',
+  LIBRARY: 'Central Library',
+  TRANSPORT: 'Transport & Logistics'
 });
 
-export const DEPARTMENTS = Object.freeze([
-  'Computer Science & Engineering',
-<<<<<<< HEAD
-  'Electronics & Communication',
-  'Mechanical Engineering',
-  'Civil Engineering',
-  'Electrical & Electronics',
-=======
-  'Electronics & Communication Engineering',
-  'Electrical & Electronics Engineering',
-  'Mechanical Engineering',
-  'Civil Engineering',
->>>>>>> feature/library-staff-portal
-  'Information Technology'
+export const ACADEMIC_SEMESTERS = Object.freeze([
+  'Semester 1', 'Semester 2', 'Semester 3', 'Semester 4',
+  'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'
 ]);
-
-export const ACADEMIC_SEMESTERS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8]);
-<<<<<<< HEAD
-=======
 
 export const USER_STATUS = Object.freeze({
   ACTIVE: 'active',
-  DISABLED: 'disabled',
   INACTIVE: 'inactive',
-  SUSPENDED: 'suspended'
+  SUSPENDED: 'suspended',
+  DISABLED: 'disabled'
 });
 
 export default {
@@ -188,4 +286,3 @@ export default {
   ACADEMIC_SEMESTERS,
   USER_STATUS
 };
->>>>>>> feature/library-staff-portal

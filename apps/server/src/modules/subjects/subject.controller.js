@@ -5,10 +5,7 @@ const { ROLES } = require('@college-erp/shared');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS } = require('@college-erp/shared');
 const { recordAuditLog } = require('../../utils/auditLogger');
-<<<<<<< HEAD
 const { resolveHodDepartment, isHodDepartment } = require('../../utils/hodScoping');
-=======
->>>>>>> feature/library-staff-portal
 
 async function listSubjects(req, res, next) {
   try {

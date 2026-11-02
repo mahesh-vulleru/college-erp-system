@@ -76,7 +76,6 @@ async function listAuditLogs(req, res, next) {
       }
     }
 
-<<<<<<< HEAD
     // Role-based financial scoping for Accounts: strictly isolate to financial logs per RBAC matrix
     if (req.user && req.user.role === ROLES.ACCOUNTS) {
       const financeConditions = [
@@ -91,8 +90,6 @@ async function listAuditLogs(req, res, next) {
       }
     }
 
-=======
->>>>>>> feature/library-staff-portal
     const [logs, total] = await Promise.all([
       AuditLog.find(query)
         .populate('user', 'name email role department')
@@ -132,7 +129,6 @@ async function getAuditLogById(req, res, next) {
       });
     }
 
-<<<<<<< HEAD
     if (req.user && req.user.role === ROLES.ACCOUNTS) {
       const isFinancial = ['FeeStructure', 'Invoice', 'Payment'].includes(log.entityType) ||
         /FEE|INVOICE|PAYMENT|REFUND/i.test(log.action);
@@ -145,8 +141,6 @@ async function getAuditLogById(req, res, next) {
       }
     }
 
-=======
->>>>>>> feature/library-staff-portal
     return sendSuccess(res, {
       message: 'Audit log record retrieved',
       data: log
@@ -167,7 +161,6 @@ async function exportAuditLogsCsv(req, res, next) {
     if (req.query.entityType) query.entityType = req.query.entityType;
     if (req.query.outcome) query.outcome = req.query.outcome;
 
-<<<<<<< HEAD
     if (req.user && req.user.role === ROLES.ACCOUNTS) {
       query.$or = [
         { entityType: { $in: ['FeeStructure', 'Invoice', 'Payment'] } },
@@ -175,8 +168,6 @@ async function exportAuditLogsCsv(req, res, next) {
       ];
     }
 
-=======
->>>>>>> feature/library-staff-portal
     const logs = await AuditLog.find(query)
       .populate('user', 'name email role')
       .sort({ createdAt: -1 })

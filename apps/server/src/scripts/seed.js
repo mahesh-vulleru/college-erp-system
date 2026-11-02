@@ -12,6 +12,13 @@ try {
 
 const mongoose = require('mongoose');
 const env = require('../config/env');
+const {
+  Bus,
+  Route,
+  Driver,
+  StudentTransportAllocation,
+  TransportSetting
+} = require('../modules/transport/models');
 const { ROLES, USER_STATUS } = require('@college-erp/shared');
 
 const User = require('../modules/auth/auth.model');
@@ -22,7 +29,6 @@ const Student = require('../modules/students/student.model');
 const Faculty = require('../modules/faculty/faculty.model');
 const FeeStructure = require('../modules/fees/fee.model');
 const Notice = require('../modules/notices/notice.model');
-<<<<<<< HEAD
 const Leave = require('../modules/leave/leave.model');
 const {
   BookCategory,
@@ -31,8 +37,6 @@ const {
   LibraryMember,
   LibrarySetting
 } = require('../modules/library/models');
-=======
->>>>>>> feature/library-staff-portal
 
 async function seed() {
   if (env.NODE_ENV === 'production') {
@@ -52,12 +56,8 @@ async function seed() {
     Student.deleteMany({}),
     Faculty.deleteMany({}),
     FeeStructure.deleteMany({}),
-<<<<<<< HEAD
     Notice.deleteMany({}),
     Leave.deleteMany({})
-=======
-    Notice.deleteMany({})
->>>>>>> feature/library-staff-portal
   ]);
 
   console.log('[Seed] Creating institutional users with role-based credentials...');
@@ -155,18 +155,7 @@ async function seed() {
     status: USER_STATUS.ACTIVE
   });
 
-<<<<<<< HEAD
 
-  const librarianUser = await upsertUser({
-    name: 'Mrs. Evelyn Reed',
-    email: 'librarian@college.edu',
-    password: process.env.SEED_LIBRARIAN_PASSWORD || 'Library@2026#',
-    role: ROLES.LIBRARIAN,
-    department: 'Central Library',
-    status: USER_STATUS.ACTIVE
-  });
-=======
->>>>>>> feature/library-staff-portal
   const accountsUser = await upsertUser({
     name: 'Mr. Robert Sterling',
     email: 'accounts@college.edu',
@@ -203,14 +192,21 @@ async function seed() {
     status: USER_STATUS.ACTIVE
   });
 
-<<<<<<< HEAD
-=======
   const librarianUser = await upsertUser({
     name: 'Mrs. Evelyn Reed',
     email: 'librarian@college.edu',
     password: process.env.SEED_LIBRARIAN_PASSWORD || 'Library@2026#',
     role: ROLES.LIBRARIAN,
     department: 'Central Library',
+    status: USER_STATUS.ACTIVE
+  });
+
+  const transportUser = await upsertUser({
+    name: 'Mr. Robert Hayes',
+    email: 'transport@college.edu',
+    password: process.env.SEED_TRANSPORT_PASSWORD || commonPassword,
+    role: ROLES.TRANSPORT_ADMIN,
+    department: 'Transport & Logistics',
     status: USER_STATUS.ACTIVE
   });
 
@@ -222,8 +218,6 @@ async function seed() {
     department: 'Central Library',
     status: USER_STATUS.ACTIVE
   });
-
->>>>>>> feature/library-staff-portal
   // Sample Disabled Account for status enforcement testing
   const disabledUser = await upsertUser({
     name: 'Disabled User Demo',
@@ -411,7 +405,6 @@ async function seed() {
     isPinned: true
   });
 
-<<<<<<< HEAD
 
   
   console.log('[Seed] Seeding sample faculty leave applications...');
@@ -533,8 +526,215 @@ async function seed() {
     console.error('[Seed] Non-fatal error seeding library catalog:', err.message);
   }
 
-=======
->>>>>>> feature/library-staff-portal
+
+  console.log('[Seed] Seeding Transport Management System initial data...');
+  try {
+    let transportSetting = await TransportSetting.findOne({ isDefault: true });
+    if (!transportSetting) {
+      transportSetting = await TransportSetting.create({
+        academicYear: '2025-2026',
+        transportWorkingStatus: 'operational',
+        defaultMorningPickup: '07:00 AM',
+        defaultEveningDrop: '05:00 PM',
+        maxSeatThresholdPercentage: 100,
+        emergencyContactPhone: '+91 98765 43210',
+        transportHelplineEmail: 'transport@college.edu',
+        isDefault: true
+      });
+    }
+
+    const driver1 = await Driver.findOneAndUpdate(
+      { driverId: 'DRV-01' },
+      {
+        driverId: 'DRV-01',
+        fullName: 'Rajesh Kumar',
+        staffType: 'driver',
+        phoneNumber: '+91 98450 11223',
+        email: 'rajesh.driver@college.edu',
+        address: '12th Cross, Malleshwaram, Bangalore',
+        drivingLicenceNumber: 'DL-KA-2015-001234',
+        licenceType: 'heavy_transport',
+        licenceExpiryDate: new Date('2028-12-31'),
+        employmentStatus: 'active',
+        availabilityStatus: 'available'
+      },
+      { upsert: true, new: true }
+    );
+
+    const driver2 = await Driver.findOneAndUpdate(
+      { driverId: 'DRV-02' },
+      {
+        driverId: 'DRV-02',
+        fullName: 'Suresh Patil',
+        staffType: 'driver',
+        phoneNumber: '+91 98450 44556',
+        email: 'suresh.driver@college.edu',
+        address: '8th Main, Indiranagar, Bangalore',
+        drivingLicenceNumber: 'DL-KA-2017-005678',
+        licenceType: 'heavy_transport',
+        licenceExpiryDate: new Date('2027-08-15'),
+        employmentStatus: 'active',
+        availabilityStatus: 'available'
+      },
+      { upsert: true, new: true }
+    );
+
+    const bus1 = await Bus.findOneAndUpdate(
+      { busId: 'BUS-01' },
+      {
+        busId: 'BUS-01',
+        registrationNumber: 'KA-01-AB-1234',
+        busName: 'Campus Express 1',
+        manufacturer: 'Tata Motors',
+        model: 'Starbus Ultra',
+        manufacturingYear: 2022,
+        busType: 'standard',
+        fuelType: 'diesel',
+        seatingCapacity: 42,
+        currentStatus: 'active',
+        insuranceNumber: 'POL-2024-998811',
+        insuranceExpiryDate: new Date('2027-06-30'),
+        fitnessCertificateNumber: 'FIT-2024-5544',
+        fitnessExpiryDate: new Date('2027-05-15'),
+        assignedDriver: driver1._id
+      },
+      { upsert: true, new: true }
+    );
+
+    const bus2 = await Bus.findOneAndUpdate(
+      { busId: 'BUS-02' },
+      {
+        busId: 'BUS-02',
+        registrationNumber: 'KA-01-CD-5678',
+        busName: 'Campus Express 2',
+        manufacturer: 'Ashok Leyland',
+        model: 'Viking',
+        manufacturingYear: 2023,
+        busType: 'deluxe',
+        fuelType: 'cng',
+        seatingCapacity: 50,
+        currentStatus: 'active',
+        insuranceNumber: 'POL-2024-998822',
+        insuranceExpiryDate: new Date('2027-09-30'),
+        fitnessCertificateNumber: 'FIT-2024-5545',
+        fitnessExpiryDate: new Date('2027-08-20'),
+        assignedDriver: driver2._id
+      },
+      { upsert: true, new: true }
+    );
+
+    const bus3 = await Bus.findOneAndUpdate(
+      { busId: 'BUS-03' },
+      {
+        busId: 'BUS-03',
+        registrationNumber: 'KA-01-EF-9012',
+        busName: 'Campus Mini 1',
+        manufacturer: 'Force Motors',
+        model: 'Traveller 3050',
+        manufacturingYear: 2021,
+        busType: 'mini',
+        fuelType: 'diesel',
+        seatingCapacity: 25,
+        currentStatus: 'under_maintenance',
+        remarks: 'Scheduled 50,000 km brake overhaul'
+      },
+      { upsert: true, new: true }
+    );
+
+    const route1 = await Route.findOneAndUpdate(
+      { routeCode: 'R-NC-101' },
+      {
+        routeId: 'RT-01',
+        routeName: 'North City Express',
+        routeCode: 'R-NC-101',
+        startingPoint: 'City Railway Station',
+        destination: 'Apex Engineering College Campus',
+        totalDistance: 28,
+        estimatedDuration: '45 mins',
+        assignedBus: bus1._id,
+        assignedDriver: driver1._id,
+        routeStatus: 'active',
+        stops: [
+          {
+            stopId: 'ST-01',
+            stopName: 'City Railway Station',
+            stopAddress: 'Platform 1 Main Entry',
+            stopSequence: 1,
+            pickupTime: '07:00 AM',
+            dropTime: '05:45 PM'
+          },
+          {
+            stopId: 'ST-02',
+            stopName: 'Majestic Metro Interchange',
+            stopAddress: 'Gubbi Thotadappa Road',
+            stopSequence: 2,
+            pickupTime: '07:15 AM',
+            dropTime: '05:30 PM'
+          },
+          {
+            stopId: 'ST-03',
+            stopName: 'Hebbal Flyover Junction',
+            stopAddress: 'Bellary Road Hebbal',
+            stopSequence: 3,
+            pickupTime: '07:35 AM',
+            dropTime: '05:10 PM'
+          },
+          {
+            stopId: 'ST-04',
+            stopName: 'Yelahanka Satellite Town',
+            stopAddress: 'NES Bus Stop Yelahanka',
+            stopSequence: 4,
+            pickupTime: '07:55 AM',
+            dropTime: '04:50 PM'
+          },
+          {
+            stopId: 'ST-05',
+            stopName: 'Apex Campus Gate 1',
+            stopAddress: 'College Main Campus Entrance',
+            stopSequence: 5,
+            pickupTime: '08:15 AM',
+            dropTime: '04:30 PM'
+          }
+        ]
+      },
+      { upsert: true, new: true }
+    );
+
+    // Link route back to bus
+    await Bus.findByIdAndUpdate(bus1._id, { assignedRoute: route1._id });
+
+    // Link sample student transport allocation
+    const sampleStudent = await Student.findOne({ rollNumber: 'CS2023001' }).populate('user');
+    if (sampleStudent) {
+      await StudentTransportAllocation.findOneAndUpdate(
+        { student: sampleStudent._id },
+        {
+          allocationId: 'STA-2026-0001',
+          student: sampleStudent._id,
+          user: sampleStudent.user?._id,
+          studentName: sampleStudent.user?.name || 'Aarav Sharma',
+          rollNumber: sampleStudent.rollNumber,
+          department: 'Computer Science & Engineering',
+          academicYear: '2025-2026',
+          guardianName: sampleStudent.guardianName || 'Rajesh Sharma',
+          guardianPhone: sampleStudent.guardianPhone || '+91 98765 11223',
+          bus: bus1._id,
+          route: route1._id,
+          pickupStop: 'Hebbal Flyover Junction',
+          dropStop: 'Hebbal Flyover Junction',
+          pickupTime: '07:35 AM',
+          dropTime: '05:10 PM',
+          allocationDate: new Date(),
+          allocationStatus: 'active',
+          transportFeeStatus: 'paid'
+        },
+        { upsert: true }
+      );
+    }
+  } catch (err) {
+    console.error('[Seed] Non-fatal error seeding transport data:', err.message);
+  }
+
   console.log('\n======================================================');
   console.log(' SEED DATA COMPLETED SUCCESSFULLY');
   console.log('======================================================');
@@ -548,12 +748,10 @@ async function seed() {
   console.log(' 5. Faculty CSE:  faculty01@college.edu (or faculty.turing@college.edu)');
   console.log(' 6. Student CSE:  student01@college.edu (or student.aarav@college.edu)');
   console.log(' 7. Accounts:     accounts@college.edu');
-<<<<<<< HEAD
-  console.log(' 8. Librarian:    librarian@college.edu');
-  console.log(' 9. Disabled Demo: disabled.user@college.edu (status: disabled)');
-=======
-  console.log(' 8. Disabled Demo: disabled.user@college.edu (status: disabled)');
->>>>>>> feature/library-staff-portal
+  console.log(' 8. Librarian:     librarian@college.edu');
+  console.log(' 9. Library Staff: librarystaff@college.edu');
+  console.log('10. Transport Admin: transport@college.edu');
+  console.log('11. Disabled Demo: disabled.user@college.edu (status: disabled)');
   console.log('======================================================\n');
 
   await mongoose.connection.close();

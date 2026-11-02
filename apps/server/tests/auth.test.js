@@ -4,7 +4,6 @@ const User = require('../src/modules/auth/auth.model');
 const { ROLES, ALL_ROLES } = require('@college-erp/shared');
 
 describe('Authentication Validation & Role Mismatch Tests', () => {
-<<<<<<< HEAD
   afterEach(() => {
     jest.restoreAllMocks();
   });
@@ -20,7 +19,8 @@ describe('Authentication Validation & Role Mismatch Tests', () => {
     expect(res.statusCode).toBe(400);
     expect(res.body.success).toBe(false);
     expect(res.body.errors).toContain('Email address is required');
-=======
+  });
+
   it('POST /api/v1/auth/login with missing body should fail with 400', async () => {
     const res = await request(app)
       .post('/api/v1/auth/login')
@@ -30,30 +30,20 @@ describe('Authentication Validation & Role Mismatch Tests', () => {
     expect(res.body.success).toBe(false);
     expect(res.body).toHaveProperty('errors');
     expect(res.body.errors.length).toBeGreaterThan(0);
->>>>>>> feature/library-staff-portal
   });
 
   it('POST /api/v1/auth/login with invalid email format should return 400', async () => {
     const res = await request(app)
       .post('/api/v1/auth/login')
       .send({
-<<<<<<< HEAD
         email: 'invalid-email-format',
         password: 'password123',
         role: ROLES.STUDENT
-=======
-        email: 'invalid-email-address',
-        password: 'password123'
->>>>>>> feature/library-staff-portal
       });
 
     expect(res.statusCode).toBe(400);
     expect(res.body.success).toBe(false);
-<<<<<<< HEAD
     expect(res.body.errors).toContain('Please enter a valid email address');
-=======
-    expect(res.body.errors).toContain('Please provide a valid email format');
->>>>>>> feature/library-staff-portal
   });
 
   it('POST /api/v1/auth/login with invalid role should return 400', async () => {
@@ -70,8 +60,6 @@ describe('Authentication Validation & Role Mismatch Tests', () => {
     expect(res.body.errors).toContain(`Role must be one of: ${ALL_ROLES.join(', ')}`);
   });
 
-<<<<<<< HEAD
-=======
   it('POST /api/v1/auth/login succeeds for Librarian role credentials', async () => {
     const mockUser = {
       _id: '507f1f77bcf86cd799439015',
@@ -99,8 +87,6 @@ describe('Authentication Validation & Role Mismatch Tests', () => {
     expect(res.body.success).toBe(true);
     expect(res.body).toHaveProperty('token');
     expect(res.body.user.role).toBe(ROLES.LIBRARIAN);
-
-    User.findOne.mockRestore();
   });
 
   it('POST /api/v1/auth/login supports institutionalRole alias and Chief Librarian title', async () => {
@@ -129,11 +115,8 @@ describe('Authentication Validation & Role Mismatch Tests', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.user.role).toBe(ROLES.LIBRARIAN);
-
-    User.findOne.mockRestore();
   });
 
->>>>>>> feature/library-staff-portal
   it('POST /api/v1/auth/login rejects role mismatch with 401 Unauthorized', async () => {
     // Mock User.findOne to return a student user
     const mockUser = {
@@ -142,40 +125,24 @@ describe('Authentication Validation & Role Mismatch Tests', () => {
       email: 'student@college.edu',
       role: ROLES.STUDENT,
       status: 'active',
-<<<<<<< HEAD
-      comparePassword: jest.fn().mockResolvedValue(true)
-    };
-
-=======
       comparePassword: jest.fn().mockResolvedValue(true),
       save: jest.fn().mockResolvedValue(true)
     };
->>>>>>> feature/library-staff-portal
     jest.spyOn(User, 'findOne').mockReturnValue({
       select: jest.fn().mockResolvedValue(mockUser)
     });
 
-<<<<<<< HEAD
-=======
-    // Attempt to log in with role 'faculty' (mismatch!)
->>>>>>> feature/library-staff-portal
     const res = await request(app)
       .post('/api/v1/auth/login')
       .send({
         email: 'student@college.edu',
-<<<<<<< HEAD
         password: 'CorrectPassword123',
         role: ROLES.FACULTY // Deliberate mismatch
-=======
-        password: 'Password123!',
-        role: ROLES.FACULTY
->>>>>>> feature/library-staff-portal
       });
 
     expect(res.statusCode).toBe(401);
     expect(res.body.success).toBe(false);
     expect(res.body.message).toContain('Role mismatch');
-<<<<<<< HEAD
     expect(res.body.registeredRole).toBe(ROLES.STUDENT);
   });
 
@@ -192,25 +159,6 @@ describe('Authentication Validation & Role Mismatch Tests', () => {
 
     jest.spyOn(User, 'findOne').mockReturnValue({
       select: jest.fn().mockResolvedValue(mockPrincipal)
-=======
-
-    User.findOne.mockRestore();
-  });
-
-  it('POST /api/v1/auth/login succeeds with matching role credentials', async () => {
-    const mockUser = {
-      _id: '507f1f77bcf86cd799439012',
-      name: 'Dr. Principal',
-      email: 'principal@college.edu',
-      role: ROLES.PRINCIPAL,
-      status: 'active',
-      department: 'Administration',
-      comparePassword: jest.fn().mockResolvedValue(true),
-      save: jest.fn().mockResolvedValue(true)
-    };
-    jest.spyOn(User, 'findOne').mockReturnValue({
-      select: jest.fn().mockResolvedValue(mockUser)
->>>>>>> feature/library-staff-portal
     });
 
     const res = await request(app)
@@ -223,14 +171,10 @@ describe('Authentication Validation & Role Mismatch Tests', () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
-<<<<<<< HEAD
-    expect(res.body.data.user.role).toBe(ROLES.PRINCIPAL);
-    expect(res.body.data.token).toBeDefined();
-=======
     expect(res.body).toHaveProperty('token');
+    expect(res.body.data.user.role).toBe(ROLES.PRINCIPAL);
     expect(res.body.user.role).toBe(ROLES.PRINCIPAL);
-
-    User.findOne.mockRestore();
+    expect(res.body.data.token).toBeDefined();
   });
 
   it('GET /api/v1/auth/me without Bearer token should return 401 Unauthorized', async () => {
@@ -239,6 +183,5 @@ describe('Authentication Validation & Role Mismatch Tests', () => {
     expect(res.statusCode).toBe(401);
     expect(res.body.success).toBe(false);
     expect(res.body.message).toContain('Bearer token missing');
->>>>>>> feature/library-staff-portal
   });
 });

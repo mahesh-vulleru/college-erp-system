@@ -1,4 +1,6 @@
+
 const express = require('express');
+
 const healthRoutes = require('./health.routes');
 const authRoutes = require('../modules/auth/auth.routes');
 const usersRoutes = require('../modules/users/users.routes');
@@ -21,7 +23,14 @@ const accreditationRoutes = require('../modules/accreditation/accreditation.rout
 const goalRoutes = require('../modules/goals/goal.routes');
 const eventRoutes = require('../modules/events/institutionalEvent.routes');
 const libraryRoutes = require('../modules/library/library.routes');
-const { getAttendanceOverview, getDepartmentSummaries, getExaminationsReport } = require('../modules/reports/report.controller');
+const transportRoutes = require('../modules/transport/transport.routes');
+
+const {
+  getAttendanceOverview,
+  getDepartmentSummaries,
+  getExaminationsReport
+} = require('../modules/reports/report.controller');
+
 const authenticate = require('../middleware/auth');
 const { authorizeRoles } = require('../middleware/rbac');
 const { ROLES } = require('@college-erp/shared');
@@ -34,55 +43,78 @@ router.use('/health', healthRoutes);
 // Versioned API v1 Router
 const v1Router = express.Router();
 
-<<<<<<< HEAD
+// Health
 v1Router.use('/health', healthRoutes);
+
+// Authentication and Users
 v1Router.use('/auth', authRoutes);
 v1Router.use('/users', usersRoutes);
-v1Router.get('/department-summaries', authenticate, authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD), getDepartmentSummaries);
+
+// Departments
+v1Router.get(
+  '/department-summaries',
+  authenticate,
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getDepartmentSummaries
+);
 v1Router.use('/departments', departmentRoutes);
-=======
-v1Router.use('/auth', authRoutes);
-v1Router.use('/users', usersRoutes);
-v1Router.use('/departments', departmentRoutes);
-v1Router.get('/department-summaries', authenticate, getDepartmentSummaries);
->>>>>>> feature/library-staff-portal
+
+// Academic Modules
 v1Router.use('/courses', courseRoutes);
 v1Router.use('/subjects', subjectRoutes);
 v1Router.use('/students', studentRoutes);
 v1Router.use('/faculty', facultyRoutes);
 v1Router.use('/timetable', timetableRoutes);
+
+// Attendance
 v1Router.use('/attendance', attendanceRoutes);
+
 v1Router.get(
   '/attendance-overview',
   authenticate,
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
   getAttendanceOverview
 );
+
+// Examinations and Results
 v1Router.get(
   ['/examination-reports', '/examinations-report'],
   authenticate,
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
   getExaminationsReport
 );
+
 v1Router.use('/examinations', examRoutes);
 v1Router.use('/results', resultRoutes);
+
+// Fees and Payments
 v1Router.use('/fees', feeRoutes);
 v1Router.use('/payments', paymentRoutes);
+
+// Reports and Administration
 v1Router.use('/notices', noticeRoutes);
 v1Router.use('/reports', reportRoutes);
 v1Router.use('/audit-logs', auditRoutes);
 v1Router.use('/leaves', leaveRoutes);
+
+// Institutional Modules
 v1Router.use('/accreditation', accreditationRoutes);
 v1Router.use('/institutional-goals', goalRoutes);
 v1Router.use('/institutional-events', eventRoutes);
+
+// Library
 v1Router.use('/library', libraryRoutes);
 
-router.use('/v1', v1Router);
-<<<<<<< HEAD
+// Transport Management
+v1Router.use('/transport', transportRoutes);
 
-// Direct /api/library alias
-=======
->>>>>>> feature/library-staff-portal
+// Mount versioned API
+router.use('/v1', v1Router);
+
+// Direct Library API Alias
 router.use('/library', libraryRoutes);
+
+// Direct Transport API Alias
+router.use('/transport', transportRoutes);
 
 module.exports = router;

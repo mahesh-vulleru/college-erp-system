@@ -823,23 +823,16 @@ class ApiClient {
   }
 
   // -------------------------------------------------------------
-<<<<<<< HEAD
-  // Library Management System APIs
-=======
   // Library Management System APIs (Phase 1 & Phase 2)
->>>>>>> feature/library-staff-portal
   // -------------------------------------------------------------
   getLibraryDashboard() {
     return this.get('/v1/library/dashboard');
   }
 
-<<<<<<< HEAD
-=======
   getStaffDashboard() {
     return this.get('/v1/library/staff-dashboard');
   }
 
->>>>>>> feature/library-staff-portal
   getBooks(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.search) searchParams.append('search', params.search);
@@ -907,11 +900,8 @@ class ApiClient {
     const searchParams = new URLSearchParams();
     if (params.status) searchParams.append('status', params.status);
     if (params.memberId) searchParams.append('memberId', params.memberId);
-<<<<<<< HEAD
-=======
     if (params.issuedBy) searchParams.append('issuedBy', params.issuedBy);
     if (params.filter) searchParams.append('filter', params.filter);
->>>>>>> feature/library-staff-portal
     if (params.search) searchParams.append('search', params.search);
     if (params.page) searchParams.append('page', params.page);
     if (params.limit) searchParams.append('limit', params.limit);
@@ -919,8 +909,6 @@ class ApiClient {
     return this.get(`/v1/library/issues${qs ? `?${qs}` : ''}`);
   }
 
-<<<<<<< HEAD
-=======
   getMyTransactions(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.status) searchParams.append('status', params.status);
@@ -946,7 +934,6 @@ class ApiClient {
     return this.post(`/v1/library/staff/${id}/reset-password`, { newPassword });
   }
 
->>>>>>> feature/library-staff-portal
   returnBook(data) {
     return this.post('/v1/library/returns', data);
   }
@@ -1038,6 +1025,500 @@ class ApiClient {
     a.remove();
     window.URL.revokeObjectURL(downloadUrl);
     return true;
+  }
+
+  // ----------------------------------------------------
+  // Transport Management System APIs (Phase 1)
+  // ----------------------------------------------------
+  getTransportSummary() {
+    return this.get('/v1/transport/summary');
+  }
+
+  getBuses(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.status && params.status !== 'all') qs.append('status', params.status);
+    if (params.busType && params.busType !== 'all') qs.append('busType', params.busType);
+    if (params.search) qs.append('search', params.search);
+    if (params.page) qs.append('page', params.page);
+    if (params.limit) qs.append('limit', params.limit);
+    const query = qs.toString();
+    return this.get(`/v1/transport/buses${query ? `?${query}` : ''}`);
+  }
+
+  getBusById(id) {
+    return this.get(`/v1/transport/buses/${id}`);
+  }
+
+  createBus(data) {
+    return this.post('/v1/transport/buses', data);
+  }
+
+  updateBus(id, data) {
+    return this.put(`/v1/transport/buses/${id}`, data);
+  }
+
+  deactivateBus(id, status = 'inactive') {
+    return this.patch(`/v1/transport/buses/${id}/deactivate`, { status });
+  }
+
+  getRoutes(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.status && params.status !== 'all') qs.append('status', params.status);
+    if (params.search) qs.append('search', params.search);
+    if (params.page) qs.append('page', params.page);
+    if (params.limit) qs.append('limit', params.limit);
+    const query = qs.toString();
+    return this.get(`/v1/transport/routes${query ? `?${query}` : ''}`);
+  }
+
+  getRouteById(id) {
+    return this.get(`/v1/transport/routes/${id}`);
+  }
+
+  createRoute(data) {
+    return this.post('/v1/transport/routes', data);
+  }
+
+  updateRoute(id, data) {
+    return this.put(`/v1/transport/routes/${id}`, data);
+  }
+
+  deactivateRoute(id, status = 'inactive') {
+    return this.patch(`/v1/transport/routes/${id}/deactivate`, { status });
+  }
+
+  getDrivers(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.staffType && params.staffType !== 'all') qs.append('staffType', params.staffType);
+    if (params.employmentStatus && params.employmentStatus !== 'all') qs.append('employmentStatus', params.employmentStatus);
+    if (params.availabilityStatus && params.availabilityStatus !== 'all') qs.append('availabilityStatus', params.availabilityStatus);
+    if (params.search) qs.append('search', params.search);
+    if (params.page) qs.append('page', params.page);
+    if (params.limit) qs.append('limit', params.limit);
+    const query = qs.toString();
+    return this.get(`/v1/transport/drivers${query ? `?${query}` : ''}`);
+  }
+
+  getDriverById(id) {
+    return this.get(`/v1/transport/drivers/${id}`);
+  }
+
+  createDriver(data) {
+    return this.post('/v1/transport/drivers', data);
+  }
+
+  updateDriver(id, data) {
+    return this.put(`/v1/transport/drivers/${id}`, data);
+  }
+
+  deactivateDriver(id, status = 'inactive') {
+    return this.patch(`/v1/transport/drivers/${id}/deactivate`, { status });
+  }
+
+  getEligibleStudents(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.search) qs.append('search', params.search);
+    if (params.department && params.department !== 'all') qs.append('department', params.department);
+    const query = qs.toString();
+    return this.get(`/v1/transport/students/eligible${query ? `?${query}` : ''}`);
+  }
+
+  getAllocations(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.bus && params.bus !== 'all') qs.append('bus', params.bus);
+    if (params.route && params.route !== 'all') qs.append('route', params.route);
+    if (params.allocationStatus && params.allocationStatus !== 'all') qs.append('allocationStatus', params.allocationStatus);
+    if (params.transportFeeStatus && params.transportFeeStatus !== 'all') qs.append('transportFeeStatus', params.transportFeeStatus);
+    if (params.search) qs.append('search', params.search);
+    if (params.page) qs.append('page', params.page);
+    if (params.limit) qs.append('limit', params.limit);
+    const query = qs.toString();
+    return this.get(`/v1/transport/allocations${query ? `?${query}` : ''}`);
+  }
+
+  createAllocation(data) {
+    return this.post('/v1/transport/allocations', data);
+  }
+
+  cancelAllocation(id, reason = '') {
+    return this.patch(`/v1/transport/allocations/${id}/cancel`, { reason });
+  }
+
+  getTransportSettings() {
+    return this.get('/v1/transport/settings');
+  }
+
+  updateTransportSettings(data) {
+    return this.put('/v1/transport/settings', data);
+  }
+
+  // Phase 2: Trip & Schedule Operations
+  getTrips(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.date) qs.append('date', params.date);
+    if (params.bus && params.bus !== 'all') qs.append('bus', params.bus);
+    if (params.route && params.route !== 'all') qs.append('route', params.route);
+    if (params.driver && params.driver !== 'all') qs.append('driver', params.driver);
+    if (params.status && params.status !== 'all') qs.append('status', params.status);
+    if (params.tripType && params.tripType !== 'all') qs.append('tripType', params.tripType);
+    if (params.search) qs.append('search', params.search);
+    const query = qs.toString();
+    return this.get(`/v1/transport/trips${query ? `?${query}` : ''}`);
+  }
+
+  getTripById(id) {
+    return this.get(`/v1/transport/trips/${id}`);
+  }
+
+  createTrip(data) {
+    return this.post('/v1/transport/trips', data);
+  }
+
+  updateTrip(id, data) {
+    return this.put(`/v1/transport/trips/${id}`, data);
+  }
+
+  startTrip(id) {
+    return this.patch(`/v1/transport/trips/${id}/start`, {});
+  }
+
+  completeTrip(id) {
+    return this.patch(`/v1/transport/trips/${id}/complete`, {});
+  }
+
+  cancelTrip(id, cancellationReason) {
+    return this.patch(`/v1/transport/trips/${id}/cancel`, { cancellationReason });
+  }
+
+  getDailySchedule(date) {
+    const qs = date ? `?date=${encodeURIComponent(date)}` : '';
+    return this.get(`/v1/transport/trips/schedule/daily${qs}`);
+  }
+
+  // Phase 2: Live GPS Tracking
+  submitGpsLocation(data) {
+    return this.post('/v1/transport/gps/update', data);
+  }
+
+  getActiveBusLocations() {
+    return this.get('/v1/transport/gps/active');
+  }
+
+  getBusLocationHistory(busId, limit = 50) {
+    return this.get(`/v1/transport/gps/history/${busId}?limit=${limit}`);
+  }
+
+  // Phase 2: Student Attendance
+  getTripAttendance(tripId) {
+    return this.get(`/v1/transport/attendance/trip/${tripId}`);
+  }
+
+  markStudentBoarding(attendanceId, remarks = '') {
+    return this.patch(`/v1/transport/attendance/${attendanceId}/board`, { remarks });
+  }
+
+  markStudentDrop(attendanceId, remarks = '', overrideCorrection = false) {
+    return this.patch(`/v1/transport/attendance/${attendanceId}/drop`, { remarks, overrideCorrection });
+  }
+
+  correctAttendance(attendanceId, data) {
+    return this.patch(`/v1/transport/attendance/${attendanceId}/correct`, data);
+  }
+
+  // Phase 2: Role Portals
+  getDriverTrips(driverId) {
+    const qs = driverId ? `?driverId=${encodeURIComponent(driverId)}` : '';
+    return this.get(`/v1/transport/driver/my-trips${qs}`);
+  }
+
+  getSupervisorDashboardSummary() {
+    return this.get('/v1/transport/supervisor/summary');
+  }
+
+  getParentChildTransport() {
+    return this.get('/v1/transport/parent/my-children');
+  }
+
+  getMyStudentTransport() {
+    return this.get('/v1/transport/student/my-transport');
+  }
+
+  // Phase 3: Vehicle Maintenance & Compliance
+  getMaintenanceRecords(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.bus && params.bus !== 'all') qs.append('bus', params.bus);
+    if (params.status && params.status !== 'all') qs.append('status', params.status);
+    if (params.type && params.type !== 'all') qs.append('type', params.type);
+    if (params.search) qs.append('search', params.search);
+    const query = qs.toString();
+    return this.get(`/v1/transport/maintenance${query ? `?${query}` : ''}`);
+  }
+
+  getMaintenanceById(id) {
+    return this.get(`/v1/transport/maintenance/${id}`);
+  }
+
+  createMaintenanceRecord(data) {
+    return this.post('/v1/transport/maintenance', data);
+  }
+
+  updateMaintenanceRecord(id, data) {
+    return this.put(`/v1/transport/maintenance/${id}`, data);
+  }
+
+  completeMaintenance(id, remarks = '') {
+    return this.patch(`/v1/transport/maintenance/${id}/complete`, { remarks });
+  }
+
+  getDocumentExpiryAlerts() {
+    return this.get('/v1/transport/maintenance/alerts/expiry');
+  }
+
+  // Phase 3: Fuel Management & Mileage
+  getFuelRecords(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.bus && params.bus !== 'all') qs.append('bus', params.bus);
+    if (params.fuelType && params.fuelType !== 'all') qs.append('fuelType', params.fuelType);
+    if (params.search) qs.append('search', params.search);
+    const query = qs.toString();
+    return this.get(`/v1/transport/fuel${query ? `?${query}` : ''}`);
+  }
+
+  createFuelRecord(data) {
+    return this.post('/v1/transport/fuel', data);
+  }
+
+  getFuelMileageStats() {
+    return this.get('/v1/transport/fuel/stats');
+  }
+
+  // Phase 3: Transport Expense Management
+  getExpenses(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.category && params.category !== 'all') qs.append('category', params.category);
+    if (params.status && params.status !== 'all') qs.append('status', params.status);
+    if (params.bus && params.bus !== 'all') qs.append('bus', params.bus);
+    if (params.search) qs.append('search', params.search);
+    const query = qs.toString();
+    return this.get(`/v1/transport/expenses${query ? `?${query}` : ''}`);
+  }
+
+  createExpense(data) {
+    return this.post('/v1/transport/expenses', data);
+  }
+
+  approveExpense(id, remarks = '') {
+    return this.patch(`/v1/transport/expenses/${id}/approve`, { remarks });
+  }
+
+  rejectExpense(id, remarks = '') {
+    return this.patch(`/v1/transport/expenses/${id}/reject`, { remarks });
+  }
+
+  // Phase 3: Transport Fee Management & Receipts
+  getFeeStructures(academicYear = '') {
+    const qs = academicYear ? `?academicYear=${encodeURIComponent(academicYear)}` : '';
+    return this.get(`/v1/transport/fees/structures${qs}`);
+  }
+
+  createFeeStructure(data) {
+    return this.post('/v1/transport/fees/structures', data);
+  }
+
+  getStudentTransportFees(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.academicYear) qs.append('academicYear', params.academicYear);
+    if (params.status && params.status !== 'all') qs.append('status', params.status);
+    if (params.search) qs.append('search', params.search);
+    const query = qs.toString();
+    return this.get(`/v1/transport/fees/students${query ? `?${query}` : ''}`);
+  }
+
+  assignStudentFee(data) {
+    return this.post('/v1/transport/fees/assign', data);
+  }
+
+  recordFeePayment(id, data) {
+    return this.post(`/v1/transport/fees/${id}/pay`, data);
+  }
+
+  getPaymentReceipt(receiptNumber) {
+    return this.get(`/v1/transport/fees/receipts/${encodeURIComponent(receiptNumber)}`);
+  }
+
+  getTransportFinancialSummary() {
+    return this.get('/v1/transport/finance/summary');
+  }
+
+  // Phase 4: Safety & Emergency SOS
+  getTransportSafetySummary() {
+    return this.get('/v1/transport/safety/summary');
+  }
+
+  triggerSosAlert(data) {
+    return this.post('/v1/transport/safety/sos', data);
+  }
+
+  getEmergencyAlerts(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.status && params.status !== 'all') qs.append('status', params.status);
+    if (params.bus && params.bus !== 'all') qs.append('bus', params.bus);
+    if (params.emergencyType && params.emergencyType !== 'all') qs.append('emergencyType', params.emergencyType);
+    const query = qs.toString();
+    return this.get(`/v1/transport/safety/sos${query ? `?${query}` : ''}`);
+  }
+
+  getEmergencyAlertById(id) {
+    return this.get(`/v1/transport/safety/sos/${id}`);
+  }
+
+  acknowledgeEmergencyAlert(id, data = {}) {
+    return this.patch(`/v1/transport/safety/sos/${id}/acknowledge`, data);
+  }
+
+  updateEmergencyResponse(id, data = {}) {
+    return this.patch(`/v1/transport/safety/sos/${id}/respond`, data);
+  }
+
+  resolveEmergencyAlert(id, data = {}) {
+    return this.patch(`/v1/transport/safety/sos/${id}/resolve`, data);
+  }
+
+  // Phase 4: Accidents & Incidents
+  getTransportIncidents(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.category && params.category !== 'all') qs.append('category', params.category);
+    if (params.severity && params.severity !== 'all') qs.append('severity', params.severity);
+    if (params.status && params.status !== 'all') qs.append('status', params.status);
+    if (params.bus && params.bus !== 'all') qs.append('bus', params.bus);
+    if (params.search) qs.append('search', params.search);
+    const query = qs.toString();
+    return this.get(`/v1/transport/safety/incidents${query ? `?${query}` : ''}`);
+  }
+
+  getTransportIncidentById(id) {
+    return this.get(`/v1/transport/safety/incidents/${id}`);
+  }
+
+  createTransportIncident(data) {
+    return this.post('/v1/transport/safety/incidents', data);
+  }
+
+  assignTransportIncident(id, data) {
+    return this.patch(`/v1/transport/safety/incidents/${id}/assign`, data);
+  }
+
+  updateTransportIncidentStatus(id, data) {
+    return this.patch(`/v1/transport/safety/incidents/${id}/status`, data);
+  }
+
+  // Phase 4: Geofencing & Overspeed
+  getGeofences(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.status && params.status !== 'all') qs.append('status', params.status);
+    if (params.type && params.type !== 'all') qs.append('type', params.type);
+    const query = qs.toString();
+    return this.get(`/v1/transport/safety/geofences${query ? `?${query}` : ''}`);
+  }
+
+  createGeofence(data) {
+    return this.post('/v1/transport/safety/geofences', data);
+  }
+
+  updateGeofence(id, data) {
+    return this.put(`/v1/transport/safety/geofences/${id}`, data);
+  }
+
+  getGeofenceEvents(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.bus && params.bus !== 'all') qs.append('bus', params.bus);
+    if (params.eventType && params.eventType !== 'all') qs.append('eventType', params.eventType);
+    const query = qs.toString();
+    return this.get(`/v1/transport/safety/geofence-events${query ? `?${query}` : ''}`);
+  }
+
+  getOverspeedEvents(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.bus && params.bus !== 'all') qs.append('bus', params.bus);
+    if (params.status && params.status !== 'all') qs.append('status', params.status);
+    const query = qs.toString();
+    return this.get(`/v1/transport/safety/overspeed-events${query ? `?${query}` : ''}`);
+  }
+
+  // Phase 4: Parent Portal
+  getParentTransportPortal(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.rollNumber) qs.append('rollNumber', params.rollNumber);
+    const query = qs.toString();
+    return this.get(`/v1/transport/parent/portal${query ? `?${query}` : ''}`);
+  }
+
+  // Phase 4: Complaints
+  submitTransportComplaint(data) {
+    return this.post('/v1/transport/complaints', data);
+  }
+
+  getTransportComplaints(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.category && params.category !== 'all') qs.append('category', params.category);
+    if (params.status && params.status !== 'all') qs.append('status', params.status);
+    if (params.priority && params.priority !== 'all') qs.append('priority', params.priority);
+    const query = qs.toString();
+    return this.get(`/v1/transport/complaints${query ? `?${query}` : ''}`);
+  }
+
+  getTransportComplaintById(id) {
+    return this.get(`/v1/transport/complaints/${id}`);
+  }
+
+  assignTransportComplaint(id, data) {
+    return this.patch(`/v1/transport/complaints/${id}/assign`, data);
+  }
+
+  respondToTransportComplaint(id, data) {
+    return this.patch(`/v1/transport/complaints/${id}/respond`, data);
+  }
+
+  // Phase 4: Announcements
+  getTransportAnnouncements() {
+    return this.get('/v1/transport/announcements');
+  }
+
+  createTransportAnnouncement(data) {
+    return this.post('/v1/transport/announcements', data);
+  }
+
+  updateTransportAnnouncement(id, data) {
+    return this.put(`/v1/transport/announcements/${id}`, data);
+  }
+
+  deactivateTransportAnnouncement(id) {
+    return this.patch(`/v1/transport/announcements/${id}/deactivate`);
+  }
+
+  // Phase 4: Notifications & Preferences
+  getTransportNotifications(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.category && params.category !== 'all') qs.append('category', params.category);
+    if (params.read !== undefined) qs.append('read', String(params.read));
+    const query = qs.toString();
+    return this.get(`/v1/transport/notifications${query ? `?${query}` : ''}`);
+  }
+
+  markTransportNotificationRead(id) {
+    return this.patch(`/v1/transport/notifications/${id}/read`);
+  }
+
+  markAllTransportNotificationsRead() {
+    return this.post('/v1/transport/notifications/read-all');
+  }
+
+  getTransportNotificationPreferences() {
+    return this.get('/v1/transport/notifications/preferences');
+  }
+
+  updateTransportNotificationPreferences(data) {
+    return this.put('/v1/transport/notifications/preferences', data);
   }
 }
 

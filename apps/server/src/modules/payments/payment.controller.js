@@ -120,7 +120,6 @@ async function recordPayment(req, res, next) {
       });
     }
 
-<<<<<<< HEAD
     // Role-based authorization: Students can only pay for their own student record
     if (req.user && req.user.role === ROLES.STUDENT) {
       const profile = await Student.findOne({ user: req.user._id });
@@ -133,8 +132,6 @@ async function recordPayment(req, res, next) {
       }
     }
 
-=======
->>>>>>> feature/library-staff-portal
     // 1. Idempotency Check: prevent duplicate payment execution
     if (idempotencyKey) {
       const existingKey = await Payment.findOne({ idempotencyKey });

@@ -16,7 +16,6 @@ const router = express.Router();
 router.use(authenticate);
 
 // Publicly readable for all authenticated institutional users
-<<<<<<< HEAD
 router.get(
   '/',
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
@@ -27,30 +26,18 @@ router.get(
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
   getDepartmentById
 );
-=======
-router.get('/', listDepartments);
-router.get('/:id', getDepartmentById);
->>>>>>> feature/library-staff-portal
 
 // Restricted creation & modification to Super Admin and Principal
 router.post(
   '/',
-<<<<<<< HEAD
   authorizeRoles(ROLES.SUPER_ADMIN),
-=======
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL),
->>>>>>> feature/library-staff-portal
   validateRequest(validateDepartmentInput),
   createDepartment
 );
 
 router.put(
   '/:id',
-<<<<<<< HEAD
   authorizeRoles(ROLES.SUPER_ADMIN),
-=======
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL),
->>>>>>> feature/library-staff-portal
   updateDepartment
 );
 

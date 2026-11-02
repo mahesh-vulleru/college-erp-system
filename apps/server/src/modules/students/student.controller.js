@@ -7,10 +7,7 @@ const mongoose = require('mongoose');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 const { recordAuditLog } = require('../../utils/auditLogger');
-<<<<<<< HEAD
 const { resolveHodDepartment, isHodDepartment } = require('../../utils/hodScoping');
-=======
->>>>>>> feature/library-staff-portal
 
 async function listStudents(req, res, next) {
   try {
@@ -19,7 +16,6 @@ async function listStudents(req, res, next) {
     const skip = (page - 1) * limit;
 
     const query = {};
-<<<<<<< HEAD
     if (req.user?.role === ROLES.HOD) {
       const hodDept = await resolveHodDepartment(req.user);
       if (hodDept) {
@@ -37,9 +33,6 @@ async function listStudents(req, res, next) {
         query.department = hodDept._id;
       }
     } else if (req.query.department) {
-=======
-    if (req.query.department) {
->>>>>>> feature/library-staff-portal
       const deptVal = String(req.query.department).trim();
       if (deptVal === '[object Object]' || deptVal === 'undefined' || deptVal === 'null') {
         return sendError(res, {
@@ -64,24 +57,6 @@ async function listStudents(req, res, next) {
           });
         }
       }
-<<<<<<< HEAD
-=======
-    } else if (req.user?.role === ROLES.HOD) {
-      // Enforce HOD department-level scoping to ensure cross-department data isolation
-      const dept = await Department.findOne({
-        $or: [
-          { hod: req.user._id },
-          ...(req.user.department
-            ? [
-                ...(mongoose.Types.ObjectId.isValid(req.user.department) ? [{ _id: req.user.department }] : []),
-                { name: req.user.department },
-                { code: String(req.user.department).toUpperCase() }
-              ]
-            : [])
-        ]
-      });
-      if (dept) query.department = dept._id;
->>>>>>> feature/library-staff-portal
     }
     if (req.query.semester) query.currentSemester = parseInt(req.query.semester, 10);
     if (req.query.batch) query.batchYear = req.query.batch;
@@ -133,7 +108,6 @@ async function getStudentById(req, res, next) {
       });
     }
 
-<<<<<<< HEAD
     if (req.user?.role === ROLES.HOD && student.department) {
       const matches = await isHodDepartment(req.user, student.department._id || student.department);
       if (!matches) {
@@ -145,8 +119,6 @@ async function getStudentById(req, res, next) {
       }
     }
 
-=======
->>>>>>> feature/library-staff-portal
     return sendSuccess(res, { data: student });
   } catch (error) {
     next(error);
@@ -178,7 +150,6 @@ async function createStudentProfile(req, res, next) {
   try {
     const { user, rollNumber, enrollmentNumber, department, course, currentSemester, batchYear, guardianName, guardianPhone, admissionStatus } = req.body;
 
-<<<<<<< HEAD
     if (req.user?.role === ROLES.HOD && department) {
       const matches = await isHodDepartment(req.user, department);
       if (!matches) {
@@ -190,8 +161,6 @@ async function createStudentProfile(req, res, next) {
       }
     }
 
-=======
->>>>>>> feature/library-staff-portal
     const existing = await Student.findOne({ $or: [{ rollNumber }, { user }] });
     if (existing) {
       return sendError(res, {
@@ -244,7 +213,6 @@ async function updateStudentProfile(req, res, next) {
       });
     }
 
-<<<<<<< HEAD
     if (req.user?.role === ROLES.HOD && student.department) {
       const matches = await isHodDepartment(req.user, student.department._id || student.department);
       if (!matches) {
@@ -267,8 +235,6 @@ async function updateStudentProfile(req, res, next) {
       }
     }
 
-=======
->>>>>>> feature/library-staff-portal
     if (department) student.department = department;
     if (course) student.course = course;
     if (currentSemester !== undefined) student.currentSemester = currentSemester;

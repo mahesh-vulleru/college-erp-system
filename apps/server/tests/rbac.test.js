@@ -1,17 +1,13 @@
 const request = require('supertest');
 const express = require('express');
-<<<<<<< HEAD
 const jwt = require('jsonwebtoken');
 const app = require('../src/app');
 const env = require('../src/config/env');
 const User = require('../src/modules/auth/auth.model');
-=======
->>>>>>> feature/library-staff-portal
 const { authorizeRoles, requirePermissions } = require('../src/middleware/rbac');
 const { ROLES, PERMISSIONS } = require('@college-erp/shared');
 
 describe('RBAC Middleware Authorization Tests', () => {
-<<<<<<< HEAD
   let mockApp;
 
   beforeAll(() => {
@@ -20,16 +16,6 @@ describe('RBAC Middleware Authorization Tests', () => {
 
     // Mock auth middleware simulator attaching req.user
     mockApp.use((req, res, next) => {
-=======
-  let app;
-
-  beforeAll(() => {
-    app = express();
-    app.use(express.json());
-
-    // Mock auth middleware simulator attaching req.user
-    app.use((req, res, next) => {
->>>>>>> feature/library-staff-portal
       const simulatedRole = req.headers['x-simulated-role'];
       if (simulatedRole) {
         req.user = {
@@ -43,22 +29,14 @@ describe('RBAC Middleware Authorization Tests', () => {
     });
 
     // Protected route requiring Super Admin or Principal
-<<<<<<< HEAD
     mockApp.get(
-=======
-    app.get(
->>>>>>> feature/library-staff-portal
       '/admin-only',
       authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL),
       (req, res) => res.status(200).json({ success: true, message: 'Granted' })
     );
 
     // Protected route requiring specific permission (e.g. ATTENDANCE_MARK)
-<<<<<<< HEAD
     mockApp.post(
-=======
-    app.post(
->>>>>>> feature/library-staff-portal
       '/attendance-mark',
       requirePermissions(PERMISSIONS.ATTENDANCE_MARK),
       (req, res) => res.status(200).json({ success: true, message: 'Granted' })
@@ -66,21 +44,13 @@ describe('RBAC Middleware Authorization Tests', () => {
   });
 
   it('rejects unauthenticated request with 401 Unauthorized', async () => {
-<<<<<<< HEAD
     const res = await request(mockApp).get('/admin-only');
-=======
-    const res = await request(app).get('/admin-only');
->>>>>>> feature/library-staff-portal
     expect(res.statusCode).toBe(401);
     expect(res.body.success).toBe(false);
   });
 
   it('rejects unauthorized role (Student accessing Admin route) with 403 Forbidden', async () => {
-<<<<<<< HEAD
     const res = await request(mockApp)
-=======
-    const res = await request(app)
->>>>>>> feature/library-staff-portal
       .get('/admin-only')
       .set('x-simulated-role', ROLES.STUDENT);
 
@@ -90,11 +60,7 @@ describe('RBAC Middleware Authorization Tests', () => {
   });
 
   it('allows authorized role (Principal accessing Admin route) with 200 OK', async () => {
-<<<<<<< HEAD
     const res = await request(mockApp)
-=======
-    const res = await request(app)
->>>>>>> feature/library-staff-portal
       .get('/admin-only')
       .set('x-simulated-role', ROLES.PRINCIPAL);
 
@@ -103,11 +69,7 @@ describe('RBAC Middleware Authorization Tests', () => {
   });
 
   it('rejects Student role attempting to mark attendance with 403 Forbidden', async () => {
-<<<<<<< HEAD
     const res = await request(mockApp)
-=======
-    const res = await request(app)
->>>>>>> feature/library-staff-portal
       .post('/attendance-mark')
       .set('x-simulated-role', ROLES.STUDENT);
 
@@ -117,11 +79,7 @@ describe('RBAC Middleware Authorization Tests', () => {
   });
 
   it('allows Faculty role possessing ATTENDANCE_MARK permission with 200 OK', async () => {
-<<<<<<< HEAD
     const res = await request(mockApp)
-=======
-    const res = await request(app)
->>>>>>> feature/library-staff-portal
       .post('/attendance-mark')
       .set('x-simulated-role', ROLES.FACULTY);
 
@@ -130,7 +88,6 @@ describe('RBAC Middleware Authorization Tests', () => {
   });
 });
 
-<<<<<<< HEAD
 describe('Rigorous 6-Role System API Access Control Tests', () => {
   const users = {
     [ROLES.SUPER_ADMIN]: {
@@ -355,5 +312,3 @@ describe('Rigorous 6-Role System API Access Control Tests', () => {
     });
   });
 });
-=======
->>>>>>> feature/library-staff-portal

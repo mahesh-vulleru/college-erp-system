@@ -19,15 +19,21 @@ import {
   Layers,
   TrendingUp,
   UserCheck,
-<<<<<<< HEAD
-  Target
-=======
   Target,
   Search,
   RotateCw,
   AlertTriangle,
-  CheckCircle
->>>>>>> feature/library-staff-portal
+  CheckCircle,
+  Bus,
+  MapPin,
+  Radio,
+  Activity,
+  Wrench,
+  Fuel,
+  Receipt,
+  ShieldAlert,
+  MessageSquare,
+  Megaphone
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '@college-erp/shared';
@@ -35,11 +41,7 @@ import { getRoleTheme } from '../../theme/roleThemes';
 
 // Six Role-Specific Navigation Groups strictly matching application routes & architecture
 const ROLE_NAV_CONFIGS = {
-<<<<<<< HEAD
   // 1. Super Admin: Overview, User Management, Institution, Academics, Operations, Finance & Administration
-=======
-  // 1. Super Admin: Overview, Institution, Academics, Operations, Finance, Reports, Security
->>>>>>> feature/library-staff-portal
   [ROLES.SUPER_ADMIN]: [
     {
       title: 'Overview',
@@ -49,7 +51,6 @@ const ROLE_NAV_CONFIGS = {
       ]
     },
     {
-<<<<<<< HEAD
       title: 'User Management',
       items: [
         { path: '/admin/users', label: 'User Directory', icon: Users },
@@ -62,18 +63,12 @@ const ROLE_NAV_CONFIGS = {
         { path: '/departments', label: 'Academic Departments', icon: Building2 },
         { path: '/faculty', label: 'Teaching Faculty', icon: UserCheck },
         { path: '/students', label: 'Student Registry', icon: GraduationCap }
-=======
-      title: 'Institution',
-      items: [
-        { path: '/departments', label: 'Departments', icon: Building2 }
->>>>>>> feature/library-staff-portal
       ]
     },
     {
       title: 'Academics',
       items: [
         { path: '/courses', label: 'Programs & Courses', icon: BookOpen },
-<<<<<<< HEAD
         { path: '/subjects', label: 'Curriculum Subjects', icon: Layers },
         { path: '/timetable', label: 'Class Timetables', icon: Clock },
         { path: '/attendance', label: 'Daily Attendance', icon: CalendarCheck },
@@ -87,39 +82,10 @@ const ROLE_NAV_CONFIGS = {
         { path: '/fees', label: 'Fee Schedules & Dues', icon: CreditCard },
         { path: '/reports', label: 'Executive Reports', icon: BarChart3 },
         { path: '/notices', label: 'Notice Board', icon: Bell }
-=======
-        { path: '/subjects', label: 'Curriculum Subjects', icon: Layers }
-      ]
-    },
-    {
-      title: 'Operations',
-      items: [
-        { path: '/timetable', label: 'Class Timetables', icon: Clock },
-        { path: '/attendance', label: 'Daily Attendance', icon: CalendarCheck }
-      ]
-    },
-    {
-      title: 'Finance',
-      items: [
-        { path: '/fees', label: 'Fee Schedules & Dues', icon: CreditCard }
-      ]
-    },
-    {
-      title: 'Reports',
-      items: [
-        { path: '/reports', label: 'Executive Reports', icon: BarChart3 }
-      ]
-    },
-    {
-      title: 'Security',
-      items: [
-        { path: '/audit-logs', label: 'Security & Audit Logs', icon: ShieldCheck }
->>>>>>> feature/library-staff-portal
       ]
     }
   ],
 
-<<<<<<< HEAD
   // 2. Principal: Executive Leadership, Academic Administration, Operations & Examination, Governance & Audits
   [ROLES.PRINCIPAL]: [
     {
@@ -129,27 +95,10 @@ const ROLE_NAV_CONFIGS = {
         { path: '/principal/accreditation', label: 'Accreditation & Compliance', icon: ShieldCheck },
         { path: '/principal/goals', label: 'Institutional Goals & KPIs', icon: Target },
         { path: '/principal/events', label: 'Institutional Academic Calendar', icon: CalendarCheck },
-=======
-  // 2. Principal: Executive Overview, Departments, Academic Performance, Examinations, Reports, Notices
-  [ROLES.PRINCIPAL]: [
-    {
-      title: 'Institutional Management',
-      items: [
-        { path: '/principal/accreditation', label: 'Accreditation & Compliance', icon: ShieldCheck },
-        { path: '/principal/goals', label: 'Institutional Goals & KPIs', icon: Target },
-        { path: '/principal/events', label: 'Deadline & Event Tracker', icon: CalendarCheck }
-      ]
-    },
-    {
-      title: 'Executive Overview',
-      items: [
-        { path: '/principal', label: 'Principal Dashboard', icon: LayoutDashboard },
->>>>>>> feature/library-staff-portal
         { path: '/overview', label: 'Institutional Health', icon: Compass }
       ]
     },
     {
-<<<<<<< HEAD
       title: 'Academic Administration',
       items: [
         { path: '/departments', label: 'Academic Departments', icon: Building2 },
@@ -164,52 +113,21 @@ const ROLE_NAV_CONFIGS = {
         { path: '/timetable', label: 'Class Timetables', icon: Clock },
         { path: '/attendance', label: 'Daily Attendance', icon: CalendarCheck },
         { path: '/examinations', label: 'Examination Status & Schedules', icon: FileText },
-=======
-      title: 'Departments',
-      items: [
-        { path: '/departments', label: 'Academic Departments', icon: Building2 }
-      ]
-    },
-    {
-      title: 'Academic Performance',
-      items: [
->>>>>>> feature/library-staff-portal
         { path: '/results', label: 'Results & Performance', icon: Award }
       ]
     },
     {
-<<<<<<< HEAD
       title: 'Governance & Audits',
       items: [
         { path: '/reports?tab=faculty', label: 'Faculty Workload', icon: Clock },
         { path: '/reports', label: 'Executive Reports', icon: BarChart3 },
         { path: '/audit-logs', label: 'Regulatory Audit Reports', icon: ShieldCheck },
-=======
-      title: 'Examinations',
-      items: [
-        { path: '/examinations', label: 'Examinations System', icon: FileText }
-      ]
-    },
-    {
-      title: 'Reports',
-      items: [
-        { path: '/reports', label: 'Executive Reports', icon: BarChart3 }
-      ]
-    },
-    {
-      title: 'Notices',
-      items: [
->>>>>>> feature/library-staff-portal
         { path: '/notices', label: 'Notice Board', icon: Bell }
       ]
     }
   ],
 
-<<<<<<< HEAD
   // 3. HOD: Department Overview, Faculty & Students, Courses, Operations, Examinations & Administration
-=======
-  // 3. HOD: Department Overview, Faculty, Courses & Subjects, Timetable, Attendance, Examinations, Results
->>>>>>> feature/library-staff-portal
   [ROLES.HOD]: [
     {
       title: 'Department Overview',
@@ -218,7 +136,6 @@ const ROLE_NAV_CONFIGS = {
       ]
     },
     {
-<<<<<<< HEAD
       title: 'Faculty & Students',
       items: [
         { path: '/faculty', label: 'Department Faculty', icon: Users },
@@ -235,46 +152,13 @@ const ROLE_NAV_CONFIGS = {
       title: 'Timetable & Operations',
       items: [
         { path: '/timetable', label: 'Department Timetable', icon: Clock },
-=======
-      title: 'Faculty',
-      items: [
-        { path: '/hod?tab=faculty', label: 'Department Faculty', icon: Users }
-      ]
-    },
-    {
-      title: 'Courses & Subjects',
-      items: [
-        { path: '/hod?tab=syllabus', label: 'Courses & Syllabus', icon: BookOpen }
-      ]
-    },
-    {
-      title: 'Timetable',
-      items: [
-        { path: '/hod?tab=timetable', label: 'Department Timetable', icon: Clock }
-      ]
-    },
-    {
-      title: 'Attendance',
-      items: [
->>>>>>> feature/library-staff-portal
         { path: '/attendance', label: 'Attendance Register', icon: CalendarCheck }
       ]
     },
     {
-<<<<<<< HEAD
       title: 'Examinations & Performance',
       items: [
         { path: '/examinations', label: 'Examinations Cell', icon: Award },
-=======
-      title: 'Examinations',
-      items: [
-        { path: '/examinations', label: 'Examinations Cell', icon: Award }
-      ]
-    },
-    {
-      title: 'Results',
-      items: [
->>>>>>> feature/library-staff-portal
         { path: '/results', label: 'Results & Analysis', icon: FileText }
       ]
     },
@@ -287,11 +171,7 @@ const ROLE_NAV_CONFIGS = {
     }
   ],
 
-<<<<<<< HEAD
   // 4. Faculty: Dashboard, Teaching & Schedule, Attendance & Students, Examinations & Grading, Communications
-=======
-  // 4. Faculty: Dashboard, My Classes, Timetable, Attendance, Examinations & Marks, Notices
->>>>>>> feature/library-staff-portal
   [ROLES.FACULTY]: [
     {
       title: 'Dashboard',
@@ -300,7 +180,6 @@ const ROLE_NAV_CONFIGS = {
       ]
     },
     {
-<<<<<<< HEAD
       title: 'Teaching & Schedule',
       items: [
         { path: '/courses', label: 'Assigned Courses & Syllabus', icon: BookOpen },
@@ -323,45 +202,13 @@ const ROLE_NAV_CONFIGS = {
     },
     {
       title: 'Communications',
-=======
-      title: 'My Classes',
-      items: [
-        { path: '/faculty?tab=courses', label: 'Assigned Courses', icon: BookOpen },
-        { path: '/faculty?tab=roster', label: 'Student Rosters', icon: Users }
-      ]
-    },
-    {
-      title: 'Timetable',
-      items: [
-        { path: '/faculty?tab=timetable', label: 'Teaching Schedule', icon: Clock }
-      ]
-    },
-    {
-      title: 'Attendance',
-      items: [
-        { path: '/attendance', label: 'Attendance Capture', icon: CalendarCheck }
-      ]
-    },
-    {
-      title: 'Examinations & Marks',
-      items: [
-        { path: '/faculty?tab=exams', label: 'Exam Duty & Marks', icon: Award }
-      ]
-    },
-    {
-      title: 'Notices',
->>>>>>> feature/library-staff-portal
       items: [
         { path: '/notices', label: 'Notice Board', icon: Bell }
       ]
     }
   ],
 
-<<<<<<< HEAD
   // 5. Student: Dashboard, Academics & Schedule, Attendance & Performance, Finance & Notices
-=======
-  // 5. Student: Dashboard, My Courses, Timetable, Attendance, Examinations, Published Results, Fees, Notices, Profile
->>>>>>> feature/library-staff-portal
   [ROLES.STUDENT]: [
     {
       title: 'Dashboard',
@@ -370,7 +217,6 @@ const ROLE_NAV_CONFIGS = {
       ]
     },
     {
-<<<<<<< HEAD
       title: 'Academics & Schedule',
       items: [
         { path: '/courses', label: 'Enrolled Courses & Syllabus', icon: BookOpen },
@@ -395,58 +241,6 @@ const ROLE_NAV_CONFIGS = {
   ],
 
   // 6. Accounts: Finance Overview, Fee Management, Reports & Notices
-=======
-      title: 'My Courses',
-      items: [
-        { path: '/student?tab=courses', label: 'Enrolled Courses', icon: BookOpen }
-      ]
-    },
-    {
-      title: 'Timetable',
-      items: [
-        { path: '/student?tab=timetable', label: 'Semester Timetable', icon: Clock }
-      ]
-    },
-    {
-      title: 'Attendance',
-      items: [
-        { path: '/student?tab=attendance', label: 'Attendance Register', icon: CalendarCheck }
-      ]
-    },
-    {
-      title: 'Examinations',
-      items: [
-        { path: '/examinations', label: 'Exam Schedules', icon: Award }
-      ]
-    },
-    {
-      title: 'Published Results',
-      items: [
-        { path: '/student?tab=results', label: 'Grade Cards & SGPA', icon: FileText }
-      ]
-    },
-    {
-      title: 'Fees',
-      items: [
-        { path: '/fees', label: 'Fee Dues & Receipts', icon: CreditCard }
-      ]
-    },
-    {
-      title: 'Notices',
-      items: [
-        { path: '/notices', label: 'Campus Circulars', icon: Bell }
-      ]
-    },
-    {
-      title: 'Profile',
-      items: [
-        { path: '/student?tab=profile', label: 'Student Profile', icon: GraduationCap }
-      ]
-    }
-  ],
-
-  // 6. Accounts: Finance Overview, Fee Schedules, Invoices, Payments, Outstanding Dues, Financial Reports, Notices
->>>>>>> feature/library-staff-portal
   [ROLES.ACCOUNTS]: [
     {
       title: 'Finance Overview',
@@ -455,7 +249,6 @@ const ROLE_NAV_CONFIGS = {
       ]
     },
     {
-<<<<<<< HEAD
       title: 'Fee Management',
       items: [
         { path: '/fees?tab=structures', label: 'Fee Plans & Schedules', icon: Layers },
@@ -468,48 +261,10 @@ const ROLE_NAV_CONFIGS = {
       title: 'Reports & Notices',
       items: [
         { path: '/reports', label: 'Financial Reports', icon: BarChart3 },
-=======
-      title: 'Fee Schedules',
-      items: [
-        { path: '/fees?tab=structures', label: 'Fee Plans & Schedules', icon: Layers }
-      ]
-    },
-    {
-      title: 'Invoices',
-      items: [
-        { path: '/fees?tab=invoices', label: 'Billing Invoices', icon: FileText }
-      ]
-    },
-    {
-      title: 'Payments',
-      items: [
-        { path: '/fees?tab=payments', label: 'Payment Transactions', icon: CreditCard }
-      ]
-    },
-    {
-      title: 'Outstanding Dues',
-      items: [
-        { path: '/accounts?tab=invoices', label: 'Outstanding Ledgers', icon: TrendingUp }
-      ]
-    },
-    {
-      title: 'Financial Reports',
-      items: [
-        { path: '/reports', label: 'Financial Reports', icon: BarChart3 }
-      ]
-    },
-    {
-      title: 'Notices',
-      items: [
->>>>>>> feature/library-staff-portal
         { path: '/notices', label: 'Notice Board', icon: Bell }
       ]
     }
   ],
-<<<<<<< HEAD
-=======
-
->>>>>>> feature/library-staff-portal
   // 7. Librarian: Overview, Catalog Management, Circulation Desk, Patrons & Accounts, Digital & Governance
   [ROLES.LIBRARIAN]: [
     {
@@ -540,16 +295,11 @@ const ROLE_NAV_CONFIGS = {
       ]
     },
     {
-<<<<<<< HEAD
       title: 'Digital & Governance',
       items: [
         { path: '/library?tab=digital', label: 'Digital Library Resources', icon: FileText },
         { path: '/library?tab=reports', label: 'Reports & Analytics', icon: BarChart3 },
         { path: '/library?tab=settings', label: 'Library Rules & Settings', icon: ShieldCheck }
-=======
-      title: 'Institutional Notices',
-      items: [
-        { path: '/notices', label: 'Campus Circulars', icon: Bell }
       ]
     }
   ],
@@ -592,7 +342,129 @@ const ROLE_NAV_CONFIGS = {
         { path: '/library-staff?tab=my-transactions', label: 'My Transactions', icon: TrendingUp },
         { path: '/library-staff?tab=notifications', label: 'Notifications', icon: Bell },
         { path: '/library-staff?tab=profile', label: 'My Profile', icon: UserCheck }
->>>>>>> feature/library-staff-portal
+      ]
+    }
+  ],
+
+  // 9. Transport Admin: Fleet, Trips, GPS, Attendance & Operations
+  [ROLES.TRANSPORT_ADMIN]: [
+    {
+      title: 'Transport Overview',
+      items: [
+        { path: '/transport', label: 'Transport Overview', icon: LayoutDashboard }
+      ]
+    },
+    {
+      title: 'Transit Operations',
+      items: [
+        { path: '/transport?tab=trips', label: 'Trip Management', icon: Clock },
+        { path: '/transport?tab=schedule', label: 'Daily Transit Schedule', icon: CalendarCheck },
+        { path: '/transport?tab=gps', label: 'Live GPS Radar', icon: Radio },
+        { path: '/transport?tab=attendance', label: 'Student Attendance', icon: UserCheck }
+      ]
+    },
+    {
+      title: 'Fleet & Routes',
+      items: [
+        { path: '/transport?tab=buses', label: 'Bus & Vehicle Management', icon: Bus },
+        { path: '/transport?tab=routes', label: 'Route & Stop Management', icon: MapPin }
+      ]
+    },
+    {
+      title: 'Staff & Allocations',
+      items: [
+        { path: '/transport?tab=drivers', label: 'Driver & Staff Management', icon: Users },
+        { path: '/transport?tab=students', label: 'Student Transport Management', icon: GraduationCap }
+      ]
+    },
+    {
+      title: 'Maintenance & Fuel',
+      items: [
+        { path: '/transport?tab=maintenance', label: 'Vehicle Maintenance', icon: Wrench },
+        { path: '/transport?tab=fuel', label: 'Fuel & Mileage Tracking', icon: Fuel }
+      ]
+    },
+    {
+      title: 'Financial Management',
+      items: [
+        { path: '/transport?tab=expenses', label: 'Transport Expenses', icon: CreditCard },
+        { path: '/transport?tab=fees', label: 'Transport Fee Ledger', icon: Receipt }
+      ]
+    },
+    {
+      title: 'Safety & Grievances',
+      items: [
+        { path: '/transport?tab=safety', label: 'Safety & Emergency SOS', icon: ShieldAlert },
+        { path: '/transport?tab=complaints', label: 'Feedback & Grievances', icon: MessageSquare },
+        { path: '/transport?tab=announcements', label: 'Notices & Broadcasts', icon: Megaphone }
+      ]
+    },
+    {
+      title: 'Configuration',
+      items: [
+        { path: '/transport?tab=settings', label: 'Transport Settings', icon: ShieldCheck }
+      ]
+    }
+  ],
+
+  [ROLES.TRANSPORT_SUPERVISOR]: [
+    {
+      title: 'Operations Overview',
+      items: [
+        { path: '/transport?tab=supervisor', label: 'Operations Dashboard', icon: LayoutDashboard }
+      ]
+    },
+    {
+      title: 'Safety & Emergency',
+      items: [
+        { path: '/transport?tab=safety', label: 'Safety & SOS Alerts', icon: ShieldAlert },
+        { path: '/transport?tab=complaints', label: 'Assigned Complaints', icon: MessageSquare }
+      ]
+    },
+    {
+      title: 'Dispatch & Radar',
+      items: [
+        { path: '/transport?tab=gps', label: 'Live GPS Fleet Radar', icon: Radio },
+        { path: '/transport?tab=schedule', label: 'Daily Transit Schedule', icon: CalendarCheck },
+        { path: '/transport?tab=trips', label: 'Trip Management', icon: Clock }
+      ]
+    },
+    {
+      title: 'Passenger Operations',
+      items: [
+        { path: '/transport?tab=attendance', label: 'Student Attendance', icon: UserCheck }
+      ]
+    }
+  ],
+
+  [ROLES.BUS_DRIVER]: [
+    {
+      title: 'Driver Console',
+      items: [
+        { path: '/transport?tab=driver_portal', label: 'My Assigned Trips', icon: Bus },
+        { path: '/transport?tab=schedule', label: 'Today\'s Transit Schedule', icon: Clock },
+        { path: '/transport?tab=safety', label: 'Safety & SOS Alert', icon: ShieldAlert }
+      ]
+    }
+  ],
+
+  [ROLES.BUS_ATTENDANT]: [
+    {
+      title: 'Attendant Desk',
+      items: [
+        { path: '/transport?tab=attendance', label: 'Student Boarding & Drops', icon: UserCheck },
+        { path: '/transport?tab=safety', label: 'Safety & SOS Alert', icon: ShieldAlert }
+      ]
+    }
+  ],
+
+  [ROLES.PARENT]: [
+    {
+      title: 'Child Transit',
+      items: [
+        { path: '/transport?tab=parent', label: 'Child Bus Tracker', icon: Bus },
+        { path: '/transport?tab=complaints', label: 'Submit Grievance', icon: MessageSquare },
+        { path: '/transport?tab=announcements', label: 'Transport Notices', icon: Megaphone }
       ]
     }
   ]
@@ -618,21 +490,18 @@ export const Sidebar = ({ isOpen, onClose }) => {
       case ROLES.STUDENT: return '/student';
       case ROLES.ACCOUNTS: return '/accounts';
       case ROLES.LIBRARIAN: return '/library';
-<<<<<<< HEAD
-=======
       case ROLES.LIBRARY_STAFF: return '/library-staff';
->>>>>>> feature/library-staff-portal
+      case ROLES.TRANSPORT_ADMIN: return '/transport';
+      case ROLES.TRANSPORT_SUPERVISOR: return '/transport?tab=supervisor';
+      case ROLES.BUS_DRIVER: return '/transport?tab=driver_portal';
+      case ROLES.BUS_ATTENDANT: return '/transport?tab=attendance';
       default: return '/';
     }
   };
 
   const getInitials = (name) => {
     if (!name) return 'U';
-<<<<<<< HEAD
     const parts = name.replace(/^(Dr.|Prof.|Mr.|Ms.|Mrs.)\s+/i, '').trim().split(' ');
-=======
-    const parts = name.replace(/^(Dr.|Prof.|Mr.|Ms.|Mrs.)s+/i, '').trim().split(' ');
->>>>>>> feature/library-staff-portal
     if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     return name.slice(0, 2).toUpperCase();
   };
@@ -647,11 +516,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
     }
   ];
 
-<<<<<<< HEAD
   // Precision active state matching supporting full pages, query params & tab anchors
-=======
-  // Precision active state matching supporting query params & tab anchors
->>>>>>> feature/library-staff-portal
   const isItemActive = (itemPath) => {
     const currentFull = `${location.pathname}${location.search}`;
     if (itemPath === currentFull) return true;
@@ -663,33 +528,16 @@ export const Sidebar = ({ isOpen, onClose }) => {
       const currentParams = new URLSearchParams(location.search);
       const itemTab = itemParams.get('tab');
       const currentTab = currentParams.get('tab');
-<<<<<<< HEAD
       const itemStatus = itemParams.get('status');
       const currentStatus = currentParams.get('status');
 
       if (itemTab && currentTab && itemTab === currentTab) return true;
       if (itemStatus && currentStatus && itemStatus === currentStatus) return true;
-=======
-
-      if (itemTab && currentTab) {
-        if (itemTab === currentTab) return true;
-        // Aliases for HOD and academic tabs
-        if ((itemTab === 'faculty' || itemTab === 'roster') && (currentTab === 'faculty' || currentTab === 'roster')) return true;
-        if ((itemTab === 'syllabus' || itemTab === 'curriculum' || itemTab === 'subjects') && (currentTab === 'syllabus' || currentTab === 'curriculum' || currentTab === 'subjects')) return true;
-        if ((itemTab === 'timetable' || itemTab === 'schedule') && (currentTab === 'timetable' || currentTab === 'schedule')) return true;
-        if ((itemTab === 'students' || itemTab === 'cohort') && (currentTab === 'students' || currentTab === 'cohort')) return true;
-        if ((itemTab === 'exams' || itemTab === 'examination') && (currentTab === 'exams' || currentTab === 'examination')) return true;
-      }
->>>>>>> feature/library-staff-portal
       return false;
     }
 
     // If current location has query params, do not match parent dashboard path
-<<<<<<< HEAD
-    if (location.search && (itemPath === '/student' || itemPath === '/faculty' || itemPath === '/hod' || itemPath === '/accounts' || itemPath === '/fees' || itemPath === '/reports' || itemPath === '/library')) {
-=======
-    if (location.search && (itemPath === '/student' || itemPath === '/faculty' || itemPath === '/hod' || itemPath === '/accounts' || itemPath === '/fees')) {
->>>>>>> feature/library-staff-portal
+    if (location.search && (itemPath === '/student' || itemPath === '/faculty' || itemPath === '/hod' || itemPath === '/accounts' || itemPath === '/fees' || itemPath === '/reports' || itemPath === '/library' || itemPath === '/transport')) {
       return false;
     }
     return location.pathname === itemPath;
