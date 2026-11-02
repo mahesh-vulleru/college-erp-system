@@ -16,11 +16,15 @@ const router = express.Router();
 router.use(authenticate);
 
 // Readable by all authenticated institutional users (Super Admin, Principal, HOD, Faculty, Student)
+<<<<<<< HEAD
 router.get(
   '/',
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
   getTimetable
 );
+=======
+router.get('/', getTimetable);
+>>>>>>> feature/library-staff-portal
 
 // Management restricted to Super Admin, Principal, and HOD
 router.post(

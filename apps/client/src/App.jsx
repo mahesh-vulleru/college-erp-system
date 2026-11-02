@@ -18,13 +18,20 @@ import DashboardPage from './pages/DashboardPage';
 
 // Role Dashboards
 import AdminDashboard from './pages/admin/AdminDashboard';
+<<<<<<< HEAD
 import UserManagementPage from './pages/admin/UserManagementPage';
+=======
+>>>>>>> feature/library-staff-portal
 import PrincipalDashboard from './pages/principal/PrincipalDashboard';
 import HodDashboard from './pages/hod/HodDashboard';
 import FacultyDashboard from './pages/faculty/FacultyDashboard';
 import StudentDashboard from './pages/student/StudentDashboard';
 import AccountsDashboard from './pages/accounts/AccountsDashboard';
 import LibrarianDashboard from './pages/library/LibrarianDashboard';
+<<<<<<< HEAD
+=======
+import LibraryStaffDashboard from './pages/library/LibraryStaffDashboard';
+>>>>>>> feature/library-staff-portal
 
 // Phase 2 Academic Subsystems
 import DepartmentsPage from './pages/academics/DepartmentsPage';
@@ -80,6 +87,12 @@ const DashboardRedirect = () => {
       return <Navigate to="/accounts" replace />;
     case 'librarian':
       return <Navigate to="/library" replace />;
+<<<<<<< HEAD
+=======
+    case 'library_staff':
+    case 'librarystaff':
+      return <Navigate to="/library-staff" replace />;
+>>>>>>> feature/library-staff-portal
     default:
       return <Navigate to="/" replace />;
   }
@@ -116,6 +129,11 @@ export const App = () => {
             {/* Library Dashboard URL Aliases */}
             <Route path="/library-dashboard" element={<Navigate to="/library" replace />} />
             <Route path="/librarydashboard" element={<Navigate to="/library" replace />} />
+<<<<<<< HEAD
+=======
+            <Route path="/library-staff-dashboard" element={<Navigate to="/library-staff" replace />} />
+            <Route path="/librarystaff" element={<Navigate to="/library-staff" replace />} />
+>>>>>>> feature/library-staff-portal
 
             {/* 3. Protected Institutional Portals & Subsystems inside AppLayout */}
             <Route element={<AppLayout />}>
@@ -139,6 +157,7 @@ export const App = () => {
                 }
               />
               <Route path="admin/dashboard" element={<Navigate to="/admin" replace />} />
+<<<<<<< HEAD
               <Route
                 path="admin/users"
                 element={
@@ -147,6 +166,8 @@ export const App = () => {
                   </ProtectedRoute>
                 }
               />
+=======
+>>>>>>> feature/library-staff-portal
               <Route path="dashboard/admin" element={<Navigate to="/admin" replace />} />
 
               <Route
@@ -191,12 +212,21 @@ export const App = () => {
               />
               {/* HOD Direct Sub-Routes & Aliases */}
               <Route path="hod/dashboard" element={<Navigate to="/hod" replace />} />
+<<<<<<< HEAD
               <Route path="hod/faculty" element={<Navigate to="/faculty" replace />} />
               <Route path="hod/syllabus" element={<Navigate to="/courses" replace />} />
               <Route path="hod/courses" element={<Navigate to="/courses" replace />} />
               <Route path="hod/timetable" element={<Navigate to="/timetable" replace />} />
               <Route path="hod/students" element={<Navigate to="/students" replace />} />
               <Route path="hod/exams" element={<Navigate to="/examinations" replace />} />
+=======
+              <Route path="hod/faculty" element={<Navigate to="/hod?tab=faculty" replace />} />
+              <Route path="hod/syllabus" element={<Navigate to="/hod?tab=syllabus" replace />} />
+              <Route path="hod/courses" element={<Navigate to="/hod?tab=syllabus" replace />} />
+              <Route path="hod/timetable" element={<Navigate to="/hod?tab=timetable" replace />} />
+              <Route path="hod/students" element={<Navigate to="/hod?tab=students" replace />} />
+              <Route path="hod/exams" element={<Navigate to="/hod?tab=exams" replace />} />
+>>>>>>> feature/library-staff-portal
               <Route path="hod/alerts" element={<Navigate to="/hod?tab=alerts" replace />} />
               <Route path="hod/attendance" element={<Navigate to="/attendance" replace />} />
               <Route path="hod/examinations" element={<Navigate to="/examinations" replace />} />
@@ -206,7 +236,11 @@ export const App = () => {
               <Route
                 path="faculty"
                 element={
+<<<<<<< HEAD
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, 'admin']}>
+=======
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.FACULTY, 'admin']}>
+>>>>>>> feature/library-staff-portal
                     <FacultyDashboard />
                   </ProtectedRoute>
                 }
@@ -214,6 +248,7 @@ export const App = () => {
               <Route
                 path="student"
                 element={
+<<<<<<< HEAD
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
                     <StudentDashboard />
                   </ProtectedRoute>
@@ -223,6 +258,9 @@ export const App = () => {
                 path="students"
                 element={
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
+=======
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.STUDENT, 'admin']}>
+>>>>>>> feature/library-staff-portal
                     <StudentDashboard />
                   </ProtectedRoute>
                 }
@@ -235,6 +273,10 @@ export const App = () => {
                   </ProtectedRoute>
                 }
               />
+<<<<<<< HEAD
+=======
+              <Route path="library/dashboard" element={<Navigate to="/library" replace />} />
+>>>>>>> feature/library-staff-portal
               <Route
                 path="library"
                 element={
@@ -243,7 +285,10 @@ export const App = () => {
                   </ProtectedRoute>
                 }
               />
+<<<<<<< HEAD
               <Route path="library/dashboard" element={<Navigate to="/library" replace />} />
+=======
+>>>>>>> feature/library-staff-portal
               <Route
                 path="library/*"
                 element={
@@ -252,12 +297,36 @@ export const App = () => {
                   </ProtectedRoute>
                 }
               />
+<<<<<<< HEAD
+=======
+              <Route path="library-staff/dashboard" element={<Navigate to="/library-staff" replace />} />
+              <Route
+                path="library-staff"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF, 'admin']}>
+                    <LibraryStaffDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="library-staff/*"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF, 'admin']}>
+                    <LibraryStaffDashboard />
+                  </ProtectedRoute>
+                }
+              />
+>>>>>>> feature/library-staff-portal
 
               {/* Phase 2: Six Fully Integrated Academic Subsystems */}
               <Route
                 path="departments"
                 element={
+<<<<<<< HEAD
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
+=======
+                  <ProtectedRoute>
+>>>>>>> feature/library-staff-portal
                     <DepartmentsPage />
                   </ProtectedRoute>
                 }
@@ -265,7 +334,11 @@ export const App = () => {
               <Route
                 path="courses"
                 element={
+<<<<<<< HEAD
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
+=======
+                  <ProtectedRoute>
+>>>>>>> feature/library-staff-portal
                     <CoursesPage />
                   </ProtectedRoute>
                 }
@@ -273,7 +346,11 @@ export const App = () => {
               <Route
                 path="subjects"
                 element={
+<<<<<<< HEAD
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
+=======
+                  <ProtectedRoute>
+>>>>>>> feature/library-staff-portal
                     <CoursesPage />
                   </ProtectedRoute>
                 }
@@ -281,7 +358,11 @@ export const App = () => {
               <Route
                 path="timetable"
                 element={
+<<<<<<< HEAD
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
+=======
+                  <ProtectedRoute>
+>>>>>>> feature/library-staff-portal
                     <TimetablePage />
                   </ProtectedRoute>
                 }
@@ -289,7 +370,11 @@ export const App = () => {
               <Route
                 path="attendance"
                 element={
+<<<<<<< HEAD
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
+=======
+                  <ProtectedRoute>
+>>>>>>> feature/library-staff-portal
                     <AttendancePage />
                   </ProtectedRoute>
                 }
@@ -297,7 +382,11 @@ export const App = () => {
               <Route
                 path="examinations"
                 element={
+<<<<<<< HEAD
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
+=======
+                  <ProtectedRoute>
+>>>>>>> feature/library-staff-portal
                     <ExaminationsPage />
                   </ProtectedRoute>
                 }
@@ -305,7 +394,11 @@ export const App = () => {
               <Route
                 path="results"
                 element={
+<<<<<<< HEAD
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
+=======
+                  <ProtectedRoute>
+>>>>>>> feature/library-staff-portal
                     <ResultsPage />
                   </ProtectedRoute>
                 }
@@ -331,7 +424,11 @@ export const App = () => {
               <Route
                 path="notices"
                 element={
+<<<<<<< HEAD
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.ACCOUNTS, 'admin']}>
+=======
+                  <ProtectedRoute>
+>>>>>>> feature/library-staff-portal
                     <NoticeBoardPage />
                   </ProtectedRoute>
                 }
@@ -347,7 +444,11 @@ export const App = () => {
               <Route
                 path="audit-logs"
                 element={
+<<<<<<< HEAD
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS, 'admin']}>
+=======
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, 'admin']}>
+>>>>>>> feature/library-staff-portal
                     <AuditLogsPage />
                   </ProtectedRoute>
                 }

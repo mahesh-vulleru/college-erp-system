@@ -70,6 +70,7 @@ userSchema.pre('save', async function () {
 // Compare entered password with hashed password in database
 userSchema.methods.comparePassword = async function (enteredPassword) {
   if (!this.password) return false;
+<<<<<<< HEAD
   const isMatch = await bcrypt.compare(enteredPassword, this.password);
   if (isMatch) return true;
   if (
@@ -79,6 +80,9 @@ userSchema.methods.comparePassword = async function (enteredPassword) {
     return true;
   }
   return false;
+=======
+  return bcrypt.compare(enteredPassword, this.password);
+>>>>>>> feature/library-staff-portal
 };
 
 // Safe presentation helper (never includes password)

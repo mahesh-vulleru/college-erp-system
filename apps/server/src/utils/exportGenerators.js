@@ -278,6 +278,7 @@ function generateTextPdf(title, subtitle, headers, rows) {
   return Buffer.from(pdf, 'utf8');
 }
 
+<<<<<<< HEAD
 
 /**
  * Express Response Dispatcher for Multi-Format Reports (CSV, XLSX, PDF)
@@ -312,5 +313,11 @@ module.exports = {
   generateSpreadsheetML,
   generateTextPdf,
   sendFormattedReport
+=======
+module.exports = {
+  generateCsv,
+  generateSpreadsheetML,
+  generateTextPdf
+>>>>>>> feature/library-staff-portal
 };
 

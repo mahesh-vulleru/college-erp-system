@@ -5,7 +5,10 @@ const Student = require('../students/student.model');
 const Faculty = require('../faculty/faculty.model');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
+<<<<<<< HEAD
 const { resolveHodDepartment, isHodDepartment } = require('../../utils/hodScoping');
+=======
+>>>>>>> feature/library-staff-portal
 
 async function listExams(req, res, next) {
   try {
@@ -130,6 +133,7 @@ async function getExamById(req, res, next) {
       }
     }
 
+<<<<<<< HEAD
     if (req.user && req.user.role === ROLES.HOD && exam.department) {
       const matches = await isHodDepartment(req.user, exam.department._id || exam.department);
       if (!matches) {
@@ -141,6 +145,8 @@ async function getExamById(req, res, next) {
       }
     }
 
+=======
+>>>>>>> feature/library-staff-portal
     return sendSuccess(res, { data: exam });
   } catch (error) {
     next(error);
@@ -228,6 +234,7 @@ async function updateExam(req, res, next) {
       });
     }
 
+<<<<<<< HEAD
     if (req.user && req.user.role === ROLES.HOD && exam.department) {
       const matches = await isHodDepartment(req.user, exam.department._id || exam.department);
       if (!matches) {
@@ -250,6 +257,8 @@ async function updateExam(req, res, next) {
       }
     }
 
+=======
+>>>>>>> feature/library-staff-portal
     const { name, examType, academicYear, semester, department, course, venue, startDate, endDate, isPublished, status } = req.body;
 
     const newStart = startDate ? new Date(startDate) : exam.startDate;

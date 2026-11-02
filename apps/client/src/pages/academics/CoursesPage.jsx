@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+<<<<<<< HEAD
 import { useLocation } from 'react-router-dom';
+=======
+>>>>>>> feature/library-staff-portal
 import {
   GraduationCap,
   BookOpen,
@@ -31,6 +34,7 @@ export const CoursesPage = () => {
 
   const isPrivileged = user && [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD].includes(user.role);
 
+<<<<<<< HEAD
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(
     location.pathname.includes('/subjects') ? 'subjects' : 'courses'
@@ -43,6 +47,9 @@ export const CoursesPage = () => {
       setActiveTab('courses');
     }
   }, [location.pathname]);
+=======
+  const [activeTab, setActiveTab] = useState('courses'); // 'courses' | 'subjects'
+>>>>>>> feature/library-staff-portal
   const [courses, setCourses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [departments, setDepartments] = useState([]);

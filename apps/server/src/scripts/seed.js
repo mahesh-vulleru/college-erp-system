@@ -22,6 +22,7 @@ const Student = require('../modules/students/student.model');
 const Faculty = require('../modules/faculty/faculty.model');
 const FeeStructure = require('../modules/fees/fee.model');
 const Notice = require('../modules/notices/notice.model');
+<<<<<<< HEAD
 const Leave = require('../modules/leave/leave.model');
 const {
   BookCategory,
@@ -30,6 +31,8 @@ const {
   LibraryMember,
   LibrarySetting
 } = require('../modules/library/models');
+=======
+>>>>>>> feature/library-staff-portal
 
 async function seed() {
   if (env.NODE_ENV === 'production') {
@@ -49,8 +52,12 @@ async function seed() {
     Student.deleteMany({}),
     Faculty.deleteMany({}),
     FeeStructure.deleteMany({}),
+<<<<<<< HEAD
     Notice.deleteMany({}),
     Leave.deleteMany({})
+=======
+    Notice.deleteMany({})
+>>>>>>> feature/library-staff-portal
   ]);
 
   console.log('[Seed] Creating institutional users with role-based credentials...');
@@ -148,6 +155,7 @@ async function seed() {
     status: USER_STATUS.ACTIVE
   });
 
+<<<<<<< HEAD
 
   const librarianUser = await upsertUser({
     name: 'Mrs. Evelyn Reed',
@@ -157,6 +165,8 @@ async function seed() {
     department: 'Central Library',
     status: USER_STATUS.ACTIVE
   });
+=======
+>>>>>>> feature/library-staff-portal
   const accountsUser = await upsertUser({
     name: 'Mr. Robert Sterling',
     email: 'accounts@college.edu',
@@ -193,6 +203,27 @@ async function seed() {
     status: USER_STATUS.ACTIVE
   });
 
+<<<<<<< HEAD
+=======
+  const librarianUser = await upsertUser({
+    name: 'Mrs. Evelyn Reed',
+    email: 'librarian@college.edu',
+    password: process.env.SEED_LIBRARIAN_PASSWORD || 'Library@2026#',
+    role: ROLES.LIBRARIAN,
+    department: 'Central Library',
+    status: USER_STATUS.ACTIVE
+  });
+
+  const libraryStaffUser = await upsertUser({
+    name: 'Mr. Marcus Cole',
+    email: 'librarystaff@college.edu',
+    password: process.env.SEED_LIBRARY_STAFF_PASSWORD || 'Password123!',
+    role: ROLES.LIBRARY_STAFF,
+    department: 'Central Library',
+    status: USER_STATUS.ACTIVE
+  });
+
+>>>>>>> feature/library-staff-portal
   // Sample Disabled Account for status enforcement testing
   const disabledUser = await upsertUser({
     name: 'Disabled User Demo',
@@ -380,6 +411,7 @@ async function seed() {
     isPinned: true
   });
 
+<<<<<<< HEAD
 
   
   console.log('[Seed] Seeding sample faculty leave applications...');
@@ -501,6 +533,8 @@ async function seed() {
     console.error('[Seed] Non-fatal error seeding library catalog:', err.message);
   }
 
+=======
+>>>>>>> feature/library-staff-portal
   console.log('\n======================================================');
   console.log(' SEED DATA COMPLETED SUCCESSFULLY');
   console.log('======================================================');
@@ -514,8 +548,12 @@ async function seed() {
   console.log(' 5. Faculty CSE:  faculty01@college.edu (or faculty.turing@college.edu)');
   console.log(' 6. Student CSE:  student01@college.edu (or student.aarav@college.edu)');
   console.log(' 7. Accounts:     accounts@college.edu');
+<<<<<<< HEAD
   console.log(' 8. Librarian:    librarian@college.edu');
   console.log(' 9. Disabled Demo: disabled.user@college.edu (status: disabled)');
+=======
+  console.log(' 8. Disabled Demo: disabled.user@college.edu (status: disabled)');
+>>>>>>> feature/library-staff-portal
   console.log('======================================================\n');
 
   await mongoose.connection.close();

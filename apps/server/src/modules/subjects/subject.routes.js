@@ -10,11 +10,15 @@ const router = express.Router();
 
 router.use(authenticate);
 
+<<<<<<< HEAD
 router.get(
   '/',
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
   listSubjects
 );
+=======
+router.get('/', listSubjects);
+>>>>>>> feature/library-staff-portal
 
 router.post(
   '/',

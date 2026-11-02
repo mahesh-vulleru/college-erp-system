@@ -1510,8 +1510,341 @@ async function exportLibraryReportCsv(req, res, next) {
   }
 }
 
+<<<<<<< HEAD
 module.exports = {
   getLibraryDashboard,
+=======
+// ----------------------------------------------------
+// 11. LIBRARY STAFF SPECIFIC ANALYTICS & ACTIVITY
+// ----------------------------------------------------
+async function getStaffDashboard(req, res, next) {
+  try {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const [
+      booksIssuedToday,
+      booksReturnedToday,
+      activeIssues,
+      pendingReservations,
+      recentTransactions,
+      myIssuesToday,
+      myReturnsToday,
+      myTotalTransactions
+    ] = await Promise.all([
+      BookIssue.countDocuments({ issueDate: { $gte: startOfToday } }),
+      BookIssue.countDocuments({ returnDate: { $gte: startOfToday } }),
+      BookIssue.find({ status: { $in: ['issued', 'overdue'] } })
+        .populate('book', 'title author isbn rackNumber shelfLocation')
+        .populate('bookCopy', 'accessionNumber condition')
+        .populate('member', 'membershipNumber memberType department')
+        .populate('user', 'name email role')
+        .sort({ dueDate: 1 }),
+      BookReservation.countDocuments({ status: 'pending' }),
+      BookIssue.find()
+        .populate('book', 'title author isbn')
+        .populate('bookCopy', 'accessionNumber')
+        .populate('member', 'membershipNumber memberType')
+        .populate('user', 'name email')
+        .populate('issuedBy', 'name email')
+        .populate('returnedTo', 'name email')
+        .sort({ createdAt: -1 })
+        .limit(10),
+      BookIssue.countDocuments({ issuedBy: req.user._id, issueDate: { $gte: startOfToday } }),
+      BookIssue.countDocuments({ returnedTo: req.user._id, returnDate: { $gte: startOfToday } }),
+      BookIssue.countDocuments({
+        $or: [{ issuedBy: req.user._id }, { returnedTo: req.user._id }]
+      })
+    ]);
+
+    const overdueIssues = activeIssues.filter((i) => i.dueDate && new Date(i.dueDate) < now);
+    const activeTransactions = activeIssues.length;
+    const overdueBooks = overdueIssues.length;
+    const pendingReturns = activeIssues.length;
+
+    return sendSuccess(res, {
+      data: {
+        summary: {
+          booksIssuedToday,
+          booksReturnedToday,
+          activeTransactions,
+          pendingReturns,
+          overdueBooks,
+          pendingReservations
+        },
+        myActivity: {
+          issuesToday: myIssuesToday,
+          returnsToday: myReturnsToday,
+          totalTransactions: myTotalTransactions
+        },
+        recentTransactions,
+        overdueList: overdueIssues.slice(0, 10),
+        activeIssuesList: activeIssues.slice(0, 10)
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getMyTransactions(req, res, next) {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+    const skip = (page - 1) * limit;
+
+    const query = {
+      $or: [{ issuedBy: req.user._id }, { returnedTo: req.user._id }]
+    };
+
+    if (req.query.status) {
+      query.status = req.query.status;
+    }
+
+    const [transactions, total] = await Promise.all([
+      BookIssue.find(query)
+        .populate('book', 'title author isbn rackNumber shelfLocation')
+        .populate('bookCopy', 'accessionNumber condition status')
+        .populate('member', 'membershipNumber memberType department')
+        .populate('user', 'name email role phone')
+        .populate('issuedBy', 'name email')
+        .populate('returnedTo', 'name email')
+        .sort({ updatedAt: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      BookIssue.countDocuments(query)
+    ]);
+
+    return sendSuccess(res, {
+      message: 'Staff transactions retrieved',
+      data: transactions,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ----------------------------------------------------
+// 12. LIBRARIAN-MANAGED LIBRARY STAFF ACCOUNTS & ASSIGNMENT
+// ----------------------------------------------------
+async function listLibraryStaff(req, res, next) {
+  try {
+    const staff = await User.find({ role: ROLES.LIBRARY_STAFF })
+      .select('-password')
+      .sort({ createdAt: -1 });
+
+    return sendSuccess(res, {
+      message: 'Library staff members retrieved',
+      data: staff
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function createOrAssignLibraryStaff(req, res, next) {
+  try {
+    const { name, email, password, department, employeeId, assignExisting, userId } = req.body;
+
+    const cleanEmail = (email || '').trim().toLowerCase();
+    if (!cleanEmail) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: 'Institutional email address is required'
+      });
+    }
+
+    // Assign existing user to library_staff role
+    if (assignExisting || userId) {
+      const existingUser = userId
+        ? await User.findById(userId)
+        : await User.findOne({ email: cleanEmail });
+
+      if (!existingUser) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.NOT_FOUND,
+          message: 'Existing user not found with given identifier/email'
+        });
+      }
+
+      // Prevent altering Super Admin, Principal, or Chief Librarian accounts
+      if ([ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN].includes(existingUser.role)) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.FORBIDDEN,
+          message: `Cannot reassign user with role '${existingUser.role}' to library staff`
+        });
+      }
+
+      existingUser.role = ROLES.LIBRARY_STAFF;
+      if (department) existingUser.department = department;
+      if (employeeId) existingUser.employeeId = employeeId;
+      await existingUser.save();
+
+      await recordAuditLog({
+        req,
+        action: 'LIBRARY_STAFF_ROLE_ASSIGNED',
+        entityType: 'User',
+        entityId: existingUser._id,
+        details: { email: existingUser.email, role: ROLES.LIBRARY_STAFF }
+      });
+
+      return sendSuccess(res, {
+        message: `User ${existingUser.name} (${existingUser.email}) successfully assigned to Library Staff role`,
+        data: existingUser.toSafeObject ? existingUser.toSafeObject() : existingUser
+      });
+    }
+
+    // Create new Library Staff user
+    if (!name || !name.trim()) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: 'Staff member name is required'
+      });
+    }
+
+    const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,})+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: 'Please provide a valid institutional email address'
+      });
+    }
+
+    // Prevent duplicate employee accounts
+    const duplicate = await User.findOne({ email: cleanEmail });
+    if (duplicate) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.CONFLICT,
+        message: `An account already exists with email '${cleanEmail}'. Use 'Assign Existing' to update role.`
+      });
+    }
+
+    const securePassword = password || 'Password123!';
+
+    const newUser = await User.create({
+      name: name.trim(),
+      email: cleanEmail,
+      password: securePassword,
+      role: ROLES.LIBRARY_STAFF,
+      department: department?.trim() || 'Central Library',
+      status: 'active',
+      isTemporaryPassword: !password
+    });
+
+    await recordAuditLog({
+      req,
+      action: 'LIBRARY_STAFF_ACCOUNT_CREATED',
+      entityType: 'User',
+      entityId: newUser._id,
+      details: { name: newUser.name, email: newUser.email, role: ROLES.LIBRARY_STAFF }
+    });
+
+    return sendSuccess(res, {
+      statusCode: HTTP_STATUS.CREATED,
+      message: `Library Staff account created successfully for ${newUser.name}`,
+      data: newUser.toSafeObject ? newUser.toSafeObject() : newUser
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function updateLibraryStaffStatus(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!['active', 'inactive', 'suspended'].includes(status)) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: "Status must be 'active', 'inactive', or 'suspended'"
+      });
+    }
+
+    const staff = await User.findById(id);
+    if (!staff) {
+      return sendError(res, { statusCode: HTTP_STATUS.NOT_FOUND, message: 'User not found' });
+    }
+
+    if (staff.role !== ROLES.LIBRARY_STAFF) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.FORBIDDEN,
+        message: 'Can only update status of Library Staff accounts'
+      });
+    }
+
+    staff.status = status;
+    await staff.save();
+
+    await recordAuditLog({
+      req,
+      action: 'LIBRARY_STAFF_STATUS_UPDATED',
+      entityType: 'User',
+      entityId: staff._id,
+      details: { status }
+    });
+
+    return sendSuccess(res, {
+      message: `Library staff account status updated to '${status}'`,
+      data: staff.toSafeObject ? staff.toSafeObject() : staff
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function resetLibraryStaffPassword(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 6) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: 'New password must be at least 6 characters long'
+      });
+    }
+
+    const staff = await User.findById(id);
+    if (!staff) {
+      return sendError(res, { statusCode: HTTP_STATUS.NOT_FOUND, message: 'User not found' });
+    }
+
+    if (staff.role !== ROLES.LIBRARY_STAFF) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.FORBIDDEN,
+        message: 'Can only reset password for Library Staff accounts'
+      });
+    }
+
+    staff.password = newPassword;
+    staff.isTemporaryPassword = true;
+    await staff.save();
+
+    await recordAuditLog({
+      req,
+      action: 'LIBRARY_STAFF_PASSWORD_RESET',
+      entityType: 'User',
+      entityId: staff._id,
+      details: { email: staff.email }
+    });
+
+    return sendSuccess(res, { message: 'Library staff password reset successfully' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = {
+  getLibraryDashboard,
+  getStaffDashboard,
+  getMyTransactions,
+  listLibraryStaff,
+  createOrAssignLibraryStaff,
+  updateLibraryStaffStatus,
+  resetLibraryStaffPassword,
+>>>>>>> feature/library-staff-portal
   listBooks,
   getBookById,
   createBook,

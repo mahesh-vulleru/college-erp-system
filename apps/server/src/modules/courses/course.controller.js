@@ -1,7 +1,11 @@
 const Course = require('./course.model');
 const { sendSuccess, sendError } = require('../../utils/response');
+<<<<<<< HEAD
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 const { resolveHodDepartment, isHodDepartment } = require('../../utils/hodScoping');
+=======
+const { HTTP_STATUS } = require('@college-erp/shared');
+>>>>>>> feature/library-staff-portal
 
 async function listCourses(req, res, next) {
   try {
@@ -40,6 +44,7 @@ async function getCourseById(req, res, next) {
 async function createCourse(req, res, next) {
   try {
     const { name, code, department, degreeType, durationSemesters, totalCredits } = req.body;
+<<<<<<< HEAD
 
     if (req.user?.role === ROLES.HOD && department) {
       const matches = await isHodDepartment(req.user, department);
@@ -51,6 +56,8 @@ async function createCourse(req, res, next) {
         });
       }
     }
+=======
+>>>>>>> feature/library-staff-portal
     const cleanCode = (code || '').toUpperCase().trim();
     const existing = await Course.findOne({ code: cleanCode });
     if (existing) {
@@ -94,6 +101,7 @@ async function updateCourse(req, res, next) {
       });
     }
 
+<<<<<<< HEAD
     if (req.user?.role === ROLES.HOD && course.department) {
       const matches = await isHodDepartment(req.user, course.department);
       if (!matches) {
@@ -105,6 +113,8 @@ async function updateCourse(req, res, next) {
       }
     }
 
+=======
+>>>>>>> feature/library-staff-portal
     if (code && code.toUpperCase().trim() !== course.code) {
       const cleanCode = code.toUpperCase().trim();
       const existing = await Course.findOne({ code: cleanCode, _id: { $ne: course._id } });

@@ -34,11 +34,18 @@ router.use('/health', healthRoutes);
 // Versioned API v1 Router
 const v1Router = express.Router();
 
+<<<<<<< HEAD
 v1Router.use('/health', healthRoutes);
 v1Router.use('/auth', authRoutes);
 v1Router.use('/users', usersRoutes);
 v1Router.get('/department-summaries', authenticate, authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD), getDepartmentSummaries);
 v1Router.use('/departments', departmentRoutes);
+=======
+v1Router.use('/auth', authRoutes);
+v1Router.use('/users', usersRoutes);
+v1Router.use('/departments', departmentRoutes);
+v1Router.get('/department-summaries', authenticate, getDepartmentSummaries);
+>>>>>>> feature/library-staff-portal
 v1Router.use('/courses', courseRoutes);
 v1Router.use('/subjects', subjectRoutes);
 v1Router.use('/students', studentRoutes);
@@ -71,8 +78,11 @@ v1Router.use('/institutional-events', eventRoutes);
 v1Router.use('/library', libraryRoutes);
 
 router.use('/v1', v1Router);
+<<<<<<< HEAD
 
 // Direct /api/library alias
+=======
+>>>>>>> feature/library-staff-portal
 router.use('/library', libraryRoutes);
 
 module.exports = router;

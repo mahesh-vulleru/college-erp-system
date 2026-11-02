@@ -5,7 +5,12 @@ export const ROLES = Object.freeze({
   FACULTY: 'faculty',
   STUDENT: 'student',
   ACCOUNTS: 'accounts',
+<<<<<<< HEAD
   LIBRARIAN: 'librarian'
+=======
+  LIBRARIAN: 'librarian',
+  LIBRARY_STAFF: 'library_staff'
+>>>>>>> feature/library-staff-portal
 });
 
 export const ROLE_LABELS = Object.freeze({
@@ -15,7 +20,12 @@ export const ROLE_LABELS = Object.freeze({
   [ROLES.FACULTY]: 'Faculty Member',
   [ROLES.STUDENT]: 'Student',
   [ROLES.ACCOUNTS]: 'Accounts & Finance Officer',
+<<<<<<< HEAD
   [ROLES.LIBRARIAN]: 'Chief Librarian'
+=======
+  [ROLES.LIBRARIAN]: 'Chief Librarian',
+  [ROLES.LIBRARY_STAFF]: 'Library Staff'
+>>>>>>> feature/library-staff-portal
 });
 
 export const ALL_ROLES = Object.freeze(Object.values(ROLES));
@@ -100,6 +110,17 @@ export const ROLE_PERMISSIONS = Object.freeze({
     PERMISSIONS.LIBRARY_DIGITAL,
     PERMISSIONS.LIBRARY_REPORTS,
     PERMISSIONS.LIBRARY_SETTINGS
+<<<<<<< HEAD
+=======
+  ],
+  [ROLES.LIBRARY_STAFF]: [
+    PERMISSIONS.USER_READ,
+    PERMISSIONS.LIBRARY_MANAGE_BOOKS,
+    PERMISSIONS.LIBRARY_MANAGE_MEMBERS,
+    PERMISSIONS.LIBRARY_CIRCULATION,
+    PERMISSIONS.LIBRARY_RESERVATIONS,
+    PERMISSIONS.LIBRARY_DIGITAL
+>>>>>>> feature/library-staff-portal
   ]
 });
 
@@ -113,6 +134,7 @@ export const HTTP_STATUS = Object.freeze({
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   CONFLICT: 409,
+<<<<<<< HEAD
   UNPROCESSABLE: 422,
   INTERNAL_ERROR: 500
 });
@@ -121,15 +143,49 @@ export const USER_STATUS = Object.freeze({
   ACTIVE: 'active',
   INACTIVE: 'inactive',
   SUSPENDED: 'suspended'
+=======
+  UNPROCESSABLE_ENTITY: 422,
+  TOO_MANY_REQUESTS: 429,
+  INTERNAL_SERVER_ERROR: 500
+>>>>>>> feature/library-staff-portal
 });
 
 export const DEPARTMENTS = Object.freeze([
   'Computer Science & Engineering',
+<<<<<<< HEAD
   'Electronics & Communication',
   'Mechanical Engineering',
   'Civil Engineering',
   'Electrical & Electronics',
+=======
+  'Electronics & Communication Engineering',
+  'Electrical & Electronics Engineering',
+  'Mechanical Engineering',
+  'Civil Engineering',
+>>>>>>> feature/library-staff-portal
   'Information Technology'
 ]);
 
 export const ACADEMIC_SEMESTERS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8]);
+<<<<<<< HEAD
+=======
+
+export const USER_STATUS = Object.freeze({
+  ACTIVE: 'active',
+  DISABLED: 'disabled',
+  INACTIVE: 'inactive',
+  SUSPENDED: 'suspended'
+});
+
+export default {
+  ROLES,
+  ROLE_LABELS,
+  ALL_ROLES,
+  PERMISSIONS,
+  ROLE_PERMISSIONS,
+  HTTP_STATUS,
+  DEPARTMENTS,
+  ACADEMIC_SEMESTERS,
+  USER_STATUS
+};
+>>>>>>> feature/library-staff-portal
