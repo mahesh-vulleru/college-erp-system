@@ -28,6 +28,11 @@ import {
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import CampusBuildingGraphic from '../../components/common/CampusBuildingGraphic';
+import DashboardHeaderBanner from '../../components/dashboard/DashboardHeaderBanner';
+import DashboardKPICard from '../../components/dashboard/DashboardKPICard';
+import DashboardAnalyticsRow from '../../components/dashboard/DashboardAnalyticsRow';
+import DashboardWidgetsRow from '../../components/dashboard/DashboardWidgetsRow';
+import DashboardModulesNav from '../../components/dashboard/DashboardModulesNav';
 import SimpleDonutChart from '../../components/common/SimpleDonutChart';
 import StatWidget from '../../components/common/StatWidget';
 import Badge from '../../components/common/Badge';
@@ -517,69 +522,78 @@ export const StudentDashboard = () => {
 
     return (
       <div className="space-y-6">
-        {/* Clean Blue Hero Banner */}
-        <div className="bg-gradient-to-r from-blue-600 via-sky-600 to-blue-700 rounded-2xl p-6 sm:p-7 text-white shadow-card relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="relative z-10 max-w-xl">
-            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-black/20 text-blue-100 text-xs font-medium mb-3 backdrop-blur-sm border border-white/10">
-              <span>{myProfile?.course?.name ? `${myProfile.course.name} (Semester ${myProfile.currentSemester || 5})` : 'B.Tech - Computer Science (Semester 5)'}</span>
-              <span>&darr;</span>
-            </div>
-            <p className="text-xs sm:text-sm font-medium text-blue-100 tracking-wide">
-              Welcome, {user?.name || 'Ravi Teja'}
-            </p>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
-              Student Dashboard
-            </h1>
-            <p className="mt-1.5 text-xs sm:text-sm text-blue-100/90 font-normal">
-              Your academic progress and campus information
-            </p>
-          </div>
-          <div className="flex items-center gap-3 relative z-10">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={loadData}
-              icon={RefreshCw}
-              isLoading={isLoading}
-              className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
-            >
-              Refresh
-            </Button>
-            <CampusBuildingGraphic className="w-48 h-24 sm:w-56 sm:h-28 opacity-90 text-white pointer-events-none drop-shadow-md hidden md:block" />
-          </div>
+        {/* 1. Header Banner */}
+        <DashboardHeaderBanner
+          title="Student Academic Portal"
+          subtitle="Semester course registration, attendance progress, internal test marks, digital hall tickets, and fee dues."
+          academicYear="2026 – 2027"
+        />
+
+        {/* 2. 5-KPI Cards Row */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <DashboardKPICard
+            title="Attendance"
+            value={`${attPercentage || 88}%`}
+            icon={CalendarCheck}
+            trend="+1.5%"
+            trendDirection="up"
+            color="emerald"
+          />
+          <DashboardKPICard
+            title="Current CGPA"
+            value={myProfile?.cgpa ? String(myProfile.cgpa) : '8.6'}
+            icon={Award}
+            trend="Dean's List"
+            trendDirection="up"
+            color="blue"
+          />
+          <DashboardKPICard
+            title="Enrolled Courses"
+            value={mySubjects.length || 6}
+            icon={BookOpen}
+            color="amber"
+          />
+          <DashboardKPICard
+            title="Credits Earned"
+            value={`${myProfile?.creditsEarned || 92} / 160`}
+            icon={GraduationCap}
+            color="rose"
+          />
+          <DashboardKPICard
+            title="Fee Dues"
+            value="₹ 0"
+            icon={CreditCard}
+            trend="Cleared"
+            trendDirection="up"
+            color="purple"
+          />
         </div>
 
-        {/* Real KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatWidget
-            title="Enrolled Subjects"
-            value={mySubjects.length || 6}
-            subtitle="Enrolled Subjects"
-            icon={BookOpen}
-            color="blue"
-          />
-          <StatWidget
-            title="Attendance"
-            value={`${attPercentage}%`}
-            subtitle="Attendance"
-            icon={CalendarCheck}
-            color="blue"
-          />
-          <StatWidget
-            title="Current CGPA"
-            value={myProfile?.cgpa || '3.6'}
-            subtitle="Current CGPA"
-            icon={Award}
-            color="blue"
-          />
-          <StatWidget
-            title="Fee Due"
-            value="₹ 0"
-            subtitle="Fee Due"
-            icon={DollarSign}
-            color="blue"
-          />
-        </div>
+        {/* 3. Analytics Row */}
+        <DashboardAnalyticsRow
+          chartTitle="Semester Attendance Trend"
+          donutTitle="Subject Attendance Breakdown"
+          totalCount={`${attPercentage || 88}%`}
+          totalCountLabel="Attendance"
+          quickActions={[
+            { label: 'Hall Ticket', icon: Award, color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+            { label: 'Pay Fees', icon: CreditCard, color: 'bg-sky-50 text-sky-800 border-sky-200' },
+            { label: 'Timetable', icon: Clock, color: 'bg-amber-50 text-amber-800 border-amber-200' },
+            { label: 'Grade Card', icon: GraduationCap, color: 'bg-purple-50 text-purple-800 border-purple-200' }
+          ]}
+          onActionClick={(label) => {
+            if (label === 'Hall Ticket') handleOpenHallTicket();
+            else if (label === 'Pay Fees') handleOpenPaymentModal();
+            else if (label === 'Timetable') setStudentActiveTab('timetable');
+            else if (label === 'Grade Card') setStudentActiveTab('grades');
+          }}
+        />
+
+        {/* 4. Lower Widgets Row */}
+        <DashboardWidgetsRow />
+
+        {/* 5. Modules Grid */}
+        <DashboardModulesNav />
 
         {/* Row 2: Today's Classes & Attendance Overview */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

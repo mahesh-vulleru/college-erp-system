@@ -23,6 +23,11 @@ import {
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import CampusBuildingGraphic from '../../components/common/CampusBuildingGraphic';
+import DashboardHeaderBanner from '../../components/dashboard/DashboardHeaderBanner';
+import DashboardKPICard from '../../components/dashboard/DashboardKPICard';
+import DashboardAnalyticsRow from '../../components/dashboard/DashboardAnalyticsRow';
+import DashboardWidgetsRow from '../../components/dashboard/DashboardWidgetsRow';
+import DashboardModulesNav from '../../components/dashboard/DashboardModulesNav';
 import SimpleBarChart from '../../components/common/SimpleBarChart';
 import SimpleDonutChart from '../../components/common/SimpleDonutChart';
 import StatWidget from '../../components/common/StatWidget';
@@ -474,62 +479,85 @@ export const AccountsDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Modern Teal Hero Banner */}
-      <div className="bg-gradient-to-r from-teal-700 via-teal-800 to-emerald-900 rounded-2xl p-6 sm:p-7 text-white shadow-card relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="relative z-10 max-w-xl">
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-black/20 text-teal-200 text-xs font-medium mb-3 backdrop-blur-sm border border-white/10">
-            <span>Academic Year 2025-26</span>
-            <span>&darr;</span>
-          </div>
-          <p className="text-xs sm:text-sm font-medium text-teal-100 tracking-wide">
-            Welcome, {user?.name || 'Lakshmi Narayana'}
-          </p>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
-            Accounts & Finance Dashboard
-          </h1>
-          <p className="mt-1.5 text-xs sm:text-sm text-teal-100/90 font-normal">
-            Fee collection, financial records and payment management
-          </p>
-        </div>
-        <div className="flex items-center gap-4 relative z-10">
-          <CampusBuildingGraphic className="w-52 h-28 sm:w-64 sm:h-32 opacity-95 text-white pointer-events-none drop-shadow-md" />
-        </div>
-      </div>
+      {/* 1. Header Banner */}
+      <DashboardHeaderBanner
+        title="Accounts & Financial Governance"
+        subtitle="Tuition fee structures, digital payment collections, student billing ledgers, and financial reconciliation."
+        academicYear="2026 – 2027"
+      />
 
-      {/* Real Statistics from MongoDB */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatWidget
-          title="Total Collection"
+      {/* 2. 5-KPI Cards Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <DashboardKPICard
+          title="Total Collections"
           value={totalCollectedINR > 0 ? `₹ ${totalCollectedINR.toLocaleString('en-IN')}` : '₹ 12,45,000'}
-          subtitle="+8.2%"
-          trend={{ value: '+8.2%', positive: true }}
           icon={DollarSign}
-          color="teal"
-        />
-        <StatWidget
-          title="Outstanding Dues"
-          value={totalOutstandingINR > 0 ? `₹ ${totalOutstandingINR.toLocaleString('en-IN')}` : '₹ 1,20,000'}
-          subtitle="-12.1%"
-          trend={{ value: '-12.1%', positive: true }}
-          icon={CreditCard}
-          color="rose"
-        />
-        <StatWidget
-          title="Transactions"
-          value={payments.length || 320}
-          subtitle="This Month"
-          icon={CheckCircle}
-          color="teal"
-        />
-        <StatWidget
-          title="Collection Rate"
-          value="98%"
-          subtitle="+5.3%"
-          trend={{ value: '+5.3%', positive: true }}
-          icon={Award}
+          trend="+8.2%"
+          trendDirection="up"
           color="emerald"
         />
+        <DashboardKPICard
+          title="Outstanding Dues"
+          value={totalOutstandingINR > 0 ? `₹ ${totalOutstandingINR.toLocaleString('en-IN')}` : '₹ 1,20,000'}
+          icon={CreditCard}
+          trend="-12.1%"
+          trendDirection="up"
+          color="blue"
+        />
+        <DashboardKPICard
+          title="Transactions"
+          value={payments.length || 320}
+          icon={CheckCircle}
+          color="amber"
+        />
+        <DashboardKPICard
+          title="Invoices Issued"
+          value={invoices.length || 450}
+          icon={FileText}
+          color="rose"
+        />
+        <DashboardKPICard
+          title="Collection Rate"
+          value="98%"
+          icon={Award}
+          trend="+5.3%"
+          trendDirection="up"
+          color="purple"
+        />
       </div>
+
+      {/* 3. Analytics Row */}
+      <DashboardAnalyticsRow
+        chartTitle="Monthly Fee Collections (₹ in Lakhs)"
+        donutTitle="Fee Head Distribution"
+        totalCount="₹ 12.45L"
+        totalCountLabel="Collected"
+        deptDistribution={[
+          { name: 'Tuition Fee', pct: '62%', color: '#16a34a' },
+          { name: 'Exam Fee', pct: '15%', color: '#8b5cf6' },
+          { name: 'Hostel Fee', pct: '12%', color: '#06b6d4' },
+          { name: 'Transport', pct: '6%', color: '#f59e0b' },
+          { name: 'Library/Misc', pct: '5%', color: '#3b82f6' }
+        ]}
+        quickActions={[
+          { label: 'Create Fee Plan', icon: DollarSign, color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+          { label: 'Issue Invoice', icon: FileText, color: 'bg-sky-50 text-sky-800 border-sky-200' },
+          { label: 'Record Payment', icon: CreditCard, color: 'bg-amber-50 text-amber-800 border-amber-200' },
+          { label: 'Export Ledger', icon: Award, color: 'bg-purple-50 text-purple-800 border-purple-200' }
+        ]}
+        onActionClick={(label) => {
+          if (label === 'Create Fee Plan') setIsCreateStructureOpen(true);
+          else if (label === 'Issue Invoice') setIsInvoiceModalOpen(true);
+          else if (label === 'Record Payment') setIsCollectModalOpen(true);
+          else if (label === 'Export Ledger') handleExportFinancialReport();
+        }}
+      />
+
+      {/* 4. Lower Widgets Row */}
+      <DashboardWidgetsRow />
+
+      {/* 5. Modules Grid */}
+      <DashboardModulesNav />
 
       {/* Row 2: Monthly Fee Collection & Payment Status */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

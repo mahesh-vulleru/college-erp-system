@@ -46,6 +46,12 @@ import AccreditationCompliancePage from './pages/principal/AccreditationComplian
 import InstitutionalGoalsPage from './pages/principal/InstitutionalGoalsPage';
 import DeadlineEventTrackerPage from './pages/principal/DeadlineEventTrackerPage';
 
+// Campus Life & Operations Modules
+import TransportPage from './pages/modules/TransportPage';
+import HostelPage from './pages/modules/HostelPage';
+import PlacementsPage from './pages/modules/PlacementsPage';
+import SettingsPage from './pages/modules/SettingsPage';
+
 import { ROLES } from '@college-erp/shared';
 
 // Smart redirector for /dashboard based on authenticated role
@@ -375,6 +381,12 @@ export const App = () => {
                   </ProtectedRoute>
                 }
               />
+
+              {/* Campus Operations & Settings */}
+              <Route path="transport" element={<TransportPage />} />
+              <Route path="hostel" element={<HostelPage />} />
+              <Route path="placements" element={<PlacementsPage />} />
+              <Route path="settings" element={<SettingsPage />} />
 
               {/* Catch-all 404 inside layout */}
               <Route path="*" element={<NotFoundPage />} />

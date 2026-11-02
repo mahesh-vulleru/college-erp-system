@@ -24,6 +24,11 @@ import {
   DollarSign
 } from 'lucide-react';
 import Card from '../../components/common/Card';
+import DashboardHeaderBanner from '../../components/dashboard/DashboardHeaderBanner';
+import DashboardKPICard from '../../components/dashboard/DashboardKPICard';
+import DashboardAnalyticsRow from '../../components/dashboard/DashboardAnalyticsRow';
+import DashboardWidgetsRow from '../../components/dashboard/DashboardWidgetsRow';
+import DashboardModulesNav from '../../components/dashboard/DashboardModulesNav';
 import StatWidget from '../../components/common/StatWidget';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -693,71 +698,136 @@ export const LibrarianDashboard = () => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* 1. Header Banner matching Burgundy & Rose theme */}
-      <div className="bg-gradient-to-r from-[#230914] via-[#380e21] to-[#1d0610] text-white rounded-2xl p-6 sm:p-8 shadow-xl border border-rose-900/40 relative overflow-hidden">
-        <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-radial from-rose-500/10 to-transparent pointer-events-none" />
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
-          <div>
-            <div className="flex items-center space-x-2 text-rose-300 text-xs font-semibold tracking-wider uppercase mb-1">
-              <Sparkles className="w-3.5 h-3.5 text-rose-400" />
-              <span>Central Library Services • Apex Engineering</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Central Library Management System
-            </h1>
-            <p className="text-rose-200/80 text-xs sm:text-sm mt-1 max-w-2xl font-light">
-              End-to-end physical inventory, accession barcode tracking, circulation desk, patron
-              services, digital resources, and fine audit ledgers.
-            </p>
-          </div>
+      {/* 1. Header Banner */}
+      <DashboardHeaderBanner
+        title="Central Library Management System"
+        subtitle="End-to-end physical inventory, accession barcode tracking, circulation desk, patron services, digital resources, and fine audit ledgers."
+        academicYear="2026 – 2027"
+      />
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                fetchDashboard();
-                if (currentTab === 'books') fetchBooks();
-                if (currentTab === 'circulation') fetchIssues();
-                if (currentTab === 'members') fetchMembers();
-                if (currentTab === 'fines') fetchFines();
-              }}
-              className="bg-white/10 hover:bg-white/20 text-white border-white/20 text-xs"
-            >
-              <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-              Refresh
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setIsIssueModalOpen(true)}
-              className="bg-rose-600 hover:bg-rose-700 text-white border-none shadow-md shadow-rose-900/40 text-xs"
-            >
-              <Clock className="w-3.5 h-3.5 mr-1.5" />
-              Issue Book
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setIsReturnModalOpen(true)}
-              className="bg-white/20 hover:bg-white/30 text-white border-none text-xs"
-            >
-              <RotateCw className="w-3.5 h-3.5 mr-1.5" />
-              Return Book
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setIsAddBookModalOpen(true)}
-              className="bg-rose-700 hover:bg-rose-800 text-white border-none text-xs"
-            >
-              <Plus className="w-3.5 h-3.5 mr-1.5" />
-              Add Book
-            </Button>
-          </div>
+      {/* 2. 5-KPI Cards Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <DashboardKPICard
+          title="Total Titles"
+          value={dashboardData?.summary?.totalTitles ?? 12400}
+          icon={BookOpen}
+          trend="+45 this term"
+          trendDirection="up"
+          color="emerald"
+        />
+        <DashboardKPICard
+          title="Physical Copies"
+          value={dashboardData?.summary?.totalCopies ?? 38500}
+          icon={Layers}
+          trend="Accessioned"
+          trendDirection="up"
+          color="blue"
+        />
+        <DashboardKPICard
+          title="Available on Shelf"
+          value={dashboardData?.summary?.availableCopies ?? 34200}
+          icon={CheckCircle}
+          color="amber"
+        />
+        <DashboardKPICard
+          title="Active Issues"
+          value={dashboardData?.summary?.issuedCopies ?? 4300}
+          icon={Clock}
+          color="rose"
+        />
+        <DashboardKPICard
+          title="Active Members"
+          value={dashboardData?.summary?.totalMembers ?? 6482}
+          icon={Users}
+          trend="+3.1%"
+          trendDirection="up"
+          color="purple"
+        />
+      </div>
+
+      {/* 3. Analytics Row */}
+      <DashboardAnalyticsRow
+        chartTitle="Weekly Book Circulation Volume"
+        donutTitle="Circulation by Category"
+        totalCount={String(dashboardData?.summary?.totalCopies ?? '38,500')}
+        totalCountLabel="Books"
+        deptDistribution={[
+          { name: 'Computer Science', pct: '35%', color: '#16a34a' },
+          { name: 'Electronics', pct: '22%', color: '#8b5cf6' },
+          { name: 'Mechanical', pct: '15%', color: '#06b6d4' },
+          { name: 'Civil', pct: '12%', color: '#f59e0b' },
+          { name: 'General/Lit', pct: '16%', color: '#3b82f6' }
+        ]}
+        quickActions={[
+          { label: 'Issue Book', icon: Clock, color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+          { label: 'Return Book', icon: RotateCw, color: 'bg-sky-50 text-sky-800 border-sky-200' },
+          { label: 'Add Book', icon: Plus, color: 'bg-amber-50 text-amber-800 border-amber-200' },
+          { label: 'Library Fines', icon: DollarSign, color: 'bg-purple-50 text-purple-800 border-purple-200' }
+        ]}
+        onActionClick={(label) => {
+          if (label === 'Issue Book') setIsIssueModalOpen(true);
+          else if (label === 'Return Book') setIsReturnModalOpen(true);
+          else if (label === 'Add Book') setIsAddBookModalOpen(true);
+          else if (label === 'Library Fines') setActiveTab('fines');
+        }}
+      />
+
+      {/* 4. Lower Widgets Row */}
+      <DashboardWidgetsRow />
+
+      {/* 5. Modules Grid */}
+      <DashboardModulesNav />
+
+      {/* Action Buttons Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              fetchDashboard();
+              if (currentTab === 'books') fetchBooks();
+              if (currentTab === 'circulation') fetchIssues();
+              if (currentTab === 'members') fetchMembers();
+              if (currentTab === 'fines') fetchFines();
+            }}
+            className="text-xs"
+          >
+            <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+            Refresh
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setIsIssueModalOpen(true)}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+          >
+            <Clock className="w-3.5 h-3.5 mr-1.5" />
+            Issue Book
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setIsReturnModalOpen(true)}
+            className="text-xs"
+          >
+            <RotateCw className="w-3.5 h-3.5 mr-1.5" />
+            Return Book
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setIsAddBookModalOpen(true)}
+            className="bg-teal-600 hover:bg-teal-700 text-white text-xs"
+          >
+            <Plus className="w-3.5 h-3.5 mr-1.5" />
+            Add Book
+          </Button>
         </div>
+      </div>
 
-        {/* Tab Navigation Pill Bar */}
+      <div className="bg-white rounded-2xl p-2 border border-slate-200 shadow-xs">
+{/* Tab Navigation Pill Bar */}
         <div className="flex items-center space-x-1.5 overflow-x-auto mt-6 pt-4 border-t border-rose-900/40 no-scrollbar">
           {tabs.map((tab) => {
             const Icon = tab.icon;

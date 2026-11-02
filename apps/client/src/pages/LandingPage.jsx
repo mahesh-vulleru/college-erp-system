@@ -3,658 +3,533 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   GraduationCap,
   ArrowRight,
+  Play,
   ShieldCheck,
-  BookOpen,
-  CalendarCheck,
-  Award,
-  CreditCard,
-  Building2,
-  Users,
   CheckCircle2,
+  Users,
+  Building2,
+  GitBranch,
+  UserCheck,
+  Coins,
+  BookOpen,
+  BookCheck,
+  Moon,
+  Sun,
+  Layers,
+  BarChart3,
+  Monitor,
   Phone,
   Mail,
   MapPin,
-  Clock,
-  Sparkles,
-  ChevronRight,
-  Layers
+  X
 } from 'lucide-react';
-import Button from '../components/common/Button';
-import Badge from '../components/common/Badge';
 import { useAuth } from '../context/AuthContext';
+import { ROLES } from '@college-erp/shared';
+import CampusBuildingGraphic from '../components/common/CampusBuildingGraphic';
 
 export const LandingPage = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
-  const [inquirySubmitted, setInquirySubmitted] = useState(false);
-  const [inquiryForm, setInquiryForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    subject: 'Admissions Inquiry',
-    message: ''
-  });
-
-  const handleInquirySubmit = (e) => {
-    e.preventDefault();
-    if (!inquiryForm.name || !inquiryForm.email) return;
-    setInquirySubmitted(true);
-    setTimeout(() => {
-      setInquiryForm({ name: '', email: '', phone: '', subject: 'Admissions Inquiry', message: '' });
-      setInquirySubmitted(false);
-    }, 5000);
-  };
-
-  const getRoleDashboard = (role) => {
+  const getPortalPath = (role) => {
     const normalized = (role || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
-    if (normalized === 'admin' || normalized === 'super_admin' || normalized === 'superadmin' || normalized === 'super_administrator') {
-      return '/admin';
-    }
-    switch (role) {
-      case 'super_admin': return '/admin';
-      case 'principal': return '/principal';
-      case 'hod': return '/hod';
-      case 'faculty': return '/faculty';
-      case 'student': return '/student';
-      case 'accounts': return '/accounts';
-      case 'librarian': return '/library';
+    switch (normalized) {
+      case 'super_admin':
+      case 'superadmin':
+      case 'admin':
+        return '/admin';
+      case 'principal':
+        return '/principal';
+      case 'hod':
+        return '/hod';
+      case 'faculty':
+        return '/faculty';
+      case 'student':
+        return '/student';
+      case 'accounts':
+      case 'accountant':
+      case 'finance':
+        return '/accounts';
+      case 'librarian':
+        return '/library';
       case 'library_staff':
       case 'librarystaff':
         return '/library-staff';
-      default: return '/login';
+      default:
+        return '/principal';
     }
   };
 
-  const departments = [
+  const portalCards = [
     {
-      code: 'CSE',
-      name: 'Computer Science & Engineering',
-      intake: 120,
-      description: 'Specializations in Artificial Intelligence, Distributed Systems, Cloud Computing, and Cyber Security.',
-      icon: BookOpen
+      id: ROLES.SUPER_ADMIN,
+      title: 'Super Admin',
+      desc: 'System setup, security audit & user accounts',
+      icon: ShieldCheck,
+      bgColor: 'bg-emerald-50/70',
+      iconBg: 'bg-emerald-100 text-emerald-700',
+      borderColor: 'border-emerald-200/60',
+      roleParam: 'super_admin'
     },
     {
-      code: 'ECE',
-      name: 'Electronics & Communication Engineering',
-      intake: 90,
-      description: 'Embedded Systems, VLSI Design, Digital Signal Processing, and IoT Hardware Architectures.',
-      icon: Layers
+      id: ROLES.PRINCIPAL,
+      title: 'Principal / Management',
+      desc: 'Institutional analytics & executive governance',
+      icon: Building2,
+      bgColor: 'bg-sky-50/70',
+      iconBg: 'bg-sky-100 text-sky-700',
+      borderColor: 'border-sky-200/60',
+      roleParam: 'principal'
     },
     {
-      code: 'EEE',
-      name: 'Electrical & Electronics Engineering',
-      intake: 60,
-      description: 'Renewable Power Systems, Smart Grids, Electric Vehicle Drives, and Control Automations.',
-      icon: Sparkles
+      id: ROLES.HOD,
+      title: 'HOD',
+      desc: 'Curriculum, timetables & faculty loads',
+      icon: GitBranch,
+      bgColor: 'bg-amber-50/70',
+      iconBg: 'bg-amber-100 text-amber-700',
+      borderColor: 'border-amber-200/60',
+      roleParam: 'hod'
     },
     {
-      code: 'ME',
-      name: 'Mechanical Engineering',
-      intake: 60,
-      description: 'Thermodynamics, CAD/CAM Modeling, Robotics, Computational Fluid Dynamics, and Additive Manufacturing.',
-      icon: Building2
+      id: ROLES.FACULTY,
+      title: 'Faculty',
+      desc: 'Class attendance & internal exam marks',
+      icon: GraduationCap,
+      bgColor: 'bg-purple-50/70',
+      iconBg: 'bg-purple-100 text-purple-700',
+      borderColor: 'border-purple-200/60',
+      roleParam: 'faculty'
     },
     {
-      code: 'CE',
-      name: 'Civil Engineering',
-      intake: 60,
-      description: 'Structural Analysis, Geotechnical Engineering, Smart Urban Infrastructure, and Environmental Systems.',
-      icon: Building2
+      id: ROLES.STUDENT,
+      title: 'Student',
+      desc: 'Attendance %, grade cards & fee receipts',
+      icon: Users,
+      bgColor: 'bg-emerald-50/70',
+      iconBg: 'bg-emerald-100 text-emerald-700',
+      borderColor: 'border-emerald-200/60',
+      roleParam: 'student'
     },
     {
-      code: 'IT',
-      name: 'Information Technology',
-      intake: 60,
-      description: 'Enterprise Web Architectures, Database Management, Mobile Applications, and Data Engineering.',
-      icon: BookOpen
-    }
-  ];
-
-  const erpCapabilities = [
-    {
-      title: 'Academic Lifecycle Governance',
-      desc: 'Centralized semester curriculum management, credit calculations, and course syllabus distribution across all 8 terms.',
-      icon: BookOpen
+      id: ROLES.ACCOUNTS,
+      title: 'Accounts',
+      desc: 'Fee structures, receipts & collection ledgers',
+      icon: Coins,
+      bgColor: 'bg-rose-50/70',
+      iconBg: 'bg-rose-100 text-rose-700',
+      borderColor: 'border-rose-200/60',
+      roleParam: 'accounts'
     },
     {
-      title: 'Real-Time Period Attendance',
-      desc: 'Digital class registers recorded per session, automated 75% regulatory compliance tracking, and condonation monitoring.',
-      icon: CalendarCheck
+      id: ROLES.LIBRARIAN,
+      title: 'Librarian',
+      desc: 'Catalog, book issues, returns & fines',
+      icon: BookOpen,
+      bgColor: 'bg-sky-50/70',
+      iconBg: 'bg-sky-100 text-sky-700',
+      borderColor: 'border-sky-200/60',
+      roleParam: 'librarian'
     },
     {
-      title: 'Continuous Evaluation & Grading',
-      desc: 'Internal mid-term test marks recording, practical lab evaluation, and automated semester grade card calculations.',
-      icon: Award
-    },
-    {
-      title: 'Transparent Institutional Accounts',
-      desc: 'Itemized semester tuition fee structures, instantaneous digital receipt generation, and real-time dues reconciliation.',
-      icon: CreditCard
-    },
-    {
-      title: 'Role-Based Access Security',
-      desc: 'Strict server-enforced boundaries separating Super Admin, Principal, Department Heads, Faculty, Students, and Accounts.',
-      icon: ShieldCheck
-    },
-    {
-      title: 'Campus Circulars & Notice Broadcasts',
-      desc: 'Official institutional announcements, emergency notifications, and exam schedules targeted directly by audience role.',
-      icon: Users
+      id: ROLES.LIBRARY_STAFF,
+      title: 'Library Staff',
+      desc: 'Book circulation, issue, return & reservation',
+      icon: BookCheck,
+      bgColor: 'bg-indigo-50/70',
+      iconBg: 'bg-indigo-100 text-indigo-700',
+      borderColor: 'border-indigo-200/60',
+      roleParam: 'library_staff'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-warm-50 text-navy-950 font-sans selection:bg-teal-100 selection:text-teal-900">
-      {/* 1. Institutional Top Navigation */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-navy-100 shadow-subtle">
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-emerald-100 selection:text-emerald-900">
+      {/* 1. Top Navbar matching Image 1 */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-2xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          {/* Logo & Name */}
-          <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-11 h-11 rounded-2xl bg-navy-900 text-teal-400 flex items-center justify-center shadow-subtle group-hover:bg-navy-950 transition-colors">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
               <GraduationCap className="w-6 h-6" />
             </div>
             <div>
-              <span className="font-extrabold text-base sm:text-lg tracking-tight text-navy-950 block leading-tight">
-                Apex Engineering College
+              <span className="font-extrabold text-lg tracking-tight text-slate-900 block leading-tight">
+                College ERP
               </span>
-              <span className="text-[11px] text-teal-700 font-semibold uppercase tracking-wider block">
-                Autonomous Technical Institution
+              <span className="text-[11px] text-slate-500 font-medium block">
+                Integrated Campus Management
               </span>
             </div>
           </Link>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center space-x-8 text-xs font-semibold uppercase tracking-wider text-navy-700">
-            <a href="#about" className="hover:text-teal-700 transition-colors">About</a>
-            <a href="#features" className="hover:text-teal-700 transition-colors">ERP Features</a>
-            <a href="#academics" className="hover:text-teal-700 transition-colors">Academic Programs</a>
-            <a href="#contact" className="hover:text-teal-700 transition-colors">Contact</a>
+          {/* Center Navigation Links */}
+          <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold text-slate-700">
+            <a href="#home" className="text-emerald-600 font-bold border-b-2 border-emerald-600 pb-1">
+              Home
+            </a>
+            <a href="#features" className="hover:text-emerald-600 transition-colors flex items-center gap-1">
+              Features <span className="text-[10px] text-slate-400">▾</span>
+            </a>
+            <a href="#modules" className="hover:text-emerald-600 transition-colors flex items-center gap-1">
+              Modules <span className="text-[10px] text-slate-400">▾</span>
+            </a>
+            <a href="#about" className="hover:text-emerald-600 transition-colors">
+              About
+            </a>
+            <a href="#contact" className="hover:text-emerald-600 transition-colors">
+              Contact
+            </a>
           </nav>
 
-          {/* Prominent Action Button */}
-          <div className="flex items-center space-x-3">
+          {/* Right Action Buttons */}
+          <div className="flex items-center space-x-4">
+            <button
+              type="button"
+              className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              title="Toggle Appearance"
+            >
+              <Moon className="w-4 h-4" />
+            </button>
+
             {isAuthenticated ? (
-              <Button
-                variant="teal"
-                size="sm"
-                onClick={() => navigate(getRoleDashboard(user?.role))}
-                icon={ArrowRight}
-                iconPosition="right"
+              <button
+                type="button"
+                onClick={() => navigate(getPortalPath(user?.role))}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs transition-all hover:scale-102"
               >
-                Go to Portal ({user?.role?.replace(/_/g, ' ')})
-              </Button>
+                Go to Portal ({user?.role?.replace(/_/g, ' ')}) <ArrowRight className="w-4 h-4" />
+              </button>
             ) : (
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => navigate('/login?role=super_admin')}
-                  icon={ShieldCheck}
-                >
-                  Admin Portal
-                </Button>
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={() => navigate('/login')}
-                  icon={ArrowRight}
-                  className="shadow-subtle"
-                >
-                  Portal Login
-                </Button>
-              </div>
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#064e3b] hover:bg-[#075e47] text-white font-bold text-xs shadow-xs transition-all hover:scale-102"
+              >
+                Login to ERP <ArrowRight className="w-4 h-4" />
+              </Link>
             )}
           </div>
         </div>
       </header>
 
-      {/* 2. Campus Hero Section */}
-      <section className="relative bg-gradient-to-br from-navy-950 via-navy-900 to-teal-950 text-white overflow-hidden py-20 lg:py-28">
-        {/* Subtle decorative architectural blur accents */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-10 w-80 h-80 bg-navy-700/20 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-semibold uppercase tracking-wider mb-5 border border-teal-500/30">
-              <Sparkles className="w-3.5 h-3.5 text-teal-400" />
-              <span>Accredited Engineering Excellence &bull; Est. 1998</span>
-            </div>
-
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
-              Shaping Tomorrow's Engineers with Innovation & Academic Rigor
-            </h1>
-
-            <p className="mt-5 text-sm sm:text-base lg:text-lg text-navy-200 font-light leading-relaxed">
-              Apex Engineering College is an autonomous undergraduate institution dedicated to world-class engineering education, outcome-based curricula, and transparent digital academic management.
-            </p>
-
-            <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-              <Button
-                variant="teal"
-                size="lg"
-                onClick={() => navigate('/login')}
-                icon={ArrowRight}
-                iconPosition="right"
-                className="shadow-elevation text-sm font-bold"
-              >
-                Access Institutional ERP Portal
-              </Button>
-
-              <a
-                href="#academics"
-                className="inline-flex items-center justify-center px-5 py-3 rounded-lg text-sm font-semibold text-white bg-white/10 hover:bg-white/15 border border-white/20 transition-all text-center"
-              >
-                Explore Academic Programs
-              </a>
-            </div>
-          </div>
-
-          {/* Quick Institutional Highlights Strip */}
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 pt-10 border-t border-navy-800">
-            <div>
-              <span className="text-2xl sm:text-3xl font-extrabold text-teal-400 block">6</span>
-              <span className="text-xs text-navy-300 font-medium block mt-1">Accredited B.Tech Disciplines</span>
-            </div>
-            <div>
-              <span className="text-2xl sm:text-3xl font-extrabold text-teal-400 block">&lt;1,000</span>
-              <span className="text-xs text-navy-300 font-medium block mt-1">Focused Campus Cohort</span>
-            </div>
-            <div>
-              <span className="text-2xl sm:text-3xl font-extrabold text-teal-400 block">1 : 13</span>
-              <span className="text-xs text-navy-300 font-medium block mt-1">Faculty-Student Mentorship</span>
-            </div>
-            <div>
-              <span className="text-2xl sm:text-3xl font-extrabold text-teal-400 block">95%+</span>
-              <span className="text-xs text-navy-300 font-medium block mt-1">Graduation & Placement Track</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. About Section */}
-      <section id="about" className="py-20 bg-white border-b border-navy-100">
+      {/* 2. Hero Section matching Image 1 */}
+      <section id="home" className="relative overflow-hidden pt-8 pb-16 lg:py-20 bg-gradient-to-b from-[#f8faf9] to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <Badge variant="teal" size="sm" className="mb-3">About Apex Engineering College</Badge>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy-950 tracking-tight">
-              A Legacy of Technical Distinction
-            </h2>
-            <p className="mt-3 text-xs sm:text-sm text-navy-600 font-light leading-relaxed">
-              Founded on the belief that engineering education must blend fundamental sciences with hands-on laboratory rigor, Apex Engineering College provides an immersive learning ecosystem.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-6 rounded-2xl bg-warm-50 border border-navy-100 shadow-subtle flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-4 border border-teal-200">
-                  <BookOpen className="w-6 h-6" />
-                </div>
-                <h3 className="text-base font-bold text-navy-950 mb-2">Outcome-Based Curriculum</h3>
-                <p className="text-xs sm:text-sm text-navy-600 font-light leading-relaxed">
-                  Regularly updated course syllabi aligned with industrial demands, autonomous examination flexibility, and project-based laboratory components.
-                </p>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            {/* Left Content */}
+            <div className="lg:col-span-6 space-y-6">
+              {/* Badge Pill */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-semibold">
+                <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>All-in-One College Management Platform</span>
               </div>
-              <div className="mt-4 pt-4 border-t border-navy-100 text-xs font-semibold text-teal-800">
-                Continuous Evaluation Framework &rarr;
+
+              {/* Main Title */}
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
+                College ERP <span className="text-[#064e3b]">System</span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
+                A unified, role-based platform to manage <strong className="font-semibold text-slate-800">academics</strong>, <strong className="font-semibold text-slate-800">administration</strong>, <strong className="font-semibold text-slate-800">students</strong>, <strong className="font-semibold text-slate-800">faculty</strong>, <strong className="font-semibold text-slate-800">finance</strong>, <strong className="font-semibold text-slate-800">library</strong> and campus operations efficiently.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <Link
+                  to="/login"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#064e3b] hover:bg-[#085f48] text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-950/15 transition-all hover:scale-102"
+                >
+                  <ArrowRight className="w-4 h-4" /> Login to Portal
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => setIsDemoModalOpen(true)}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs sm:text-sm border border-slate-300 shadow-2xs transition-all"
+                >
+                  <Play className="w-3.5 h-3.5 fill-slate-800" /> Watch Demo
+                </button>
+              </div>
+
+              {/* Value Checkpoints */}
+              <div className="pt-4 flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-700">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Role-Based Access</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Secure & Reliable</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Paperless Operations</span>
+                </div>
               </div>
             </div>
 
-            <div className="p-6 rounded-2xl bg-warm-50 border border-navy-100 shadow-subtle flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-navy-50 text-navy-800 flex items-center justify-center mb-4 border border-navy-200">
-                  <Building2 className="w-6 h-6" />
-                </div>
-                <h3 className="text-base font-bold text-navy-950 mb-2">Modern Laboratory Facilities</h3>
-                <p className="text-xs sm:text-sm text-navy-600 font-light leading-relaxed">
-                  Specialized research laboratories including Cloud Clusters, High-Performance Computing, VLSI Design, Robotics, and Advanced Materials testing.
-                </p>
-              </div>
-              <div className="mt-4 pt-4 border-t border-navy-100 text-xs font-semibold text-navy-800">
-                Industry-Grade Toolchains &rarr;
-              </div>
-            </div>
+            {/* Right Hero Graphic with architectural campus visual */}
+            <div className="lg:col-span-6 relative">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-200 bg-emerald-950/5 group">
+                <img
+                  src="/hero-screenshot.jpg"
+                  alt="Apex Engineering College Campus"
+                  className="w-full h-[320px] sm:h-[400px] object-cover object-right transform group-hover:scale-102 transition-transform duration-700"
+                  onError={(e) => {
+                    // Fallback to decorative illustration container if screenshot not available
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent pointer-events-none" />
 
-            <div className="p-6 rounded-2xl bg-warm-50 border border-navy-100 shadow-subtle flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-4 border border-teal-200">
-                  <Users className="w-6 h-6" />
+                {/* Campus Badge Overlay */}
+                <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md rounded-2xl p-4 border border-white/60 shadow-lg flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                      <Building2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900 leading-tight">Autonomous Engineering College</h4>
+                      <p className="text-[11px] text-slate-500 font-medium">Ranked Grade 'A+' Institutional Campus &bull; 68 Programs</p>
+                    </div>
+                  </div>
+                  <span className="hidden sm:inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-600 text-white">
+                    Live ERP
+                  </span>
                 </div>
-                <h3 className="text-base font-bold text-navy-950 mb-2">Student-Centric Governance</h3>
-                <p className="text-xs sm:text-sm text-navy-600 font-light leading-relaxed">
-                  A transparent digital governance model where students and faculty seamlessly track attendance, results, circulars, and fee settlements without paperwork.
-                </p>
-              </div>
-              <div className="mt-4 pt-4 border-t border-navy-100 text-xs font-semibold text-teal-800">
-                Zero Bureaucracy Digital Campus &rarr;
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 4. ERP Capabilities & Features Section */}
-      <section id="features" className="py-20 bg-warm-50 border-b border-navy-100">
+      {/* 3. "Access Your Institutional Portal" 8-Role Section matching Image 1 */}
+      <section className="py-16 sm:py-20 bg-slate-50/60 border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <Badge variant="neutral" size="sm" className="mb-3">Campus ERP Architecture</Badge>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy-950 tracking-tight">
-              Enterprise Academic Management System
+          <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              Access Your Institutional Portal
             </h2>
-            <p className="mt-3 text-xs sm:text-sm text-navy-600 font-light leading-relaxed">
-              Our unified ERP streamlines operational workflows across student admissions, lecture attendance, grading, fee ledgers, and governance.
+            <p className="text-xs sm:text-sm text-slate-500 font-medium">
+              Choose your role to continue to the respective dashboard.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {erpCapabilities.map((feat, idx) => {
-              const Icon = feat.icon;
+          {/* 8 Distinct Colorful Role Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            {portalCards.map((card) => {
+              const Icon = card.icon;
               return (
                 <div
-                  key={idx}
-                  className="bg-white p-6 rounded-2xl border border-navy-200/80 shadow-subtle hover:shadow-card transition-all"
+                  key={card.id}
+                  onClick={() => navigate(`/login?role=${card.roleParam}`)}
+                  className={`p-5 rounded-3xl border ${card.borderColor} ${card.bgColor} bg-white hover-card-elevate cursor-pointer transition-all flex flex-col justify-between space-y-4`}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-4 border border-teal-200">
-                    <Icon className="w-5 h-5" />
+                  <div className="space-y-3">
+                    <div className={`w-11 h-11 rounded-2xl ${card.iconBg} flex items-center justify-center shadow-2xs`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900">{card.title}</h3>
+                      <p className="text-xs text-slate-500 leading-snug mt-1 font-normal">
+                        {card.desc}
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-sm sm:text-base font-bold text-navy-950 mb-2">{feat.title}</h3>
-                  <p className="text-xs text-navy-600 font-light leading-relaxed">{feat.desc}</p>
+
+                  <div className="pt-2">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-700 hover:text-emerald-700 hover:border-emerald-300 shadow-2xs transition-all">
+                      <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </div>
                 </div>
               );
             })}
           </div>
 
-          {/* Dedicated Login CTA banner inside features */}
-          <div className="mt-14 p-8 rounded-2xl bg-navy-900 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-elevation">
-            <div>
-              <h3 className="text-lg sm:text-xl font-bold">Authorized Institutional Access</h3>
-              <p className="text-xs sm:text-sm text-navy-300 font-light mt-1">
-                Faculty, students, and administrators can sign in directly using their institutional account.
-              </p>
+          {/* 4 Feature Pillars Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-14 pt-10 border-t border-slate-200/80">
+            <div className="flex items-start space-x-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                <Layers className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">Unified Management</h4>
+                <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">All college operations in one platform</p>
+              </div>
             </div>
-            <Button
-              variant="teal"
-              size="md"
-              onClick={() => navigate('/login')}
-              icon={ArrowRight}
-              iconPosition="right"
-              className="flex-shrink-0"
-            >
-              Sign In to Your Account
-            </Button>
+
+            <div className="flex items-start space-x-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                <BarChart3 className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">Real-Time Insights</h4>
+                <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">Reports, analytics and performance tracking</p>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">Secure & Role-Based</h4>
+                <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">Controlled access for every user role</p>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                <Monitor className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">Web & Mobile Ready</h4>
+                <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">Access anytime, anywhere smoothly</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 5. Academic Services & Programs Section */}
-      <section id="academics" className="py-20 bg-white border-b border-navy-100">
+      {/* 4. Dark Forest-Green Statistics Banner matching Image 1 */}
+      <section className="py-8 bg-[#062a1e] text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <Badge variant="teal" size="sm" className="mb-3">Curriculum Catalog</Badge>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy-950 tracking-tight">
-              Undergraduate Engineering Disciplines
-            </h2>
-            <p className="mt-3 text-xs sm:text-sm text-navy-600 font-light leading-relaxed">
-              Four-year Bachelor of Technology (B.Tech) degree programs designed to provide rigorous mathematical foundations and experiential application.
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-emerald-800/60">
+            <div className="pt-4 md:pt-0">
+              <div className="flex items-center justify-center gap-2">
+                <Users className="w-5 h-5 text-emerald-400" />
+                <span className="text-2xl sm:text-3xl font-black text-white">1,000+</span>
+              </div>
+              <p className="text-xs text-emerald-300/80 font-medium mt-1">Students</p>
+            </div>
+
+            <div className="pt-4 md:pt-0">
+              <div className="flex items-center justify-center gap-2">
+                <GraduationCap className="w-5 h-5 text-emerald-400" />
+                <span className="text-2xl sm:text-3xl font-black text-white">100+</span>
+              </div>
+              <p className="text-xs text-emerald-300/80 font-medium mt-1">Faculty & Staff</p>
+            </div>
+
+            <div className="pt-4 md:pt-0">
+              <div className="flex items-center justify-center gap-2">
+                <Building2 className="w-5 h-5 text-emerald-400" />
+                <span className="text-2xl sm:text-3xl font-black text-white">10+</span>
+              </div>
+              <p className="text-xs text-emerald-300/80 font-medium mt-1">Departments</p>
+            </div>
+
+            <div className="pt-4 md:pt-0">
+              <div className="flex items-center justify-center gap-2">
+                <Layers className="w-5 h-5 text-emerald-400" />
+                <span className="text-2xl sm:text-3xl font-black text-white">20+</span>
+              </div>
+              <p className="text-xs text-emerald-300/80 font-medium mt-1">Integrated Modules</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Institutional Footer */}
+      <footer id="contact" className="bg-[#041a13] text-emerald-100/70 py-12 border-t border-emerald-950 text-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2 text-white font-black text-base">
+              <GraduationCap className="w-5 h-5 text-emerald-400" />
+              <span>Apex Engineering College</span>
+            </div>
+            <p className="text-[11px] leading-relaxed text-emerald-200/60">
+              Autonomous Technical Institution approved by AICTE & UGC. Committed to engineering innovation, digital transparency, and institutional excellence.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {departments.map((dept) => (
-              <div
-                key={dept.code}
-                className="p-6 rounded-2xl bg-warm-50 border border-navy-200/80 shadow-subtle hover:border-teal-300 transition-colors flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="font-mono text-xs font-bold text-teal-800 bg-teal-100/70 px-2.5 py-0.5 rounded-full border border-teal-200">
-                      {dept.code}
-                    </span>
-                    <span className="text-[11px] text-navy-400 font-medium">
-                      Intake: {dept.intake} seats
-                    </span>
-                  </div>
-                  <h3 className="text-base font-bold text-navy-950 mb-2">{dept.name}</h3>
-                  <p className="text-xs text-navy-600 font-light leading-relaxed">{dept.description}</p>
-                </div>
-                <div className="mt-5 pt-4 border-t border-navy-100 flex items-center justify-between text-xs">
-                  <span className="text-navy-500 font-medium">8 Semesters &bull; 160 Credits</span>
-                  <span className="font-semibold text-teal-700">Full-Time B.Tech</span>
-                </div>
-              </div>
-            ))}
+          <div>
+            <h4 className="text-white font-bold mb-3 uppercase tracking-wider text-[11px]">Academic Programs</h4>
+            <ul className="space-y-2 text-[11px]">
+              <li>Computer Science & Engineering</li>
+              <li>Electronics & Communication</li>
+              <li>Electrical & Electronics</li>
+              <li>Mechanical & Robotics</li>
+              <li>Artificial Intelligence & ML</li>
+            </ul>
           </div>
 
-          {/* Academic Services Support Grid */}
-          <div className="mt-14 p-6 sm:p-8 rounded-2xl bg-teal-50/60 border border-teal-200">
-            <h3 className="text-base font-bold text-navy-950 mb-4 text-center sm:text-left">
-              Student Academic Support Infrastructure
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs text-navy-700 font-light">
-              <div className="flex items-start space-x-3">
-                <CheckCircle2 className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <strong className="font-semibold text-navy-900 block">Digital Central Library</strong>
-                  <span>Access to over 50,000 volumes, IEEE Xplore, ScienceDirect, and high-speed research terminals.</span>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <CheckCircle2 className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <strong className="font-semibold text-navy-900 block">Training & Placement Cell</strong>
-                  <span>Comprehensive technical interview coaching, algorithmic problem solving, and corporate recruitment drives.</span>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <CheckCircle2 className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <strong className="font-semibold text-navy-900 block">Autonomous Examination Cell</strong>
-                  <span>Prompt continuous assessment scheduling, barcode-evaluated grading, and verified institutional transcripts.</span>
-                </div>
-              </div>
+          <div>
+            <h4 className="text-white font-bold mb-3 uppercase tracking-wider text-[11px]">Campus Modules</h4>
+            <ul className="space-y-2 text-[11px]">
+              <li><Link to="/courses" className="hover:text-white">Curriculum & Subjects</Link></li>
+              <li><Link to="/attendance" className="hover:text-white">Daily Period Attendance</Link></li>
+              <li><Link to="/examinations" className="hover:text-white">Examinations & Schedules</Link></li>
+              <li><Link to="/fees" className="hover:text-white">Digital Fee Receipts</Link></li>
+              <li><Link to="/library" className="hover:text-white">Central Library Catalog</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-white font-bold mb-3 uppercase tracking-wider text-[11px]">Campus Helpdesk</h4>
+            <div className="space-y-2 text-[11px]">
+              <p className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5 text-emerald-400" /> Campus Road, Tech Valley, Hyderabad</p>
+              <p className="flex items-center gap-2"><Phone className="w-3.5 h-3.5 text-emerald-400" /> +91 (800) 234-5678</p>
+              <p className="flex items-center gap-2"><Mail className="w-3.5 h-3.5 text-emerald-400" /> registrar@college.edu</p>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* 6. Contact Section */}
-      <section id="contact" className="py-20 bg-warm-50 border-b border-navy-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <Badge variant="neutral" size="sm" className="mb-3">Connect With Us</Badge>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy-950 tracking-tight">
-              Campus Inquiries & Administration
-            </h2>
-            <p className="mt-3 text-xs sm:text-sm text-navy-600 font-light leading-relaxed">
-              Have questions regarding admissions, academic regulations, or campus facilities? Reach out to our administrative offices.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            {/* Contact Details */}
-            <div className="space-y-6">
-              <div className="p-6 rounded-2xl bg-white border border-navy-200/80 shadow-subtle flex items-start space-x-4">
-                <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center flex-shrink-0 border border-teal-200">
-                  <MapPin className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-navy-950">Campus Location</h4>
-                  <p className="text-xs text-navy-600 font-light mt-1 leading-relaxed">
-                    Apex Engineering College Campus, Knowledge Corridor, Tech Institutional Zone, Landmark Highway, PIN: 500081
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-6 rounded-2xl bg-white border border-navy-200/80 shadow-subtle flex items-start space-x-4">
-                <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center flex-shrink-0 border border-teal-200">
-                  <Phone className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-navy-950">Telephone & Inquiries</h4>
-                  <p className="text-xs text-navy-600 font-light mt-1">
-                    Admissions Desk: +91 (0) 40 2345 6789 &bull; Academic Registrar: +91 (0) 40 2345 6790
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-6 rounded-2xl bg-white border border-navy-200/80 shadow-subtle flex items-start space-x-4">
-                <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center flex-shrink-0 border border-teal-200">
-                  <Mail className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-navy-950">Official Email Inquiries</h4>
-                  <p className="text-xs text-navy-600 font-light mt-1">
-                    General Inquiries: info@college.edu &bull; Admissions: admissions@college.edu
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-6 rounded-2xl bg-white border border-navy-200/80 shadow-subtle flex items-start space-x-4">
-                <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center flex-shrink-0 border border-teal-200">
-                  <Clock className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-navy-950">Administrative Working Hours</h4>
-                  <p className="text-xs text-navy-600 font-light mt-1">
-                    Monday to Saturday: 8:30 AM to 5:00 PM (Closed on Government Gazetted Holidays)
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Public Inquiry Form */}
-            <div className="p-6 sm:p-8 rounded-2xl bg-white border border-navy-200/80 shadow-subtle">
-              <h3 className="text-base font-bold text-navy-950 mb-1">Submit an Inquiry</h3>
-              <p className="text-xs text-navy-500 font-light mb-6">
-                Our academic council desk responds to institutional inquiries within 24 business hours.
-              </p>
-
-              {inquirySubmitted ? (
-                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm flex items-center space-x-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                  <div>
-                    <strong className="block font-semibold">Thank you for contacting us!</strong>
-                    <span>Your inquiry has been logged. Our admissions desk will follow up shortly.</span>
-                  </div>
-                </div>
-              ) : (
-                <form onSubmit={handleInquirySubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-navy-700 uppercase tracking-wider mb-1">
-                      Full Legal Name
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={inquiryForm.name}
-                      onChange={(e) => setInquiryForm({ ...inquiryForm, name: e.target.value })}
-                      placeholder="e.g. Ramesh Chandra"
-                      className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-lg border border-navy-200 bg-warm-50 text-navy-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-600 transition-colors"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-navy-700 uppercase tracking-wider mb-1">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        required
-                        value={inquiryForm.email}
-                        onChange={(e) => setInquiryForm({ ...inquiryForm, email: e.target.value })}
-                        placeholder="you@domain.com"
-                        className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-lg border border-navy-200 bg-warm-50 text-navy-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-600 transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-navy-700 uppercase tracking-wider mb-1">
-                        Contact Phone
-                      </label>
-                      <input
-                        type="tel"
-                        value={inquiryForm.phone}
-                        onChange={(e) => setInquiryForm({ ...inquiryForm, phone: e.target.value })}
-                        placeholder="+91 98765 43210"
-                        className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-lg border border-navy-200 bg-warm-50 text-navy-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-600 transition-colors"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-navy-700 uppercase tracking-wider mb-1">
-                      Inquiry Category
-                    </label>
-                    <select
-                      value={inquiryForm.subject}
-                      onChange={(e) => setInquiryForm({ ...inquiryForm, subject: e.target.value })}
-                      className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-lg border border-navy-200 bg-warm-50 text-navy-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-600 transition-colors"
-                    >
-                      <option value="Admissions Inquiry">Admissions & Intake Information</option>
-                      <option value="Curriculum Syllabus">Academic Syllabus & Course Credits</option>
-                      <option value="Campus Visit">Campus Tour & Laboratory Visitation</option>
-                      <option value="General Query">General Administration Query</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-navy-700 uppercase tracking-wider mb-1">
-                      Message Details
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={inquiryForm.message}
-                      onChange={(e) => setInquiryForm({ ...inquiryForm, message: e.target.value })}
-                      placeholder="Please summarize your question or inquiry..."
-                      className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-lg border border-navy-200 bg-warm-50 text-navy-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-600 transition-colors"
-                    />
-                  </div>
-
-                  <Button type="submit" variant="teal" size="md" className="w-full shadow-subtle">
-                    Send Campus Inquiry
-                  </Button>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 7. Institutional Footer */}
-      <footer className="bg-navy-950 text-navy-300 py-12 border-t border-navy-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-subtle">
-              <GraduationCap className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-bold text-sm tracking-wide text-white block">Apex Engineering College</span>
-              <span className="text-[10px] text-teal-400 block tracking-wider uppercase font-semibold">
-                Autonomous Technical Institution &bull; &lt;1,000 Students
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-navy-400 font-medium">
-            <a href="#about" className="hover:text-white transition-colors">About</a>
-            <a href="#features" className="hover:text-white transition-colors">ERP Platform</a>
-            <a href="#academics" className="hover:text-white transition-colors">Programs</a>
-            <a href="#contact" className="hover:text-white transition-colors">Contact</a>
-            <Link to="/login" className="text-teal-400 hover:text-teal-300 font-semibold transition-colors">
-              Staff & Student Login &rarr;
-            </Link>
-          </div>
-
-          <p className="text-[11px] text-navy-500 text-center md:text-right font-light">
-            &copy; {new Date().getFullYear()} Apex Engineering College. All rights reserved.
-          </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 pt-6 border-t border-emerald-900/60 flex flex-col sm:flex-row items-center justify-between text-[11px]">
+          <p>&copy; 2026 Apex Engineering College ERP System. All rights reserved.</p>
+          <p className="mt-2 sm:mt-0">Designed & Engineered with React, Node.js & MongoDB.</p>
         </div>
       </footer>
+
+      {/* Demo Video Modal */}
+      {isDemoModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Play className="w-4 h-4 text-emerald-600 fill-emerald-600" /> College ERP Platform Walkthrough
+              </h3>
+              <button
+                onClick={() => setIsDemoModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="py-6 space-y-4 text-xs text-slate-600">
+              <div className="rounded-2xl bg-[#062a1e] p-6 text-white text-center space-y-2">
+                <GraduationCap className="w-12 h-12 text-emerald-400 mx-auto animate-pulse-glow" />
+                <h4 className="text-base font-bold">Interactive ERP Demonstration</h4>
+                <p className="text-emerald-200/80 text-[11px]">
+                  Experience instant role-based access for all 8 institutional personas directly from the portal login.
+                </p>
+              </div>
+              <p>
+                The College ERP System is fully connected to the live database, providing zero-latency academic tracking, digital fee payments, timetable scheduling and library circulation.
+              </p>
+            </div>
+            <div className="pt-2 flex justify-end gap-2">
+              <button
+                onClick={() => setIsDemoModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs"
+              >
+                Close
+              </button>
+              <Link
+                to="/login"
+                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5"
+              >
+                Try Live Portal <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default LandingPage;
-

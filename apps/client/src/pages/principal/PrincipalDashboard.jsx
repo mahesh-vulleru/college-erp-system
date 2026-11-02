@@ -42,6 +42,11 @@ import { useToast } from '../../context/ToastContext';
 import StudentAtRiskAlerts from '../../components/principal/StudentAtRiskAlerts';
 import FacultyLeaveManagement from '../../components/principal/FacultyLeaveManagement';
 import ExecutiveReportsExport from '../../components/principal/ExecutiveReportsExport';
+import DashboardHeaderBanner from '../../components/dashboard/DashboardHeaderBanner';
+import DashboardKPICard from '../../components/dashboard/DashboardKPICard';
+import DashboardAnalyticsRow from '../../components/dashboard/DashboardAnalyticsRow';
+import DashboardWidgetsRow from '../../components/dashboard/DashboardWidgetsRow';
+import DashboardModulesNav from '../../components/dashboard/DashboardModulesNav';
 
 export const PrincipalDashboard = () => {
   const { user } = useAuth();
@@ -344,299 +349,92 @@ export const PrincipalDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Elegant Green Hero Banner */}
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-700 to-emerald-800 rounded-2xl p-6 sm:p-7 text-white shadow-card relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="relative z-10 max-w-xl">
-          <p className="text-xs sm:text-sm font-medium text-emerald-100 tracking-wide">
-            Welcome, {user?.name || 'Dr. Priya Reddy'}
-          </p>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
-            Principal Dashboard
-          </h1>
-          <p className="mt-1.5 text-xs sm:text-sm text-emerald-100/90 font-normal">
-            Institutional performance, academic insights and executive decisions
-          </p>
-        </div>
-        <div className="flex items-center gap-4 relative z-10">
-          <CampusBuildingGraphic className="w-52 h-28 sm:w-64 sm:h-32 opacity-95 text-white pointer-events-none drop-shadow-md" />
-        </div>
-      </div>
+      {/* 1. Dashboard Header Banner matching Screenshot 2 */}
+      <DashboardHeaderBanner
+        title="Principal / Management Dashboard"
+        subtitle="Institutional analytics, academic overview, and executive governance."
+        academicYear="2026 – 2027"
+      />
 
-      {/* Real Statistics from MongoDB */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatWidget
+      {/* 2. 5-KPI Cards Row matching Screenshot 2 */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <DashboardKPICard
           title="Total Students"
-          value={academicSummary?.totalStudents ?? '1,000'}
-          subtitle="+3.2%"
-          trend={{ value: '+3.2%', positive: true }}
+          value={academicSummary?.totalStudents ? Number(academicSummary.totalStudents).toLocaleString() : '6,482'}
           icon={Users}
-          color="blue"
-        />
-        <StatWidget
-          title="Faculty Members"
-          value={academicSummary?.totalFaculty ?? '120'}
-          subtitle="+2.1%"
-          trend={{ value: '+2.1%', positive: true }}
-          icon={Users}
+          trend="+4.2%"
+          trendDirection="up"
           color="emerald"
         />
-        <StatWidget
+        <DashboardKPICard
+          title="Total Faculty"
+          value={academicSummary?.totalFaculty ? Number(academicSummary.totalFaculty).toLocaleString() : '421'}
+          icon={GraduationCap}
+          trend="+2.1%"
+          trendDirection="up"
+          color="blue"
+        />
+        <DashboardKPICard
           title="Departments"
-          value={academicSummary?.totalDepartments ?? deptSummaries?.length ?? '4'}
-          subtitle="Active"
+          value={academicSummary?.totalDepartments ?? deptSummaries?.length ?? '68'}
           icon={Building2}
-          color="emerald"
+          color="amber"
         />
-        <StatWidget
-          title="Attendance Rate"
-          value={attendanceHealth ? `${attendanceHealth.collegeAveragePercentage || 85}%` : '85%'}
-          subtitle="+3.4%"
-          trend={{ value: '+3.4%', positive: true }}
+        <DashboardKPICard
+          title="Programs"
+          value={academicSummary?.totalCourses ?? '36'}
+          icon={BookOpen}
+          color="rose"
+        />
+        <DashboardKPICard
+          title="Overall Attendance"
+          value={attendanceHealth ? `${attendanceHealth.collegeAveragePercentage || 94}%` : '94%'}
           icon={CalendarCheck}
-          color="blue"
+          trend="+1.9%"
+          trendDirection="up"
+          color="purple"
         />
       </div>
 
-      {/* Phase 1: Institutional Management Strategic Overview */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-subtle">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
+      {/* 3. Analytics Row: Line Chart + Donut Chart + Quick Actions */}
+      <DashboardAnalyticsRow
+        chartTitle="Student Enrollment Trend"
+        donutTitle="Department-wise Students"
+        totalCount={academicSummary?.totalStudents ? Number(academicSummary.totalStudents).toLocaleString() : '6,482'}
+        totalCountLabel="Students"
+        onActionClick={(action) => {
+          if (action === 'Send Notice') {
+            setIsNoticeModalOpen(true);
+          } else if (action === 'Approve Requests') {
+            document.getElementById('council-approvals-section')?.scrollIntoView({ behavior: 'smooth' });
+          } else if (action === 'View Analytics' || action === 'Academic Report') {
+            document.getElementById('institutional-governance-section')?.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
+      />
+
+      {/* 4. Lower Widgets Row: Upcoming Events, Recent Activities, Calendar, Notices */}
+      <DashboardWidgetsRow
+        noticesList={notices.length > 0 ? notices.slice(0, 5).map(n => ({
+          title: n.title,
+          isNew: true,
+          date: n.createdAt ? new Date(n.createdAt).toLocaleDateString() : 'Recent'
+        })) : null}
+      />
+
+      {/* 5. Modules (Quick Navigation) Grid */}
+      <DashboardModulesNav />
+
+      {/* Deep-Dive Governance & Department Operations */}
+      <div id="institutional-governance-section" className="space-y-6 pt-4 border-t border-slate-200/80">
+        <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-indigo-600" />
-              Institutional Management & Strategic Governance
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              High-level accreditation compliance, institutional KPI tracking, and operational calendar deadlines.
-            </p>
+            <h2 className="text-lg font-bold text-slate-900 tracking-tight">Executive Governance & Academic Portals</h2>
+            <p className="text-xs text-slate-500">Institutional accreditation, student risk tracking, and council approval registers</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/principal/accreditation"
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors"
-            >
-              All Portals <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Accreditation Completion */}
-          <Link
-            to="/principal/accreditation"
-            className="group p-4 rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/50 to-white hover:border-indigo-300 hover:shadow-md transition-all block"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-indigo-900 uppercase tracking-wider">
-                Accreditation
-              </span>
-              <div className="p-2 rounded-lg bg-indigo-100 text-indigo-700 group-hover:scale-110 transition-transform">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-            </div>
-            <div className="mt-2">
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-indigo-950">
-                  {instMetrics.accreditationCompletion}%
-                </span>
-                <span className="text-xs text-indigo-600 font-medium">compliance</span>
-              </div>
-              <div className="w-full bg-indigo-100 rounded-full h-1.5 mt-2 overflow-hidden">
-                <div
-                  className="bg-indigo-600 h-1.5 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(instMetrics.accreditationCompletion, 100)}%` }}
-                />
-              </div>
-              <p className="text-[11px] text-slate-500 mt-2 flex items-center justify-between">
-                <span>{instMetrics.completedCriteria} of {instMetrics.totalCriteria} criteria verified</span>
-                <ArrowRight className="w-3 h-3 text-indigo-400 group-hover:translate-x-0.5 transition-transform" />
-              </p>
-            </div>
-          </Link>
-
-          {/* Card 2: Institutional Goal Achievement */}
-          <Link
-            to="/principal/goals"
-            className="group p-4 rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50/50 to-white hover:border-emerald-300 hover:shadow-md transition-all block"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-emerald-900 uppercase tracking-wider">
-                Goal Achievement
-              </span>
-              <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700 group-hover:scale-110 transition-transform">
-                <Target className="w-5 h-5" />
-              </div>
-            </div>
-            <div className="mt-2">
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-emerald-950">
-                  {instMetrics.goalAchievement}%
-                </span>
-                <span className="text-xs text-emerald-600 font-medium">overall KPI</span>
-              </div>
-              <div className="w-full bg-emerald-100 rounded-full h-1.5 mt-2 overflow-hidden">
-                <div
-                  className="bg-emerald-600 h-1.5 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(instMetrics.goalAchievement, 100)}%` }}
-                />
-              </div>
-              <p className="text-[11px] text-slate-500 mt-2 flex items-center justify-between">
-                <span>{instMetrics.onTrackGoals} of {instMetrics.totalGoals} goals active/met</span>
-                <ArrowRight className="w-3 h-3 text-emerald-400 group-hover:translate-x-0.5 transition-transform" />
-              </p>
-            </div>
-          </Link>
-
-          {/* Card 3: Upcoming Deadlines */}
-          <Link
-            to="/principal/events"
-            className="group p-4 rounded-xl border border-amber-100 bg-gradient-to-br from-amber-50/50 to-white hover:border-amber-300 hover:shadow-md transition-all block"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-amber-900 uppercase tracking-wider">
-                Upcoming Deadlines
-              </span>
-              <div className="p-2 rounded-lg bg-amber-100 text-amber-700 group-hover:scale-110 transition-transform">
-                <Clock className="w-5 h-5" />
-              </div>
-            </div>
-            <div className="mt-2">
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-amber-950">
-                  {instMetrics.upcomingDeadlines}
-                </span>
-                <span className="text-xs text-amber-600 font-medium">milestones</span>
-              </div>
-              <p className="text-[11px] text-slate-500 mt-3.5 flex items-center justify-between">
-                <span>Due in next 14 calendar days</span>
-                <ArrowRight className="w-3 h-3 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
-              </p>
-            </div>
-          </Link>
-
-          {/* Card 4: Overdue Action Items */}
-          <Link
-            to="/principal/events?status=overdue"
-            className="group p-4 rounded-xl border border-rose-100 bg-gradient-to-br from-rose-50/50 to-white hover:border-rose-300 hover:shadow-md transition-all block"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-rose-900 uppercase tracking-wider">
-                Overdue Items
-              </span>
-              <div className="p-2 rounded-lg bg-rose-100 text-rose-700 group-hover:scale-110 transition-transform">
-                <AlertTriangle className="w-5 h-5" />
-              </div>
-            </div>
-            <div className="mt-2">
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-rose-700">
-                  {instMetrics.overdueItems}
-                </span>
-                <span className="text-xs text-rose-600 font-medium">pending</span>
-              </div>
-              <p className="text-[11px] text-rose-600 font-medium mt-3.5 flex items-center justify-between">
-                <span>Requires immediate intervention</span>
-                <ArrowRight className="w-3 h-3 text-rose-400 group-hover:translate-x-0.5 transition-transform" />
-              </p>
-            </div>
-          </Link>
-        </div>
-      </div>
-
-      {/* Charts Row: Enrollment Trend & Department Strength */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm sm:text-base font-bold text-slate-900">Student Enrollment Trend</h2>
-            <div className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium cursor-pointer">
-              This Year &darr;
-            </div>
-          </div>
-          <SimpleLineChart
-            categories={enrollmentTrend.categories}
-            series={enrollmentTrend.series}
-            height={190}
-          />
-        </div>
-
-        <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm sm:text-base font-bold text-slate-900">Department Strength</h2>
-            <div className="flex items-center space-x-3 text-xs text-slate-600">
-              <span className="inline-flex items-center"><span className="w-2.5 h-2.5 rounded-sm bg-cyan-500 mr-1.5" /> Students</span>
-              <span className="inline-flex items-center"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 mr-1.5" /> Faculty</span>
-            </div>
-          </div>
-          <SimpleBarChart
-            data={deptStrengthBars}
-            height={190}
-            barColors={['#06b6d4', '#10b981']}
-          />
-        </div>
-      </div>
-
-      {/* Row 3: Pending Approvals & Important Notices */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm sm:text-base font-bold text-slate-900">Pending Approvals</h2>
-            <button
-              onClick={() => {
-                const el = document.getElementById('council-approvals-section');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 cursor-pointer"
-            >
-              View All
-            </button>
-          </div>
-          <div className="space-y-3">
-            {pendingApprovalsList.map((app, i) => (
-              <div
-                key={app.id || i}
-                onClick={() => setSelectedReviewApproval(app)}
-                className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
-                title="Click to review and decide"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs group-hover:bg-emerald-50 group-hover:text-emerald-700 transition-colors">
-                    <FileText className="w-4 h-4 text-slate-500" />
-                  </div>
-                  <div>
-                    <p className="text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-emerald-800 transition-colors">{app.title}</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">{app.submittedDate ? `${app.submittedDate} • ${app.department || ''}` : (app.time || 'Pending review')}</p>
-                  </div>
-                </div>
-                <Badge variant={app.variant || (app.status === 'pending' ? 'amber' : 'blue')} size="xs">
-                  {app.status ? (app.status === 'pending' ? 'Pending' : 'Review') : 'Pending'}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm sm:text-base font-bold text-slate-900">Important Notices</h2>
-            <Link to="/notices" className="text-xs font-semibold text-emerald-600 hover:text-emerald-700">
-              View All
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {importantNoticesList.map((not, i) => (
-              <div key={not.id || i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
-                    <Bell className="w-4 h-4 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs sm:text-sm font-semibold text-slate-800">{not.title}</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">{not.createdAt ? `Published on ${new Date(not.createdAt).toLocaleDateString()}` : not.date}</p>
-                  </div>
-                </div>
-                <span className="text-[11px] text-slate-400 font-medium">Official</span>
-              </div>
-            ))}
-          </div>
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+            Authorized Oversight
+          </span>
         </div>
       </div>
 
