@@ -30,7 +30,7 @@ class ApiClient {
       const parts = token.split('.');
       if (parts.length !== 3) return false;
       const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-      const json = typeof atob === 'function' ? atob(b64) : Buffer.from(b64, 'base64').toString('utf8');
+      const json = typeof atob === 'function' ? atob(b64) : (typeof globalThis !== 'undefined' && globalThis.Buffer ? globalThis.Buffer.from(b64, 'base64').toString('utf8') : '');
       const payload = JSON.parse(json);
       if (!payload.exp) return false;
       return payload.exp * 1000 < Date.now();
@@ -634,6 +634,8 @@ class ApiClient {
     if (params.status) searchParams.append('status', params.status);
     if (params.department) searchParams.append('department', params.department);
     if (params.leaveType) searchParams.append('leaveType', params.leaveType);
+    if (params.applicantRole) searchParams.append('applicantRole', params.applicantRole);
+    if (params.scope) searchParams.append('scope', params.scope);
     if (params.search) searchParams.append('search', params.search);
     if (params.page) searchParams.append('page', params.page);
     if (params.limit) searchParams.append('limit', params.limit);
@@ -651,6 +653,18 @@ class ApiClient {
 
   reviewLeave(id, data) {
     return this.patch(`/v1/leaves/${id}/review`, data);
+  }
+
+  escalateLeave(id, data) {
+    return this.post(`/v1/leaves/${id}/escalate`, data);
+  }
+
+  getLeaveWorkflowConfig() {
+    return this.get('/v1/leaves/config');
+  }
+
+  updateLeaveWorkflowConfig(data) {
+    return this.put('/v1/leaves/config', data);
   }
 
   async downloadReport(params = {}) {

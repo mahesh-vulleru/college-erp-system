@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   CalendarCheck,
+  Calendar,
+  ShieldCheck,
   Award,
   BookOpen,
   Clock,
@@ -41,6 +43,7 @@ import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Notification from '../../components/common/Notification';
+import RoleLeaveManagement from '../../components/leave/RoleLeaveManagement';
 import api from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -623,7 +626,7 @@ export const FacultyDashboard = () => {
           ]}
           onActionClick={(label) => {
             if (label === 'Mark Attendance') setIsMarkAttendanceOpen(true);
-            else if (label === 'Apply Leave') setIsApplyLeaveOpen(true);
+            else if (label === 'Apply Leave') setFacultyActiveTab('leave');
             else if (label === 'Enter Marks') setFacultyActiveTab('marks');
             else if (label === 'Timetable') setFacultyActiveTab('timetable');
           }}
@@ -634,102 +637,6 @@ export const FacultyDashboard = () => {
 
         {/* 5. Modules Grid */}
         <DashboardModulesNav />
-
-        {/* Row 2: Today's Timetable & Student Attendance (This Month) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm sm:text-base font-bold text-slate-900">Today's Timetable</h2>
-              <button
-                onClick={() => setFacultyActiveTab('timetable')}
-                className="text-xs font-semibold text-purple-600 hover:text-purple-700"
-              >
-                View Full
-              </button>
-            </div>
-            <div className="space-y-3">
-              {facultyTodayTimetable.map((slot, i) => (
-                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-xs font-mono font-bold text-slate-700 w-36">{slot.time}</span>
-                    <span className="text-xs sm:text-sm font-semibold text-slate-900">{slot.subject}</span>
-                  </div>
-                  <span className="text-xs font-medium text-slate-500">{slot.cohort}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
-            <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-4">Student Attendance (This Month)</h2>
-            <div className="flex items-center justify-center py-2">
-              <SimpleDonutChart
-                data={facultyAttendanceDonut}
-                centerLabel="Attendance"
-                centerValue="92%"
-                size={180}
-                thickness={22}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Row 3: My Subjects & Recent Activities */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm sm:text-base font-bold text-slate-900">My Subjects</h2>
-              <button
-                onClick={() => setFacultyActiveTab('courses')}
-                className="text-xs font-semibold text-purple-600 hover:text-purple-700"
-              >
-                View All
-              </button>
-            </div>
-            <div className="space-y-3">
-              {facultySubjectsList.map((sub, i) => (
-                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
-                      <BookOpen className="w-4 h-4 text-purple-600" />
-                    </div>
-                    <div>
-                      <span className="text-xs sm:text-sm font-semibold text-slate-900">{sub.code} - {sub.name}</span>
-                    </div>
-                  </div>
-                  <span className="text-xs font-medium text-slate-500">{sub.students} Students</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm sm:text-base font-bold text-slate-900">Recent Activities</h2>
-              <button
-                onClick={() => setFacultyActiveTab('roster')}
-                className="text-xs font-semibold text-purple-600 hover:text-purple-700 cursor-pointer"
-              >
-                View Rosters
-              </button>
-            </div>
-            <div className="space-y-3">
-              {facultyRecentActivities.map((act, i) => (
-                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${act.color.split(' ')[1]}`}>
-                      <act.icon className={`w-4 h-4 ${act.color.split(' ')[0]}`} />
-                    </div>
-                    <div>
-                      <p className="text-xs sm:text-sm font-semibold text-slate-800">{act.title}</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">{act.time}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
         {/* Navigation Tabs */}
         <div className="flex border-b border-navy-200 bg-white px-4 rounded-xl shadow-subtle overflow-x-auto">
@@ -779,6 +686,18 @@ export const FacultyDashboard = () => {
           >
             <Award className="w-4 h-4" />
             <span>Examinations & Assessments ({exams.length})</span>
+          </button>
+
+          <button
+            onClick={() => setFacultyActiveTab('leave')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              facultyActiveTab === 'leave'
+                ? 'border-teal-600 text-teal-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <CalendarCheck className="w-4 h-4" />
+            <span>Leave Management & Approvals</span>
           </button>
         </div>
 
@@ -909,6 +828,11 @@ export const FacultyDashboard = () => {
               </div>
             )}
           </Card>
+        )}
+
+        {/* TAB 5: Role-Based Leave Management & Student Approvals */}
+        {facultyActiveTab === 'leave' && (
+          <RoleLeaveManagement defaultTab="approvals" />
         )}
 
         {/* Mark Attendance Modal */}

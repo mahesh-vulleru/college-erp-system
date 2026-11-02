@@ -34,6 +34,9 @@ function validateLeaveApplyInput(data = {}) {
     'paternity',
     'duty',
     'special_casual',
+    'academic',
+    'medical',
+    'personal',
     'unpaid',
     'other'
   ];

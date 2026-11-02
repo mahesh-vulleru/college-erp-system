@@ -10,6 +10,7 @@ import {
   Users,
   CalendarCheck,
   CreditCard,
+  Coins,
   CheckCircle,
   Eye,
   EyeOff,

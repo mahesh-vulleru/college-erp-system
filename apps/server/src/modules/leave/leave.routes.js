@@ -3,7 +3,10 @@ const {
   listLeaveRequests,
   getLeaveRequestById,
   applyLeave,
-  reviewLeave
+  reviewLeave,
+  escalateLeave,
+  getWorkflowConfig,
+  updateWorkflowConfig
 } = require('./leave.controller');
 const { validateLeaveApplyInput, validateLeaveReviewInput } = require('./leave.validator');
 const authenticate = require('../../middleware/auth');
@@ -15,35 +18,72 @@ const router = express.Router();
 
 router.use(authenticate);
 
-// List leave requests (Faculty: own leaves; HOD: dept leaves; Principal/Super Admin: institutional leaves)
+// Workflow configuration endpoints
+router.get('/config', getWorkflowConfig);
+router.put('/config', authorizeRoles(ROLES.SUPER_ADMIN), updateWorkflowConfig);
+
+// List leave requests (role-based scoped in controller)
 router.get(
   '/',
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY),
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.HOD,
+    ROLES.FACULTY,
+    ROLES.STUDENT,
+    ROLES.LIBRARIAN,
+    ROLES.LIBRARY_STAFF,
+    ROLES.ACCOUNTS
+  ),
   listLeaveRequests
 );
 
 // Get single leave request
 router.get(
   '/:id',
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY),
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.HOD,
+    ROLES.FACULTY,
+    ROLES.STUDENT,
+    ROLES.LIBRARIAN,
+    ROLES.LIBRARY_STAFF,
+    ROLES.ACCOUNTS
+  ),
   getLeaveRequestById
 );
 
-// Apply for leave (Faculty)
+// Apply for leave (All authenticated institutional roles)
 router.post(
   '/',
-  authorizeRoles(ROLES.FACULTY, ROLES.HOD),
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.HOD,
+    ROLES.FACULTY,
+    ROLES.STUDENT,
+    ROLES.LIBRARIAN,
+    ROLES.LIBRARY_STAFF,
+    ROLES.ACCOUNTS
+  ),
   validateRequest(validateLeaveApplyInput),
   applyLeave
 );
 
-// Review leave (Approve / Reject) (Principal, Super Admin, HOD)
+// Review leave (Approve / Reject) (Designated approvers)
 router.patch(
   '/:id/review',
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.LIBRARIAN),
   validateRequest(validateLeaveReviewInput),
   reviewLeave
 );
 
-module.exports = router;
+// Escalate leave request to higher authority
+router.post(
+  '/:id/escalate',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.LIBRARIAN),
+  escalateLeave
+);
 
+module.exports = router;

@@ -8,8 +8,10 @@ export const Modal = ({
   subtitle,
   children,
   footer,
-  maxWidth = 'max-w-lg'
+  maxWidth = 'max-w-lg',
+  className = ''
 }) => {
+  // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen) onClose();
@@ -18,31 +20,43 @@ export const Modal = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  // Prevent background scrolling while open, restore on close
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
+      {/* Subtle, consistent dark transparent backdrop that preserves dashboard colors */}
       <div
-        className="fixed inset-0 bg-navy-950/70 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+        className="fixed inset-0 bg-slate-950/35 backdrop-blur-[1.5px] transition-opacity duration-200"
         onClick={onClose}
+        aria-hidden="true"
       />
 
-      {/* Modal Dialog */}
-      <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+      {/* Centered responsive modal container */}
+      <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-6">
         <div
-          className={`relative transform overflow-hidden rounded-2xl bg-white text-left shadow-elevation transition-all w-full sm:my-8 ${maxWidth} border border-navy-100 animate-in zoom-in-95 fade-in duration-200`}
+          className={`relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full my-auto ${maxWidth} border border-slate-200/90 animate-in zoom-in-95 fade-in duration-200 ${className}`}
         >
           {/* Header */}
           {(title || subtitle) && (
-            <div className="flex items-start justify-between border-b border-navy-100/80 px-6 py-4.5 bg-white">
+            <div className="flex items-start justify-between border-b border-slate-100 px-6 py-4.5 bg-white">
               <div className="min-w-0 pr-4">
-                {title && <h3 className="text-base font-bold text-navy-950 tracking-tight">{title}</h3>}
-                {subtitle && <p className="text-xs text-navy-500 font-normal mt-0.5">{subtitle}</p>}
+                {title && <h3 className="text-base font-bold text-slate-900 tracking-tight">{title}</h3>}
+                {subtitle && <p className="text-xs text-slate-500 font-normal mt-0.5">{subtitle}</p>}
               </div>
               <button
                 onClick={onClose}
-                className="rounded-xl p-1.5 text-navy-400 hover:bg-navy-50 hover:text-navy-700 transition-colors flex-shrink-0"
+                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors flex-shrink-0 cursor-pointer"
                 aria-label="Close dialog"
               >
                 <X className="w-4 h-4" />
@@ -51,11 +65,11 @@ export const Modal = ({
           )}
 
           {/* Body */}
-          <div className="px-6 py-5 text-sm text-navy-800">{children}</div>
+          <div className="px-6 py-5 text-sm text-slate-800">{children}</div>
 
           {/* Footer */}
           {footer && (
-            <div className="border-t border-navy-100/80 bg-navy-50/40 px-6 py-3.5 flex items-center justify-end space-x-2">
+            <div className="border-t border-slate-100 bg-slate-50/70 px-6 py-3.5 flex items-center justify-end space-x-2">
               {footer}
             </div>
           )}

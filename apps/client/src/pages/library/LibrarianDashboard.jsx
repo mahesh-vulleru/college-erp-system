@@ -37,6 +37,7 @@ import Select from '../../components/common/Select';
 import Table from '../../components/common/Table';
 import Modal from '../../components/common/Modal';
 import SimpleBarChart from '../../components/common/SimpleBarChart';
+import RoleLeaveManagement from '../../components/leave/RoleLeaveManagement';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import api from '../../api/apiClient';
@@ -693,7 +694,8 @@ export const LibrarianDashboard = () => {
     { id: 'fines', label: 'Overdue & Fines', icon: CreditCard },
     { id: 'digital', label: 'Digital Library', icon: FileText },
     { id: 'reports', label: 'Reports & Exports', icon: Download },
-    { id: 'settings', label: 'Settings', icon: Sliders }
+    { id: 'settings', label: 'Settings', icon: Sliders },
+    { id: 'leaves', label: 'Staff Leaves & Approvals', icon: CalendarCheck }
   ];
 
   return (
@@ -778,56 +780,8 @@ export const LibrarianDashboard = () => {
       {/* 5. Modules Grid */}
       <DashboardModulesNav />
 
-      {/* Action Buttons Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              fetchDashboard();
-              if (currentTab === 'books') fetchBooks();
-              if (currentTab === 'circulation') fetchIssues();
-              if (currentTab === 'members') fetchMembers();
-              if (currentTab === 'fines') fetchFines();
-            }}
-            className="text-xs"
-          >
-            <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-            Refresh
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setIsIssueModalOpen(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
-          >
-            <Clock className="w-3.5 h-3.5 mr-1.5" />
-            Issue Book
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setIsReturnModalOpen(true)}
-            className="text-xs"
-          >
-            <RotateCw className="w-3.5 h-3.5 mr-1.5" />
-            Return Book
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setIsAddBookModalOpen(true)}
-            className="bg-teal-600 hover:bg-teal-700 text-white text-xs"
-          >
-            <Plus className="w-3.5 h-3.5 mr-1.5" />
-            Add Book
-          </Button>
-        </div>
-      </div>
-
       <div className="bg-white rounded-2xl p-2 border border-slate-200 shadow-xs">
-{/* Tab Navigation Pill Bar */}
+        {/* Tab Navigation Pill Bar */}
         <div className="flex items-center space-x-1.5 overflow-x-auto mt-6 pt-4 border-t border-rose-900/40 no-scrollbar">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -2080,6 +2034,15 @@ export const LibrarianDashboard = () => {
             </div>
           </form>
         </Card>
+      )}
+
+      {/* =========================================================================
+          TAB 11: STAFF LEAVES & APPROVALS
+      ========================================================================= */}
+      {currentTab === 'leaves' && (
+        <div className="space-y-6">
+          <RoleLeaveManagement defaultTab="approvals" />
+        </div>
       )}
 
       {/* =========================================================================

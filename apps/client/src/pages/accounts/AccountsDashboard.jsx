@@ -19,6 +19,7 @@ import {
   ArrowRight,
   ExternalLink,
   CheckCircle2,
+  CalendarCheck,
   Award
 } from 'lucide-react';
 import Card from '../../components/common/Card';
@@ -38,6 +39,7 @@ import Modal from '../../components/common/Modal';
 import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
 import Notification from '../../components/common/Notification';
+import RoleLeaveManagement from '../../components/leave/RoleLeaveManagement';
 import api from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -541,15 +543,15 @@ export const AccountsDashboard = () => {
         ]}
         quickActions={[
           { label: 'Create Fee Plan', icon: DollarSign, color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
-          { label: 'Issue Invoice', icon: FileText, color: 'bg-sky-50 text-sky-800 border-sky-200' },
+          { label: 'Student Invoices', icon: FileText, color: 'bg-sky-50 text-sky-800 border-sky-200' },
           { label: 'Record Payment', icon: CreditCard, color: 'bg-amber-50 text-amber-800 border-amber-200' },
-          { label: 'Export Ledger', icon: Award, color: 'bg-purple-50 text-purple-800 border-purple-200' }
+          { label: 'Reconciliation', icon: Award, color: 'bg-purple-50 text-purple-800 border-purple-200' }
         ]}
         onActionClick={(label) => {
           if (label === 'Create Fee Plan') setIsCreateStructureOpen(true);
-          else if (label === 'Issue Invoice') setIsInvoiceModalOpen(true);
-          else if (label === 'Record Payment') setIsCollectModalOpen(true);
-          else if (label === 'Export Ledger') handleExportFinancialReport();
+          else if (label === 'Student Invoices') setActiveTab('invoices');
+          else if (label === 'Record Payment') setIsRecordPaymentOpen(true);
+          else if (label === 'Reconciliation') setActiveTab('reconciliation');
         }}
       />
 
@@ -558,31 +560,6 @@ export const AccountsDashboard = () => {
 
       {/* 5. Modules Grid */}
       <DashboardModulesNav />
-
-      {/* Row 2: Monthly Fee Collection & Payment Status */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
-          <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-4">Monthly Fee Collection</h2>
-          <SimpleBarChart
-            data={monthlyFeeData}
-            height={190}
-            barColors={['#14b8a6']}
-          />
-        </div>
-
-        <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
-          <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-4">Payment Status</h2>
-          <div className="flex items-center justify-center py-2">
-            <SimpleDonutChart
-              data={paymentStatusDonut}
-              centerLabel="Total"
-              centerValue={payments.length || 320}
-              size={180}
-              thickness={22}
-            />
-          </div>
-        </div>
-      </div>
 
       {/* Row 3: Recent Transactions & Fee Due Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -700,6 +677,18 @@ export const AccountsDashboard = () => {
         >
           <TrendingUp className="w-4 h-4" />
           <span>Financial Audit & Reconciliation</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('leaves')}
+          className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+            activeTab === 'leaves'
+              ? 'border-emerald-600 text-emerald-800'
+              : 'border-transparent text-navy-500 hover:text-navy-900'
+          }`}
+        >
+          <CalendarCheck className="w-4 h-4" />
+          <span>Staff Leave Applications</span>
         </button>
       </div>
 
@@ -841,6 +830,13 @@ export const AccountsDashboard = () => {
               </p>
             </div>
           </Card>
+        </div>
+      )}
+
+      {/* TAB 5: Staff Leave Applications */}
+      {activeTab === 'leaves' && (
+        <div className="space-y-6">
+          <RoleLeaveManagement defaultTab="my-leaves" />
         </div>
       )}
 

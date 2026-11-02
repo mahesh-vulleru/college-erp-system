@@ -43,6 +43,7 @@ import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Notification from '../../components/common/Notification';
+import RoleLeaveManagement from '../../components/leave/RoleLeaveManagement';
 import api from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -577,15 +578,24 @@ export const StudentDashboard = () => {
           totalCountLabel="Attendance"
           quickActions={[
             { label: 'Hall Ticket', icon: Award, color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+            { label: 'Apply Leave', icon: CalendarCheck, color: 'bg-teal-50 text-teal-800 border-teal-200' },
             { label: 'Pay Fees', icon: CreditCard, color: 'bg-sky-50 text-sky-800 border-sky-200' },
-            { label: 'Timetable', icon: Clock, color: 'bg-amber-50 text-amber-800 border-amber-200' },
-            { label: 'Grade Card', icon: GraduationCap, color: 'bg-purple-50 text-purple-800 border-purple-200' }
+            { label: 'Timetable', icon: Clock, color: 'bg-amber-50 text-amber-800 border-amber-200' }
           ]}
           onActionClick={(label) => {
-            if (label === 'Hall Ticket') handleOpenHallTicket();
-            else if (label === 'Pay Fees') handleOpenPaymentModal();
-            else if (label === 'Timetable') setStudentActiveTab('timetable');
-            else if (label === 'Grade Card') setStudentActiveTab('grades');
+            if (label === 'Hall Ticket') {
+              if (myExams && myExams.length > 0) {
+                setSelectedHallTicketExam(myExams[0]);
+              } else {
+                setStudentActiveTab('exams');
+              }
+            } else if (label === 'Apply Leave') {
+              setStudentActiveTab('leaves');
+            } else if (label === 'Pay Fees') {
+              setStudentActiveTab('fees');
+            } else if (label === 'Timetable') {
+              setStudentActiveTab('timetable');
+            }
           }}
         />
 
@@ -594,98 +604,6 @@ export const StudentDashboard = () => {
 
         {/* 5. Modules Grid */}
         <DashboardModulesNav />
-
-        {/* Row 2: Today's Classes & Attendance Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm sm:text-base font-bold text-slate-900">Today's Classes</h2>
-              <button
-                onClick={() => setStudentActiveTab('timetable')}
-                className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-              >
-                View Full
-              </button>
-            </div>
-            <div className="space-y-3">
-              {studentTodayClasses.map((slot, i) => (
-                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-xs font-mono font-bold text-slate-700 w-36">{slot.time}</span>
-                    <span className="text-xs sm:text-sm font-semibold text-slate-900">{slot.subject}</span>
-                  </div>
-                  <span className="text-xs font-medium text-slate-500">{slot.room}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
-            <h2 className="text-sm sm:text-base font-bold text-slate-900 mb-4">Attendance Overview</h2>
-            <div className="flex items-center justify-center py-2">
-              <SimpleDonutChart
-                data={studentAttendanceDonut}
-                centerLabel="Overall"
-                centerValue={`${attPercentage}%`}
-                size={180}
-                thickness={22}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Row 3: Recent Results & Important Notices */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm sm:text-base font-bold text-slate-900">Recent Results</h2>
-              <button
-                onClick={() => setStudentActiveTab('results')}
-                className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-              >
-                View All
-              </button>
-            </div>
-            <div className="space-y-3">
-              {studentRecentResults.map((res, i) => (
-                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
-                  <span className="text-xs sm:text-sm font-semibold text-slate-900">{res.subject}</span>
-                  <div className="flex items-center space-x-3">
-                    <Badge variant="emerald" size="xs">Grade {res.grade}</Badge>
-                    <span className="text-xs font-mono font-bold text-slate-700">{res.score}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="lg:col-span-6 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-subtle">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm sm:text-base font-bold text-slate-900">Important Notices</h2>
-              <button
-                onClick={() => setStudentActiveTab('notices')}
-                className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-              >
-                View All
-              </button>
-            </div>
-            <div className="space-y-3">
-              {studentNoticesList.map((not, i) => (
-                <div key={i} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
-                      <Bell className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs sm:text-sm font-semibold text-slate-800">{not.title}</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">{not.date}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
         {/* Navigation Tabs */}
         <div className="flex border-b border-navy-200 bg-white px-4 rounded-xl shadow-subtle overflow-x-auto">
@@ -771,6 +689,18 @@ export const StudentDashboard = () => {
           >
             <Bell className="w-4 h-4" />
             <span>Campus Circulars</span>
+          </button>
+
+          <button
+            onClick={() => setStudentActiveTab('leaves')}
+            className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 whitespace-nowrap ${
+              studentActiveTab === 'leaves'
+                ? 'border-emerald-600 text-emerald-800'
+                : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <CalendarCheck className="w-4 h-4" />
+            <span>Leave Applications</span>
           </button>
 
           <button
@@ -1139,6 +1069,13 @@ export const StudentDashboard = () => {
               </div>
             )}
           </Card>
+        )}
+
+        {/* TAB: Leave Applications */}
+        {studentActiveTab === 'leaves' && (
+          <div className="space-y-6">
+            <RoleLeaveManagement defaultTab="my-leaves" />
+          </div>
         )}
       </div>
     );

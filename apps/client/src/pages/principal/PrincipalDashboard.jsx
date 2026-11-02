@@ -40,7 +40,7 @@ import api from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import StudentAtRiskAlerts from '../../components/principal/StudentAtRiskAlerts';
-import FacultyLeaveManagement from '../../components/principal/FacultyLeaveManagement';
+import RoleLeaveManagement from '../../components/leave/RoleLeaveManagement';
 import ExecutiveReportsExport from '../../components/principal/ExecutiveReportsExport';
 import DashboardHeaderBanner from '../../components/dashboard/DashboardHeaderBanner';
 import DashboardKPICard from '../../components/dashboard/DashboardKPICard';
@@ -619,8 +619,8 @@ export const PrincipalDashboard = () => {
         </Card>
       </div>
 
-      {/* Feature 2: Faculty Leave Management & Approval Workflow */}
-      <FacultyLeaveManagement departments={deptSummaries} />
+      {/* Feature 2: Institutional & Faculty Leave Management Workflow */}
+      <RoleLeaveManagement defaultTab="approvals" />
 
       {/* 3. Academic Calendar & Institutional Circulars */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

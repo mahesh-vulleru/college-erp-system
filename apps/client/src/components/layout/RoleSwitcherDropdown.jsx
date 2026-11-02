@@ -117,16 +117,29 @@ export const RoleSwitcherDropdown = () => {
     navigate(role.path);
   };
 
+  const userRole = (user?.role || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
+  const isSuperAdmin = userRole === 'super_admin' || userRole === 'admin' || userRole === 'superadmin' || userRole === 'super_administrator';
+
+  // For non-superadmin users: display assigned role as a static, non-clickable label
+  if (!isSuperAdmin) {
+    return (
+      <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-[#072c1f] text-white text-xs sm:text-sm font-semibold tracking-wide shadow-xs border border-emerald-900/60 select-none">
+        <IconComponent className="w-4 h-4 text-emerald-300 shrink-0" />
+        <span className="truncate max-w-[140px] sm:max-w-none">{activeRoleInfo.name}</span>
+      </div>
+    );
+  }
+
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
-      {/* Role Pill Button */}
+      {/* Role Pill Button for Super Admin */}
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-[#072c1f] hover:bg-[#0a3a2b] text-white text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-xs border border-emerald-900/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
       >
         <IconComponent className="w-4 h-4 text-emerald-300 shrink-0" />
-        <span className="truncate max-w-[120px] sm:max-w-none">{activeRoleInfo.name} / Management</span>
+        <span className="truncate max-w-[120px] sm:max-w-none">{activeRoleInfo.name}</span>
         <ChevronDown className={`w-3.5 h-3.5 text-emerald-300/80 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
