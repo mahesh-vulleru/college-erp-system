@@ -242,7 +242,7 @@ export const App = () => {
               <Route
                 path="student"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.ACCOUNTS, 'admin']}>
                     <StudentDashboard />
                   </ProtectedRoute>
                 }
@@ -250,7 +250,7 @@ export const App = () => {
               <Route
                 path="students"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.ACCOUNTS, 'admin']}>
                     <StudentDashboard />
                   </ProtectedRoute>
                 }
@@ -267,7 +267,7 @@ export const App = () => {
               <Route
                 path="library"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, 'admin']}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
                     <LibrarianDashboard />
                   </ProtectedRoute>
                 }
@@ -276,7 +276,7 @@ export const App = () => {
               <Route
                 path="library/*"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, 'admin']}>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
                     <LibrarianDashboard />
                   </ProtectedRoute>
                 }
@@ -472,7 +472,7 @@ export const App = () => {
               <Route
                 path="calendar"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.ACCOUNTS, ROLES.LIBRARIAN, ROLES.LIBRARY_STAFF, ROLES.TRANSPORT_ADMIN, ROLES.TRANSPORT_SUPERVISOR, ROLES.BUS_DRIVER, ROLES.BUS_ATTENDANT, ROLES.PARENT, 'admin']}>
                     <DeadlineEventTrackerPage />
                   </ProtectedRoute>
                 }
@@ -524,7 +524,24 @@ export const App = () => {
               <Route
                 path="notices"
                 element={
-                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.ACCOUNTS, 'admin']}>
+                  <ProtectedRoute
+                    allowedRoles={[
+                      ROLES.SUPER_ADMIN,
+                      ROLES.PRINCIPAL,
+                      ROLES.HOD,
+                      ROLES.FACULTY,
+                      ROLES.STUDENT,
+                      ROLES.ACCOUNTS,
+                      ROLES.LIBRARIAN,
+                      ROLES.LIBRARY_STAFF,
+                      ROLES.TRANSPORT_ADMIN,
+                      ROLES.TRANSPORT_SUPERVISOR,
+                      ROLES.BUS_DRIVER,
+                      ROLES.BUS_ATTENDANT,
+                      ROLES.PARENT,
+                      'admin'
+                    ]}
+                  >
                     <NoticeBoardPage />
                   </ProtectedRoute>
                 }
