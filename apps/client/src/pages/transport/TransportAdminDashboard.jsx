@@ -33,7 +33,8 @@ import {
   DollarSign,
   Receipt,
   MessageSquare,
-  Megaphone
+  Megaphone,
+  FileSpreadsheet
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import StatWidget from '../../components/common/StatWidget';
@@ -63,6 +64,8 @@ import SafetyManagementView from './SafetyManagementView';
 import ComplaintsManagementView from './ComplaintsManagementView';
 import AnnouncementsManagementView from './AnnouncementsManagementView';
 import ParentTransportPortalView from './ParentTransportPortalView';
+import TransportAnalyticsDashboard from './TransportAnalyticsDashboard';
+import TransportReportCenter from './TransportReportCenter';
 
 export const TransportAdminDashboard = () => {
   const { user } = useAuth();
@@ -92,7 +95,9 @@ export const TransportAdminDashboard = () => {
       'safety',
       'complaints',
       'announcements',
-      'parent'
+      'parent',
+      'analytics',
+      'reports'
     ].includes(rawTab)) return rawTab;
     return 'overview';
   }, [rawTab]);
@@ -829,6 +834,8 @@ export const TransportAdminDashboard = () => {
           { key: 'complaints', label: 'Feedback & Grievances', icon: MessageSquare },
           { key: 'announcements', label: 'Notices & Broadcasts', icon: Megaphone },
           { key: 'parent', label: 'Parent Transit Portal', icon: Users },
+          { key: 'analytics', label: 'Executive Analytics', icon: TrendingUp },
+          { key: 'reports', label: 'Report Center & Exports', icon: FileSpreadsheet },
           { key: 'settings', label: 'Transport Rules & Settings', icon: ShieldCheck }
         ].map((tab) => {
           const Icon = tab.icon;
@@ -2012,6 +2019,20 @@ export const TransportAdminDashboard = () => {
       {/* ------------------------------------------------------------------- */}
       {activeTab === 'parent' && (
         <ParentTransportPortalView onOpenComplaintModal={() => handleTabChange('complaints')} />
+      )}
+
+      {/* ------------------------------------------------------------------- */}
+      {/* TAB: TRANSPORT ANALYTICS & EXECUTIVE INTELLIGENCE (PHASE 5) */}
+      {/* ------------------------------------------------------------------- */}
+      {activeTab === 'analytics' && (
+        <TransportAnalyticsDashboard />
+      )}
+
+      {/* ------------------------------------------------------------------- */}
+      {/* TAB: CENTRAL REPORT CENTER & EXPORTS (PHASE 5) */}
+      {/* ------------------------------------------------------------------- */}
+      {activeTab === 'reports' && (
+        <TransportReportCenter />
       )}
 
       {/* =================================================================== */}

@@ -52,6 +52,11 @@ export const DeadlineEventTrackerPage = () => {
   const { user } = useAuth();
   const { addToast } = useToast();
 
+  const canManageEvents = useMemo(() => {
+    const role = user?.role;
+    return ['super_admin', 'admin', 'principal', 'hod', 'transport_admin'].includes(role);
+  }, [user?.role]);
+
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
   const [isLoading, setIsLoading] = useState(true);
   const [events, setEvents] = useState([]);
@@ -399,15 +404,17 @@ export const DeadlineEventTrackerPage = () => {
             Refresh
           </Button>
 
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={openCreateModal}
-            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Schedule Event
-          </Button>
+          {canManageEvents && (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={openCreateModal}
+              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              Schedule Event
+            </Button>
+          )}
         </div>
       </div>
 
@@ -635,7 +642,7 @@ export const DeadlineEventTrackerPage = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          {evt.status !== 'completed' && evt.status !== 'cancelled' && (
+                          {canManageEvents && evt.status !== 'completed' && evt.status !== 'cancelled' && (
                             <button
                               type="button"
                               onClick={() => { setSelectedEvent(evt); setIsCompleteModalOpen(true); }}
@@ -653,22 +660,26 @@ export const DeadlineEventTrackerPage = () => {
                           >
                             <Eye className="w-4 h-4" />
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => openEditModal(evt)}
-                            className="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50"
-                            title="Edit Event"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteEvent(evt._id || evt.id)}
-                            className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50"
-                            title="Delete Event"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {canManageEvents && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => openEditModal(evt)}
+                                className="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50"
+                                title="Edit Event"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteEvent(evt._id || evt.id)}
+                                className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50"
+                                title="Delete Event"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

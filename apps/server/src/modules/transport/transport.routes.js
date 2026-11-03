@@ -99,6 +99,23 @@ const {
   updateNotificationPreferences
 } = require('./transport.controller');
 
+const {
+  getExecutiveAnalytics,
+  getFleetAnalytics,
+  getRouteAnalytics,
+  getDriverAnalytics,
+  getStudentTransportAnalytics,
+  getTripAndAttendanceAnalytics,
+  getFuelAndMaintenanceAnalytics,
+  getFinancialAnalytics,
+  getSafetyAnalytics
+} = require('./transport.analytics.controller');
+
+const {
+  getReportData,
+  exportReport
+} = require('./transport.reports.controller');
+
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
 const { ROLES } = require('@college-erp/shared');
@@ -1081,6 +1098,163 @@ router.get(
 router.put(
   '/notifications/preferences',
   updateNotificationPreferences
+);
+
+// ---------------------------------------------------------------------------
+// 21. TRANSPORT ANALYTICS APIS (PHASE 5)
+// ---------------------------------------------------------------------------
+router.get(
+  '/analytics/executive',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR
+  ),
+  getExecutiveAnalytics
+);
+
+router.get(
+  '/analytics/fleet',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR
+  ),
+  getFleetAnalytics
+);
+
+router.get(
+  '/analytics/routes',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR
+  ),
+  getRouteAnalytics
+);
+
+router.get(
+  '/analytics/drivers',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR
+  ),
+  getDriverAnalytics
+);
+
+router.get(
+  '/analytics/students',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR,
+    ROLES.STUDENT,
+    ROLES.PARENT
+  ),
+  getStudentTransportAnalytics
+);
+
+router.get(
+  '/analytics/trips',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR
+  ),
+  getTripAndAttendanceAnalytics
+);
+
+router.get(
+  '/analytics/attendance',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR
+  ),
+  getTripAndAttendanceAnalytics
+);
+
+router.get(
+  '/analytics/fuel',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR
+  ),
+  getFuelAndMaintenanceAnalytics
+);
+
+router.get(
+  '/analytics/maintenance',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR
+  ),
+  getFuelAndMaintenanceAnalytics
+);
+
+router.get(
+  '/analytics/finance',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.ACCOUNTS
+  ),
+  getFinancialAnalytics
+);
+
+router.get(
+  '/analytics/safety',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR
+  ),
+  getSafetyAnalytics
+);
+
+// ---------------------------------------------------------------------------
+// 22. TRANSPORT REPORT CENTER & EXPORTS (PHASE 5)
+// ---------------------------------------------------------------------------
+router.get(
+  '/reports',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR,
+    ROLES.ACCOUNTS,
+    ROLES.PARENT,
+    ROLES.STUDENT
+  ),
+  getReportData
+);
+
+router.get(
+  '/reports/export',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR,
+    ROLES.ACCOUNTS,
+    ROLES.PARENT,
+    ROLES.STUDENT
+  ),
+  exportReport
 );
 
 module.exports = router;

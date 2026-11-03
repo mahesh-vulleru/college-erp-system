@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Menu, Search, Bell, Calendar, HelpCircle, User, LogOut, ExternalLink } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import NotificationDropdown from './NotificationDropdown';
 import RoleSwitcherDropdown from './RoleSwitcherDropdown';
 import api from '../../api/apiClient';
 
@@ -80,16 +81,16 @@ export const Topbar = ({ onToggleSidebar }) => {
 
       {/* Right: Notification, Calendar, Help, Profile */}
       <div className="flex items-center space-x-2 sm:space-x-3">
-        {/* Notices Bell */}
+        {/* Universal Notifications Dropdown */}
+        <NotificationDropdown />
+
+        {/* Calendar / Events quick link */}
         <Link
-          to="/notices"
-          className="relative p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-emerald-700 transition-colors"
-          title={`${unreadNoticesCount} Notices`}
+          to="/calendar"
+          className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-emerald-700 transition-colors hidden sm:inline-flex"
+          title="Institutional Calendar & Events"
         >
-          <Bell className="w-4 h-4" />
-          {unreadNoticesCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
-          )}
+          <Calendar className="w-4 h-4" />
         </Link>
 
         {/* Timetable / Calendar quick button */}

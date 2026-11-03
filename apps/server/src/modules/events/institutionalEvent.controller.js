@@ -17,8 +17,9 @@ async function listEvents(req, res, next) {
 
     const query = {};
 
-    if (req.query.category && req.query.category !== 'all') {
-      query.eventCategory = req.query.category;
+    const category = req.query.eventCategory || req.query.category;
+    if (category && category !== 'all') {
+      query.eventCategory = category;
     }
 
     if (req.query.status && req.query.status !== 'all') {
