@@ -780,23 +780,24 @@ export const LibrarianDashboard = () => {
       {/* 5. Modules Grid */}
       <DashboardModulesNav />
 
-      <div className="bg-white rounded-2xl p-2 border border-slate-200 shadow-xs">
+      <div className="bg-white rounded-2xl p-2.5 border border-slate-200 shadow-xs">
         {/* Tab Navigation Pill Bar */}
-        <div className="flex items-center space-x-1.5 overflow-x-auto mt-6 pt-4 border-t border-rose-900/40 no-scrollbar">
+        <div className="flex items-center space-x-1.5 overflow-x-auto no-scrollbar">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = currentTab === tab.id;
             return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
                   isActive
-                    ? 'bg-rose-600 text-white shadow-md shadow-rose-950/50'
-                    : 'text-rose-200/70 hover:text-white hover:bg-white/5'
+                    ? 'bg-emerald-700 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-emerald-800 hover:bg-emerald-50/70'
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <Icon className="w-4 h-4 shrink-0" />
                 <span>{tab.label}</span>
               </button>
             );
@@ -810,7 +811,7 @@ export const LibrarianDashboard = () => {
       {currentTab === 'overview' && (
         <div className="space-y-6">
           {/* Key Metric Tiles */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
             <StatWidget
               title="Total Titles"
               value={dashboardData?.summary?.totalTitles ?? '...'}

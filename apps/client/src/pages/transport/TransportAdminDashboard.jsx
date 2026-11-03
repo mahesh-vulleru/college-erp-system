@@ -760,21 +760,21 @@ export const TransportAdminDashboard = () => {
       {/* ------------------------------------------------------------------- */}
       {/* HEADER BANNER */}
       {/* ------------------------------------------------------------------- */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-950 via-stone-900 to-amber-950 p-6 sm:p-8 text-white border border-amber-900/40 shadow-xl shadow-amber-950/20">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#062a1e] via-[#0b3d2c] to-[#062a1e] p-6 sm:p-8 text-white border border-emerald-900/50 shadow-xl shadow-emerald-950/20">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center gap-2.5">
-              <span className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+              <span className="p-2 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 <Bus className="w-6 h-6" />
               </span>
-              <Badge variant="warning" size="sm" className="font-semibold tracking-wide uppercase">
-                Transport Management System &bull; Phase 1
-              </Badge>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-200 border border-emerald-500/30 tracking-wide uppercase">
+                Transport Management System &bull; Phase 1–5
+              </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
               Transport Operations Command Portal
             </h1>
-            <p className="text-sm text-amber-200/80 font-light max-w-2xl">
+            <p className="text-sm text-emerald-100/80 font-light max-w-2xl">
               Centralized fleet monitoring, bus route allocation, driver rosters, and student transport coordination for Apex Engineering College.
             </p>
           </div>
@@ -791,7 +791,7 @@ export const TransportAdminDashboard = () => {
                 if (activeTab === 'students') fetchAllocations();
                 addToast('Refreshing live fleet metrics...', 'info');
               }}
-              className="text-amber-200 border-amber-700/60 hover:bg-amber-900/40"
+              className="text-emerald-100 border-emerald-500/40 hover:bg-emerald-800/40 cursor-pointer"
             >
               <RefreshCw className="w-4 h-4 mr-1.5" />
               Sync Data
@@ -800,7 +800,7 @@ export const TransportAdminDashboard = () => {
               variant="primary"
               size="sm"
               onClick={handleOpenAllocateModal}
-              className="bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold border-none shadow-md shadow-amber-500/30"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold border-none shadow-md shadow-emerald-950/30 cursor-pointer"
             >
               <Plus className="w-4 h-4 mr-1.5" />
               Allocate Student
@@ -809,7 +809,7 @@ export const TransportAdminDashboard = () => {
         </div>
 
         {/* Decorative background glow */}
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       </div>
 
       {/* ------------------------------------------------------------------- */}
@@ -847,8 +847,8 @@ export const TransportAdminDashboard = () => {
               onClick={() => handleTabChange(tab.key)}
               className={`inline-flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all whitespace-nowrap cursor-pointer ${
                 isActive
-                  ? 'bg-amber-500 text-stone-950 font-bold shadow-md shadow-amber-500/20'
-                  : 'text-navy-600 hover:text-navy-950 hover:bg-navy-100/70'
+                  ? 'bg-emerald-700 text-white font-bold shadow-md shadow-emerald-900/20'
+                  : 'text-slate-600 hover:text-emerald-900 hover:bg-emerald-50/70'
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
@@ -856,7 +856,7 @@ export const TransportAdminDashboard = () => {
               {tab.count !== undefined && (
                 <span
                   className={`ml-1 text-[11px] px-1.5 py-0.5 rounded-full ${
-                    isActive ? 'bg-stone-950/20 text-stone-950 font-bold' : 'bg-navy-200/80 text-navy-700'
+                    isActive ? 'bg-white/20 text-white font-bold' : 'bg-slate-100 text-slate-700'
                   }`}
                 >
                   {tab.count}
@@ -997,7 +997,7 @@ export const TransportAdminDashboard = () => {
                 <button
                   type="button"
                   onClick={() => handleTabChange('students')}
-                  className="font-semibold text-amber-700 hover:text-amber-900 inline-flex items-center gap-1 cursor-pointer"
+                  className="font-semibold text-emerald-700 hover:text-emerald-900 inline-flex items-center gap-1 cursor-pointer"
                 >
                   Manage Allocations <ArrowRight className="w-3.5 h-3.5" />
                 </button>
@@ -1050,7 +1050,7 @@ export const TransportAdminDashboard = () => {
                 <button
                   type="button"
                   onClick={() => handleTabChange('buses')}
-                  className="font-semibold text-amber-700 hover:text-amber-900 inline-flex items-center gap-1 cursor-pointer"
+                  className="font-semibold text-emerald-700 hover:text-emerald-900 inline-flex items-center gap-1 cursor-pointer"
                 >
                   View Buses <ArrowRight className="w-3.5 h-3.5" />
                 </button>
@@ -1103,7 +1103,7 @@ export const TransportAdminDashboard = () => {
                 <button
                   type="button"
                   onClick={() => handleTabChange('drivers')}
-                  className="font-semibold text-amber-700 hover:text-amber-900 inline-flex items-center gap-1 cursor-pointer"
+                  className="font-semibold text-emerald-700 hover:text-emerald-900 inline-flex items-center gap-1 cursor-pointer"
                 >
                   Manage Drivers <ArrowRight className="w-3.5 h-3.5" />
                 </button>
@@ -1191,7 +1191,7 @@ export const TransportAdminDashboard = () => {
               variant="primary"
               size="sm"
               onClick={handleOpenAddBus}
-              className="bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold border-none"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold border-none shadow-xs cursor-pointer"
             >
               <Plus className="w-4 h-4 mr-1.5" />
               Add Bus
@@ -1362,7 +1362,7 @@ export const TransportAdminDashboard = () => {
               variant="primary"
               size="sm"
               onClick={handleOpenAddRoute}
-              className="bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold border-none"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold border-none shadow-xs cursor-pointer"
             >
               <Plus className="w-4 h-4 mr-1.5" />
               Add Route
@@ -1514,7 +1514,7 @@ export const TransportAdminDashboard = () => {
               variant="primary"
               size="sm"
               onClick={handleOpenAddDriver}
-              className="bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold border-none"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold border-none shadow-xs cursor-pointer"
             >
               <Plus className="w-4 h-4 mr-1.5" />
               Add Driver
@@ -1671,7 +1671,7 @@ export const TransportAdminDashboard = () => {
               variant="primary"
               size="sm"
               onClick={handleOpenAllocateModal}
-              className="bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold border-none"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold border-none shadow-xs cursor-pointer"
             >
               <Plus className="w-4 h-4 mr-1.5" />
               New Student Allocation
@@ -1905,7 +1905,7 @@ export const TransportAdminDashboard = () => {
                   type="submit"
                   variant="primary"
                   disabled={settingsSaving}
-                  className="bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold border-none"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold border-none shadow-xs cursor-pointer"
                 >
                   {settingsSaving ? 'Saving...' : 'Save Transport Configuration'}
                 </Button>
@@ -2187,7 +2187,7 @@ export const TransportAdminDashboard = () => {
               variant="primary"
               size="sm"
               disabled={busFormSubmitting}
-              className="bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold border-none"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold border-none shadow-xs cursor-pointer"
             >
               {busFormSubmitting ? 'Saving...' : editingBus ? 'Update Bus' : 'Register Bus'}
             </Button>
@@ -2426,7 +2426,7 @@ export const TransportAdminDashboard = () => {
               variant="primary"
               size="sm"
               disabled={routeFormSubmitting}
-              className="bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold border-none"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold border-none shadow-xs cursor-pointer"
             >
               {routeFormSubmitting ? 'Saving...' : editingRoute ? 'Update Route' : 'Create Route'}
             </Button>
@@ -2596,7 +2596,7 @@ export const TransportAdminDashboard = () => {
               variant="primary"
               size="sm"
               disabled={driverFormSubmitting}
-              className="bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold border-none"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold border-none shadow-xs cursor-pointer"
             >
               {driverFormSubmitting ? 'Saving...' : editingDriver ? 'Update Driver' : 'Save Driver'}
             </Button>
@@ -2805,7 +2805,7 @@ export const TransportAdminDashboard = () => {
               variant="primary"
               size="sm"
               disabled={allocateFormSubmitting}
-              className="bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold border-none"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold border-none shadow-xs cursor-pointer"
             >
               {allocateFormSubmitting ? 'Allocating...' : 'Confirm Allocation Pass'}
             </Button>

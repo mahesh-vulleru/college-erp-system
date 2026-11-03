@@ -1283,8 +1283,8 @@ switch (normalized) {
           DEMO MODAL
       ========================================================================= */}
       {isDemoModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 animate-fade-in">
+          <div className="erp-modal-panel rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-pink-200" style={{ backgroundColor: "#FFF1F5" }}>
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <Play className="w-4 h-4 text-emerald-600 fill-emerald-600" /> College ERP Platform Walkthrough

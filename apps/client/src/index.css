@@ -75,3 +75,24 @@ html, body {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px -5px rgba(6, 78, 59, 0.08), 0 8px 10px -6px rgba(6, 78, 59, 0.04);
 }
+
+
+/* Global Modal Theme: Light Pink (#FFF1F5) with crisp White inputs and dark text */
+.erp-modal-panel {
+  background-color: #FFF1F5 !important;
+}
+
+.erp-modal-panel input,
+.erp-modal-panel select,
+.erp-modal-panel textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1;
+}
+
+.erp-modal-panel input:focus,
+.erp-modal-panel select:focus,
+.erp-modal-panel textarea:focus {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}

@@ -24,6 +24,38 @@ const DEV_ACCOUNTS = [
     role: ROLES.TRANSPORT_ADMIN,
     department: 'Transport & Logistics',
     status: USER_STATUS.ACTIVE
+  },
+  {
+    name: 'Ms. Sarah Jenkins',
+    email: 'supervisor@college.edu',
+    password: 'Password123!',
+    role: ROLES.TRANSPORT_SUPERVISOR,
+    department: 'Transport Operations',
+    status: USER_STATUS.ACTIVE
+  },
+  {
+    name: 'Mr. Rajesh Kumar',
+    email: 'driver@college.edu',
+    password: 'Password123!',
+    role: ROLES.BUS_DRIVER,
+    department: 'Transport Fleet',
+    status: USER_STATUS.ACTIVE
+  },
+  {
+    name: 'Mrs. Sunita Sharma',
+    email: 'attendant@college.edu',
+    password: 'Password123!',
+    role: ROLES.BUS_ATTENDANT,
+    department: 'Student Transit Care',
+    status: USER_STATUS.ACTIVE
+  },
+  {
+    name: 'Mr. Vikram Sharma',
+    email: 'parent@college.edu',
+    password: 'Password123!',
+    role: ROLES.PARENT,
+    department: 'Parents Association',
+    status: USER_STATUS.ACTIVE
   }
 ];
 
@@ -70,12 +102,11 @@ if (require.main === module) {
       await mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 8000 });
       console.log('[DevSeed CLI] Connected successfully.');
       await ensureDevAccounts();
-      const transportUser = await User.findOne({ email: 'transport@college.edu' });
-      if (transportUser) {
-        console.log('[DevSeed CLI] Transport Admin verified:');
-        console.log(`- Email: ${transportUser.email}`);
-        console.log(`- Role:  ${transportUser.role}`);
-        console.log(`- Status: ${transportUser.status}`);
+      for (const acc of DEV_ACCOUNTS) {
+        const u = await User.findOne({ email: acc.email });
+        if (u) {
+          console.log(`[DevSeed CLI] Account verified: ${u.email} -> ${u.role}`);
+        }
       }
       await mongoose.disconnect();
       console.log('[DevSeed CLI] Complete.');
@@ -91,4 +122,3 @@ module.exports = {
   ensureDevAccounts,
   DEV_ACCOUNTS
 };
-
