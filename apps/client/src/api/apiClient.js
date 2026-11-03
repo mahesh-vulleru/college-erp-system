@@ -800,6 +800,7 @@ class ApiClient {
   getInstitutionalEvents(params = {}) {
     const searchParams = new URLSearchParams();
     if (params.category) searchParams.append('category', params.category);
+    if (params.eventCategory) searchParams.append('category', params.eventCategory);
     if (params.status) searchParams.append('status', params.status);
     if (params.priority) searchParams.append('priority', params.priority);
     if (params.department) searchParams.append('department', params.department);
@@ -810,6 +811,10 @@ class ApiClient {
     if (params.limit) searchParams.append('limit', params.limit);
     const qs = searchParams.toString();
     return this.get(`/v1/institutional-events${qs ? `?${qs}` : ''}`);
+  }
+
+  getEvents(params = {}) {
+    return this.getInstitutionalEvents(params);
   }
 
   getEventsSummary() {
@@ -824,12 +829,24 @@ class ApiClient {
     return this.post('/v1/institutional-events', data);
   }
 
+  createEvent(data) {
+    return this.createInstitutionalEvent(data);
+  }
+
   updateInstitutionalEvent(id, data) {
     return this.put(`/v1/institutional-events/${id}`, data);
   }
 
+  updateEvent(id, data) {
+    return this.updateInstitutionalEvent(id, data);
+  }
+
   deleteInstitutionalEvent(id) {
     return this.delete(`/v1/institutional-events/${id}`);
+  }
+
+  deleteEvent(id) {
+    return this.deleteInstitutionalEvent(id);
   }
 
   markEventCompleted(id, data = {}) {
@@ -1531,6 +1548,106 @@ class ApiClient {
 
   updateTransportNotificationPreferences(data) {
     return this.put('/v1/transport/notifications/preferences', data);
+  }
+
+  // Phase 5: Transport Analytics & Reports
+  getTransportExecutiveAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/executive${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportFleetAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/fleet${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportRouteAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/routes${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportDriverAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/drivers${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportStudentAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/students${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportTripAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/trips${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportFuelAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/fuel${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportFinancialAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/finance${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportSafetyAnalytics(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/analytics/safety${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportReport(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/transport/reports${qs ? `?${qs}` : ''}`);
+  }
+
+  getTransportExportUrl(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return `${API_BASE_URL}/v1/transport/reports/export${qs ? `?${qs}` : ''}`;
+  }
+
+  // Universal Notifications System
+  getNotifications(params = {}) {
+    const qs = new URLSearchParams();
+    if (params.category && params.category !== 'all') qs.append('category', params.category);
+    if (params.read !== undefined) qs.append('read', String(params.read));
+    if (params.limit) qs.append('limit', String(params.limit));
+    const query = qs.toString();
+    return this.get(`/v1/notifications${query ? `?${query}` : ''}`);
+  }
+
+  markNotificationRead(id) {
+    return this.patch(`/v1/notifications/${id}/read`);
+  }
+
+  markAllNotificationsRead() {
+    return this.post('/v1/notifications/read-all');
+  }
+
+  createNotification(data) {
+    return this.post('/v1/notifications', data);
+  }
+
+  // Universal Calendar & Institutional Events
+  getCalendarEvents(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/calendar${qs ? `?${qs}` : ''}`);
+  }
+
+  getCalendarSummary() {
+    return this.get('/v1/calendar/summary');
+  }
+
+  createCalendarEvent(data) {
+    return this.post('/v1/calendar', data);
+  }
+
+  updateCalendarEvent(id, data) {
+    return this.put(`/v1/calendar/${id}`, data);
+  }
+
+  deleteCalendarEvent(id) {
+    return this.delete(`/v1/calendar/${id}`);
   }
 }
 

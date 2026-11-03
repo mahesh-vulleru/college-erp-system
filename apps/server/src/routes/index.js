@@ -23,6 +23,7 @@ const goalRoutes = require('../modules/goals/goal.routes');
 const eventRoutes = require('../modules/events/institutionalEvent.routes');
 const libraryRoutes = require('../modules/library/library.routes');
 const transportRoutes = require('../modules/transport/transport.routes');
+const notificationRoutes = require('../modules/notifications/notification.routes');
 
 const {
   getAttendanceOverview,
@@ -99,6 +100,11 @@ v1Router.use('/leaves', leaveRoutes);
 v1Router.use('/accreditation', accreditationRoutes);
 v1Router.use('/institutional-goals', goalRoutes);
 v1Router.use('/institutional-events', eventRoutes);
+v1Router.use('/events', eventRoutes.calendarRouter || eventRoutes);
+v1Router.use('/calendar', eventRoutes.calendarRouter || eventRoutes);
+
+// Notifications System
+v1Router.use('/notifications', notificationRoutes);
 
 // Library
 v1Router.use('/library', libraryRoutes);
@@ -109,10 +115,10 @@ v1Router.use('/transport', transportRoutes);
 // Mount versioned API
 router.use('/v1', v1Router);
 
-// Direct Library API Alias
+// Direct Aliases
 router.use('/library', libraryRoutes);
-
-// Direct Transport API Alias
 router.use('/transport', transportRoutes);
+router.use('/notifications', notificationRoutes);
+router.use('/calendar', eventRoutes.calendarRouter || eventRoutes);
 
 module.exports = router;

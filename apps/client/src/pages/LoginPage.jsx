@@ -57,11 +57,18 @@ export const LoginPage = () => {
         return '/library-staff';
       case 'transport_admin':
       case 'transportadmin':
-      case 'transport_supervisor':
-      case 'bus_driver':
-      case 'bus_attendant':
-      case 'parent':
         return '/transport';
+      case 'transport_supervisor':
+      case 'transportsupervisor':
+        return '/transport?tab=supervisor';
+      case 'bus_driver':
+      case 'driver':
+        return '/transport?tab=driver_portal';
+      case 'bus_attendant':
+      case 'attendant':
+        return '/transport?tab=attendance';
+      case 'parent':
+        return '/transport?tab=parent';
       default:
         return '/principal';
     }
