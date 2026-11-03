@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
 import {
   GraduationCap,
@@ -21,17 +21,69 @@ import {
   Headphones,
   Settings,
   MessageSquare,
-  BookMarked
+  BookMarked,
+  Car,
+  Wrench,
+  Fuel,
+  Navigation,
+  MapPin,
+  Activity,
+  Radio,
+  DollarSign,
+  Receipt,
+  AlertCircle,
+  FileSpreadsheet,
+  ShieldAlert,
+  ShieldCheck,
+  AlertTriangle,
+  Megaphone,
+  TrendingUp,
+  Sliders,
+  Award,
+  CheckCircle2,
+  GitBranch,
+  User,
+  Key,
+  Landmark,
+  ChevronDown,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Calendar
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { ROLES } from '@college-erp/shared';
 
 export const Sidebar = ({ isOpen, onClose }) => {
   const { user } = useAuth();
   const location = useLocation();
 
-  // Determine role dashboard root path
+  // Desktop collapsed state
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('erp_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleCollapsed = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('erp_sidebar_collapsed', String(next));
+      } catch {
+        // storage fallback
+      }
+      return next;
+    });
+  };
+
+  // Determine normalized role
+  const role = (user?.role || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
+
+  // Determine root dashboard path
   const getRoleDashboardPath = () => {
-    const role = (user?.role || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
     switch (role) {
       case 'super_admin':
       case 'admin':
@@ -55,64 +107,572 @@ export const Sidebar = ({ isOpen, onClose }) => {
       case 'librarian':
         return '/library';
       case 'transport_admin':
+        return '/transport/admin';
       case 'transport_supervisor':
+        return '/transport/supervisor';
       case 'bus_driver':
+        return '/transport/driver';
       case 'bus_attendant':
+        return '/transport/attendant';
       case 'parent':
-        return '/transport';
+        return '/transport/parent';
       default:
         return '/principal';
     }
   };
 
   const dashboardPath = getRoleDashboardPath();
-  const role = (user?.role || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
 
-  // Navigation Items with strict Role-Based visibility matching responsibilities
-  const allNavItems = [
-    { path: dashboardPath, label: 'Dashboard', icon: LayoutDashboard, exact: true, roles: '*' },
-    { path: '/departments', label: 'Institution', icon: Building2, roles: ['super_admin', 'admin', 'superadmin', 'principal'] },
-    { path: '/courses', label: 'Academics', icon: GraduationCap, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'faculty', 'student'] },
-    { path: '/students', label: 'Students', icon: Users, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'faculty', 'accounts', 'librarian'] },
-    { path: '/faculty', label: 'Faculty', icon: UserCheck, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'faculty'] },
-    { path: '/examinations', label: 'Examinations', icon: FileEdit, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'faculty', 'student'] },
-    { path: '/attendance', label: 'Attendance', icon: CalendarCheck, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'faculty', 'student'] },
-    { path: '/timetable', label: 'Timetable', icon: Clock, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'faculty', 'student'] },
-    { path: '/subjects', label: 'Curriculum', icon: Layers, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'faculty'] },
-    { path: '/fees', label: 'Fee & Accounts', icon: CreditCard, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'accounts', 'student'] },
-    { path: '/library', label: 'Library', icon: BookMarked, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'librarian', 'library_staff', 'student', 'faculty'] },
-    { path: '/transport', label: 'Transport', icon: Bus, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'student', 'transport_admin', 'transport_supervisor', 'bus_driver', 'bus_attendant', 'parent'] },
-    { path: '/hostel', label: 'Hostel', icon: BedDouble, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'student'] },
-    { path: '/placements', label: 'Placements', icon: Briefcase, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'student'] },
-    { path: '/notices', label: 'Communications', icon: MessageSquare, roles: '*' },
-    { path: '/reports', label: 'Reports & Analytics', icon: BarChart3, roles: ['super_admin', 'admin', 'superadmin', 'principal', 'hod', 'accounts'] },
-    { path: '/settings', label: 'Settings', icon: Settings, roles: ['super_admin', 'admin', 'superadmin', 'principal'] }
-  ];
+  // ---------------------------------------------------------------------------
+  // ROLE-SPECIFIC MENU GROUPS CONFIGURATION
+  // ---------------------------------------------------------------------------
+  const roleMenuGroups = useMemo(() => {
+    // 1. TRANSPORT ADMIN
+    if (role === 'transport_admin' || role === 'transportadmin') {
+      return [
+        {
+          group: 'Overview',
+          icon: LayoutDashboard,
+          items: [
+            { label: 'Transport Dashboard', path: '/transport/admin', exact: true, icon: LayoutDashboard },
+            { label: 'Fleet Analytics', path: '/transport/admin?tab=analytics', icon: TrendingUp },
+            { label: 'Transport Overview', path: '/transport/admin?tab=overview', icon: Bus }
+          ]
+        },
+        {
+          group: 'Fleet Management',
+          icon: Car,
+          items: [
+            { label: 'Bus & Vehicle Fleet', path: '/transport/admin?tab=buses', icon: Bus },
+            { label: 'Driver Management', path: '/transport/admin?tab=drivers', icon: Users },
+            { label: 'Staff & Personnel', path: '/transport/admin?tab=drivers', icon: UserCheck },
+            { label: 'Vehicle Documents', path: '/transport/admin?tab=buses', icon: FileSpreadsheet },
+            { label: 'Vehicle Maintenance', path: '/transport/admin?tab=maintenance', icon: Wrench },
+            { label: 'Fuel Management', path: '/transport/admin?tab=fuel', icon: Fuel }
+          ]
+        },
+        {
+          group: 'Transport Operations',
+          icon: Navigation,
+          items: [
+            { label: 'Trips & Dispatch', path: '/transport/admin?tab=trips', icon: Clock },
+            { label: 'Daily Transit Schedule', path: '/transport/admin?tab=schedule', icon: Calendar },
+            { label: 'Routes & Stops', path: '/transport/admin?tab=routes', icon: MapPin },
+            { label: 'Student Transport Allocation', path: '/transport/admin?tab=students', icon: GraduationCap },
+            { label: 'Student Attendance', path: '/transport/admin?tab=attendance', icon: UserCheck },
+            { label: 'Live GPS Tracking', path: '/transport/admin?tab=gps', icon: Activity },
+            { label: 'GPS Radar', path: '/transport/admin?tab=gps', icon: Radio }
+          ]
+        },
+        {
+          group: 'Finance',
+          icon: CreditCard,
+          items: [
+            { label: 'Transport Fees', path: '/transport/admin?tab=fees', icon: DollarSign },
+            { label: 'Fee Collection', path: '/transport/admin?tab=fees', icon: Receipt },
+            { label: 'Pending Payments', path: '/transport/admin?tab=expenses', icon: AlertCircle },
+            { label: 'Payment History', path: '/transport/admin?tab=fees', icon: FileSpreadsheet }
+          ]
+        },
+        {
+          group: 'Safety & Communication',
+          icon: ShieldAlert,
+          items: [
+            { label: 'Safety Management', path: '/transport/admin?tab=safety', icon: ShieldCheck },
+            { label: 'Complaints Management', path: '/transport/admin?tab=complaints', icon: MessageSquare },
+            { label: 'Emergency Management', path: '/transport/admin?tab=safety', icon: AlertTriangle },
+            { label: 'Transport Announcements', path: '/transport/admin?tab=announcements', icon: Megaphone },
+            { label: 'Notifications', path: '/notices', icon: Bell }
+          ]
+        },
+        {
+          group: 'Reports',
+          icon: BarChart3,
+          items: [
+            { label: 'Transport Analytics', path: '/transport/admin?tab=analytics', icon: TrendingUp },
+            { label: 'Transport Reports', path: '/transport/admin?tab=reports', icon: FileSpreadsheet },
+            { label: 'Fleet Reports', path: '/transport/admin?tab=reports', icon: Bus },
+            { label: 'Driver Reports', path: '/transport/admin?tab=reports', icon: Users },
+            { label: 'Attendance Reports', path: '/transport/admin?tab=reports', icon: CalendarCheck },
+            { label: 'Financial Reports', path: '/transport/admin?tab=reports', icon: Receipt }
+          ]
+        },
+        {
+          group: 'Settings',
+          icon: Settings,
+          items: [
+            { label: 'Transport Settings', path: '/transport/admin?tab=settings', icon: Settings },
+            { label: 'Transport Configuration', path: '/transport/admin?tab=settings', icon: Sliders }
+          ]
+        }
+      ];
+    }
 
-  const navItems = allNavItems.filter((item) => {
-    if (item.roles === '*') return true;
-    return item.roles.includes(role);
+    // 2. PRINCIPAL
+    if (role === 'principal') {
+      return [
+        {
+          group: 'Main',
+          icon: Building2,
+          items: [
+            { label: 'Principal Dashboard', path: '/principal', exact: true, icon: LayoutDashboard },
+            { label: 'Institutional Overview', path: '/overview', icon: Building2 },
+            { label: 'Executive Analytics', path: '/principal?tab=analytics', icon: BarChart3 }
+          ]
+        },
+        {
+          group: 'Academic Management',
+          icon: GraduationCap,
+          items: [
+            { label: 'Departments', path: '/departments', icon: Building2 },
+            { label: 'Academic Programs', path: '/courses', icon: Layers },
+            { label: 'Courses & Subjects', path: '/subjects', icon: BookOpen },
+            { label: 'Academic Calendar', path: '/calendar', icon: Calendar },
+            { label: 'Timetable Management', path: '/timetable', icon: Clock },
+            { label: 'Academic Events', path: '/principal/events', icon: CalendarCheck },
+            { label: 'Examinations', path: '/examinations', icon: FileEdit },
+            { label: 'Results & Performance', path: '/results', icon: Award },
+            { label: 'Academic Reports', path: '/reports?type=academic', icon: BarChart3 }
+          ]
+        },
+        {
+          group: 'People Management',
+          icon: Users,
+          items: [
+            { label: 'HOD Management', path: '/hod', icon: GitBranch },
+            { label: 'Faculty Management', path: '/faculty', icon: UserCheck },
+            { label: 'Student Management', path: '/students', icon: Users },
+            { label: 'Staff Directory', path: '/faculty', icon: UserCheck },
+            { label: 'Faculty Workload', path: '/timetable', icon: Clock },
+            { label: 'Attendance Overview', path: '/attendance', icon: CalendarCheck }
+          ]
+        },
+        {
+          group: 'Administration',
+          icon: ShieldCheck,
+          items: [
+            { label: 'Leave Management', path: '/principal?tab=leaves', icon: CalendarCheck },
+            { label: 'Leave Approvals', path: '/principal?tab=leaves', icon: CheckCircle2 },
+            { label: 'Institutional Communications', path: '/notices', icon: MessageSquare },
+            { label: 'Notifications', path: '/notices', icon: Bell },
+            { label: 'Meetings & Scheduling', path: '/calendar', icon: Calendar },
+            { label: 'Announcements', path: '/notices', icon: Megaphone },
+            { label: 'Institutional Events', path: '/principal/events', icon: CalendarCheck }
+          ]
+        },
+        {
+          group: 'Finance Overview',
+          icon: CreditCard,
+          items: [
+            { label: 'Financial Overview', path: '/fees', icon: CreditCard },
+            { label: 'Fee Collection Overview', path: '/fees', icon: Receipt },
+            { label: 'Pending Dues', path: '/fees', icon: AlertCircle },
+            { label: 'Financial Reports', path: '/reports?type=finance', icon: FileSpreadsheet }
+          ]
+        },
+        {
+          group: 'Campus Management',
+          icon: Landmark,
+          items: [
+            { label: 'Library Overview', path: '/library', icon: BookMarked },
+            { label: 'Transport Overview', path: '/transport', icon: Bus },
+            { label: 'Campus Operations', path: '/departments', icon: Building2 }
+          ]
+        },
+        {
+          group: 'Reports & Analytics',
+          icon: BarChart3,
+          items: [
+            { label: 'Academic Performance Reports', path: '/reports?type=academic', icon: BarChart3 },
+            { label: 'Department Reports', path: '/reports?type=department', icon: Building2 },
+            { label: 'Attendance Reports', path: '/reports?type=attendance', icon: CalendarCheck },
+            { label: 'Institutional Reports', path: '/reports', icon: FileSpreadsheet },
+            { label: 'Executive Reports', path: '/reports', icon: TrendingUp }
+          ]
+        },
+        {
+          group: 'Settings',
+          icon: Settings,
+          items: [
+            { label: 'Profile', path: '/settings?tab=profile', icon: User },
+            { label: 'Account Settings', path: '/settings?tab=account', icon: Key },
+            { label: 'Preferences', path: '/settings?tab=preferences', icon: Sliders }
+          ]
+        }
+      ];
+    }
+
+    // 3. TRANSPORT SUPERVISOR
+    if (role === 'transport_supervisor') {
+      return [
+        {
+          group: 'Overview',
+          icon: LayoutDashboard,
+          items: [
+            { label: 'Supervisor Dashboard', path: '/transport/supervisor', exact: true, icon: LayoutDashboard },
+            { label: 'Fleet Analytics', path: '/transport/supervisor?tab=overview', icon: TrendingUp }
+          ]
+        },
+        {
+          group: 'Transport Operations',
+          icon: Navigation,
+          items: [
+            { label: 'Trips & Dispatch', path: '/transport/supervisor?tab=trips', icon: Clock },
+            { label: 'Daily Transit Schedule', path: '/transport/supervisor?tab=schedule', icon: Calendar },
+            { label: 'Student Attendance', path: '/transport/supervisor?tab=attendance', icon: UserCheck },
+            { label: 'Live GPS Tracking', path: '/transport/supervisor?tab=gps', icon: Activity }
+          ]
+        },
+        {
+          group: 'Fleet & Safety',
+          icon: Car,
+          items: [
+            { label: 'Maintenance Requests', path: '/transport/supervisor?tab=maintenance', icon: Wrench },
+            { label: 'Safety & Emergency', path: '/transport/supervisor?tab=safety', icon: ShieldAlert },
+            { label: 'Grievances & Complaints', path: '/transport/supervisor?tab=complaints', icon: MessageSquare }
+          ]
+        },
+        {
+          group: 'Communication',
+          icon: MessageSquare,
+          items: [
+            { label: 'Announcements & Broadcasts', path: '/transport/supervisor?tab=announcements', icon: Megaphone },
+            { label: 'Notifications', path: '/notices', icon: Bell }
+          ]
+        }
+      ];
+    }
+
+    // 4. BUS DRIVER
+    if (role === 'bus_driver') {
+      return [
+        {
+          group: 'Driver Console',
+          icon: Bus,
+          items: [
+            { label: 'Driver Console & GPS', path: '/transport/driver', exact: true, icon: Bus },
+            { label: 'Daily Transit Schedule', path: '/transport/driver?tab=schedule', icon: Calendar }
+          ]
+        },
+        {
+          group: 'Safety & Alerts',
+          icon: ShieldAlert,
+          items: [
+            { label: 'Safety & Emergency SOS', path: '/transport/driver?tab=safety', icon: AlertTriangle },
+            { label: 'Notices & Broadcasts', path: '/transport/driver?tab=announcements', icon: Megaphone },
+            { label: 'Settings', path: '/settings', icon: Settings }
+          ]
+        }
+      ];
+    }
+
+    // 5. BUS ATTENDANT
+    if (role === 'bus_attendant') {
+      return [
+        {
+          group: 'Attendant Console',
+          icon: UserCheck,
+          items: [
+            { label: 'Student Bus Attendance', path: '/transport/attendant', exact: true, icon: UserCheck },
+            { label: 'Passenger Directory', path: '/transport/attendant?tab=roster', icon: Users },
+            { label: 'Daily Transit Schedule', path: '/transport/attendant?tab=schedule', icon: Calendar }
+          ]
+        },
+        {
+          group: 'Communication',
+          icon: MessageSquare,
+          items: [
+            { label: 'Announcements', path: '/transport/attendant?tab=announcements', icon: Megaphone },
+            { label: 'Settings', path: '/settings', icon: Settings }
+          ]
+        }
+      ];
+    }
+
+    // 6. PARENT
+    if (role === 'parent') {
+      return [
+        {
+          group: 'Parent Portal',
+          icon: Users,
+          items: [
+            { label: 'Transit & Live GPS', path: '/transport/parent', exact: true, icon: Bus },
+            { label: 'Academic Performance', path: '/transport/parent?tab=academic', icon: GraduationCap },
+            { label: 'Attendance Records', path: '/transport/parent?tab=attendance', icon: CalendarCheck },
+            { label: 'Fee Dues & Receipts', path: '/transport/parent?tab=fees', icon: CreditCard }
+          ]
+        },
+        {
+          group: 'Communication',
+          icon: MessageSquare,
+          items: [
+            { label: 'Transit Announcements', path: '/transport/parent?tab=announcements', icon: Megaphone },
+            { label: 'Settings', path: '/settings', icon: Settings }
+          ]
+        }
+      ];
+    }
+
+    // 7. SUPER ADMIN
+    if (role === 'super_admin' || role === 'admin' || role === 'superadmin' || role === 'super_administrator') {
+      return [
+        {
+          group: 'Main',
+          icon: ShieldAlert,
+          items: [
+            { label: 'System Admin Dashboard', path: '/admin', exact: true, icon: LayoutDashboard },
+            { label: 'User Management', path: '/admin/users', icon: Users },
+            { label: 'Institutional Overview', path: '/overview', icon: Building2 }
+          ]
+        },
+        {
+          group: 'Academic Infrastructure',
+          icon: GraduationCap,
+          items: [
+            { label: 'Departments', path: '/departments', icon: Building2 },
+            { label: 'Courses & Programs', path: '/courses', icon: Layers },
+            { label: 'Timetable Schedules', path: '/timetable', icon: Clock },
+            { label: 'Examinations', path: '/examinations', icon: FileEdit }
+          ]
+        },
+        {
+          group: 'Campus Portals',
+          icon: Landmark,
+          items: [
+            { label: 'Fee Administration', path: '/fees', icon: CreditCard },
+            { label: 'Central Library', path: '/library', icon: BookMarked },
+            { label: 'Transport Fleet', path: '/transport', icon: Bus },
+            { label: 'Hostel System', path: '/hostel', icon: BedDouble },
+            { label: 'Placements', path: '/placements', icon: Briefcase }
+          ]
+        },
+        {
+          group: 'Governance & Logs',
+          icon: BarChart3,
+          items: [
+            { label: 'System Audit Logs', path: '/audit-logs', icon: ShieldCheck },
+            { label: 'Executive Reports', path: '/reports', icon: BarChart3 },
+            { label: 'Communications', path: '/notices', icon: MessageSquare },
+            { label: 'System Settings', path: '/settings', icon: Settings }
+          ]
+        }
+      ];
+    }
+
+    // 8. HOD
+    if (role === 'hod') {
+      return [
+        {
+          group: 'Department',
+          icon: GitBranch,
+          items: [
+            { label: 'HOD Dashboard', path: '/hod', exact: true, icon: LayoutDashboard },
+            { label: 'Curriculum & Courses', path: '/courses', icon: BookOpen },
+            { label: 'Timetables & Slots', path: '/timetable', icon: Clock }
+          ]
+        },
+        {
+          group: 'Academics & Faculty',
+          icon: GraduationCap,
+          items: [
+            { label: 'Faculty Loads', path: '/faculty', icon: UserCheck },
+            { label: 'Department Students', path: '/students', icon: Users },
+            { label: 'Examinations', path: '/examinations', icon: FileEdit },
+            { label: 'Attendance Records', path: '/attendance', icon: CalendarCheck }
+          ]
+        },
+        {
+          group: 'Governance',
+          icon: ShieldCheck,
+          items: [
+            { label: 'Staff Leaves & Approvals', path: '/hod?tab=leaves', icon: CalendarCheck },
+            { label: 'Department Reports', path: '/reports', icon: BarChart3 },
+            { label: 'Notices & Circulars', path: '/notices', icon: MessageSquare }
+          ]
+        }
+      ];
+    }
+
+    // 9. FACULTY
+    if (role === 'faculty') {
+      return [
+        {
+          group: 'Teaching & Classes',
+          icon: GraduationCap,
+          items: [
+            { label: 'Faculty Dashboard', path: '/faculty', exact: true, icon: LayoutDashboard },
+            { label: 'Attendance Marking', path: '/attendance', icon: CalendarCheck },
+            { label: 'Internal Exam Marks', path: '/examinations', icon: FileEdit },
+            { label: 'Class Timetable', path: '/timetable', icon: Clock },
+            { label: 'Assigned Subjects', path: '/courses', icon: BookOpen }
+          ]
+        },
+        {
+          group: 'Campus Services',
+          icon: Landmark,
+          items: [
+            { label: 'Apply for Leave', path: '/faculty?tab=leaves', icon: CalendarCheck },
+            { label: 'Library Catalog', path: '/library', icon: BookMarked },
+            { label: 'Campus Notices', path: '/notices', icon: MessageSquare }
+          ]
+        }
+      ];
+    }
+
+    // 10. STUDENT
+    if (role === 'student') {
+      return [
+        {
+          group: 'Student Portal',
+          icon: GraduationCap,
+          items: [
+            { label: 'Student Dashboard', path: '/student', exact: true, icon: LayoutDashboard },
+            { label: 'Attendance Percentage', path: '/attendance', icon: CalendarCheck },
+            { label: 'Semester Results', path: '/results', icon: Award },
+            { label: 'Class Timetable', path: '/timetable', icon: Clock },
+            { label: 'Courses Enrolled', path: '/courses', icon: BookOpen }
+          ]
+        },
+        {
+          group: 'Campus Services',
+          icon: Landmark,
+          items: [
+            { label: 'Fee Dues & Payment', path: '/fees', icon: CreditCard },
+            { label: 'Library Access', path: '/library', icon: BookMarked },
+            { label: 'Transport Tracking', path: '/transport', icon: Bus },
+            { label: 'Notice Board', path: '/notices', icon: MessageSquare }
+          ]
+        }
+      ];
+    }
+
+    // 11. ACCOUNTS
+    if (role === 'accounts' || role === 'accountant' || role === 'finance') {
+      return [
+        {
+          group: 'Finance & Ledger',
+          icon: Coins,
+          items: [
+            { label: 'Accounts Dashboard', path: '/accounts', exact: true, icon: LayoutDashboard },
+            { label: 'Fee Structures & Receipts', path: '/fees', icon: CreditCard },
+            { label: 'Payment Transactions', path: '/payments', icon: Receipt },
+            { label: 'Student Fee Ledgers', path: '/students', icon: Users },
+            { label: 'Audit Trail', path: '/audit-logs', icon: ShieldCheck },
+            { label: 'Financial Reports', path: '/reports', icon: BarChart3 }
+          ]
+        }
+      ];
+    }
+
+    // 12. LIBRARIAN & LIBRARY STAFF
+    if (role === 'librarian' || role === 'library_staff' || role === 'librarystaff') {
+      const isStaff = role === 'library_staff' || role === 'librarystaff';
+      const rootPath = isStaff ? '/library-staff' : '/library';
+      return [
+        {
+          group: 'Library Management',
+          icon: BookMarked,
+          items: [
+            { label: isStaff ? 'Staff Circulation Desk' : 'Chief Librarian Portal', path: rootPath, exact: true, icon: LayoutDashboard },
+            { label: 'Book Catalog & Accession', path: `${rootPath}?tab=books`, icon: BookOpen },
+            { label: 'Circulation Desk', path: `${rootPath}?tab=circulation`, icon: Clock },
+            { label: 'Member Patrons', path: `${rootPath}?tab=members`, icon: Users },
+            { label: 'Book Reservations', path: `${rootPath}?tab=reservations`, icon: BookMarked },
+            { label: 'Overdue & Fine Ledgers', path: `${rootPath}?tab=fines`, icon: DollarSign },
+            { label: 'Digital E-Library', path: `${rootPath}?tab=digital`, icon: Layers },
+            { label: 'Staff Leaves & Approvals', path: `${rootPath}?tab=leaves`, icon: CalendarCheck }
+          ]
+        }
+      ];
+    }
+
+    // Default fallback
+    return [
+      {
+        group: 'Quick Access',
+        icon: LayoutDashboard,
+        items: [
+          { label: 'Dashboard', path: dashboardPath, exact: true, icon: LayoutDashboard },
+          { label: 'Academics', path: '/courses', icon: GraduationCap },
+          { label: 'Communications', path: '/notices', icon: MessageSquare }
+        ]
+      }
+    ];
+  }, [role, dashboardPath]);
+
+  // Track expanded/collapsed groups. By default, all groups start expanded.
+  const [expandedGroups, setExpandedGroups] = useState(() => {
+    const initial = {};
+    roleMenuGroups.forEach((g) => {
+      initial[g.group] = true;
+    });
+    return initial;
   });
 
-  const isItemActive = (item) => {
-    if (item.exact) {
-      return location.pathname === item.path ||
-        (location.pathname === '/admin' && item.path === '/admin') ||
-        (location.pathname === '/principal' && item.path === '/principal') ||
-        (location.pathname === '/hod' && item.path === '/hod') ||
-        (location.pathname === '/faculty' && item.path === '/faculty') ||
-        (location.pathname === '/student' && item.path === '/student') ||
-        (location.pathname === '/accounts' && item.path === '/accounts') ||
-        (location.pathname === '/library' && item.path === '/library') ||
-        (location.pathname === '/library-staff' && item.path === '/library-staff') ||
-        (location.pathname === '/transport' && item.path === '/transport');
-    }
-    return location.pathname.startsWith(item.path);
+  const toggleGroup = (groupName) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [groupName]: !prev[groupName]
+    }));
   };
+
+  // Helper to determine if an item is active
+  const isItemActive = (item) => {
+    const currentPath = location.pathname;
+    const currentSearch = new URLSearchParams(location.search);
+
+    const [targetPath, targetQuery] = item.path.split('?');
+    const targetParams = new URLSearchParams(targetQuery || '');
+
+    // Check pathname
+    const isMatchingPath =
+      targetPath === currentPath ||
+      (targetPath === '/transport/admin' && currentPath === '/transport') ||
+      (targetPath === '/transport' && currentPath === '/transport/admin');
+
+    if (!isMatchingPath) {
+      if (item.exact) return false;
+      if (targetPath.length > 1 && currentPath.startsWith(targetPath + '/')) {
+        return true;
+      }
+      return false;
+    }
+
+    // Target specifies query params (e.g. ?tab=buses)
+    if (targetQuery) {
+      for (const [key, val] of targetParams.entries()) {
+        if (currentSearch.get(key) !== val) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // Target has no query params, but current URL has query params
+    const activeTab = currentSearch.get('tab');
+    if (activeTab && activeTab !== 'overview' && activeTab !== 'dashboard') {
+      return false;
+    }
+
+    return true;
+  };
+
+  // Auto-expand group containing the active item
+  useEffect(() => {
+    for (const group of roleMenuGroups) {
+      const hasActiveChild = group.items.some((item) => isItemActive(item));
+      if (hasActiveChild) {
+        setExpandedGroups((prev) => ({
+          ...prev,
+          [group.group]: true
+        }));
+      }
+    }
+  }, [location.pathname, location.search, roleMenuGroups]);
 
   return (
     <>
-      {/* Mobile backdrop */}
+      {/* Mobile backdrop overlay */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity"
@@ -121,90 +681,159 @@ export const Sidebar = ({ isOpen, onClose }) => {
         />
       )}
 
-      {/* Dark Forest-Green Sidebar */}
+      {/* Dark Forest-Green Sidebar Container */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#062a1e] border-r border-[#041d15] flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-50 ${
+          isCollapsed ? 'lg:w-20' : 'lg:w-64'
+        } w-64 bg-[#062a1e] border-r border-[#041d15] flex flex-col transition-all duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:static lg:translate-x-0 shadow-2xl text-white`}
+        } lg:static lg:translate-x-0 shadow-2xl text-white select-none`}
       >
         {/* Brand Header */}
-        <div className="h-16 px-5 border-b border-white/10 flex items-center justify-between">
+        <div className="h-16 px-4 border-b border-white/10 flex items-center justify-between shrink-0">
           <Link
             to={dashboardPath}
             onClick={onClose}
-            className="flex items-center space-x-3 group"
+            className="flex items-center space-x-3 group min-w-0"
+            title="College ERP Home"
           >
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
               <GraduationCap className="w-5 h-5 text-emerald-300" />
             </div>
-            <div>
-              <span className="font-extrabold text-sm sm:text-base tracking-tight text-white block leading-tight">
-                College ERP
-              </span>
-              <span className="text-[10px] text-emerald-300/70 font-medium tracking-wide block">
-                College Management System
-              </span>
-            </div>
+            {!isCollapsed && (
+              <div className="truncate">
+                <span className="font-extrabold text-sm sm:text-base tracking-tight text-white block leading-tight truncate">
+                  College ERP
+                </span>
+                <span className="text-[10px] text-emerald-300/70 font-medium tracking-wide block truncate">
+                  Campus Management
+                </span>
+              </div>
+            )}
           </Link>
+
+          {/* Mobile close button */}
           <button
+            type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-emerald-300/60 hover:text-white lg:hidden"
+            className="p-1.5 rounded-xl text-emerald-300/60 hover:text-white hover:bg-white/10 lg:hidden cursor-pointer"
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Navigation List */}
-        <div className="flex-1 px-3 py-4 overflow-y-auto space-y-4">
-          <div>
-            <span className="px-3 text-[10px] font-bold tracking-wider text-emerald-300/50 uppercase block mb-2">
-              Quick Access
-            </span>
-            <nav className="space-y-1">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const active = isItemActive(item);
+        {/* Scrollable Navigation Groups */}
+        <div className="flex-1 px-2.5 py-3 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-emerald-900/60 scrollbar-track-transparent">
+          {roleMenuGroups.map((grp) => {
+            const isExpanded = expandedGroups[grp.group] !== false;
+            const GroupIcon = grp.icon;
 
-                return (
-                  <NavLink
-                    key={item.label}
-                    to={item.path}
-                    onClick={() => {
-                      if (window.innerWidth < 1024) onClose();
-                    }}
-                    className={`w-full flex items-center px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
-                      active
-                        ? 'bg-[#a7f3d0] text-[#064e3b] shadow-xs font-bold'
-                        : 'text-emerald-100/75 hover:bg-white/10 hover:text-white'
-                    }`}
+            return (
+              <div key={grp.group} className="space-y-1">
+                {/* Group Accordion Header */}
+                {!isCollapsed ? (
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(grp.group)}
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 text-[11px] font-bold tracking-wider text-emerald-300/60 hover:text-emerald-200 uppercase rounded-lg hover:bg-white/5 transition-colors cursor-pointer group"
                   >
-                    <Icon
-                      className={`w-4 h-4 mr-3 shrink-0 ${
-                        active ? 'text-[#064e3b]' : 'text-emerald-300/70'
-                      }`}
-                    />
-                    <span className="truncate">{item.label}</span>
-                  </NavLink>
-                );
-              })}
-            </nav>
-          </div>
+                    <div className="flex items-center gap-2 truncate">
+                      <GroupIcon className="w-3.5 h-3.5 text-emerald-400/70 group-hover:text-emerald-300" />
+                      <span className="truncate">{grp.group}</span>
+                    </div>
+                    {isExpanded ? (
+                      <ChevronDown className="w-3.5 h-3.5 shrink-0 opacity-70" />
+                    ) : (
+                      <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-70" />
+                    )}
+                  </button>
+                ) : (
+                  <div className="h-4 border-t border-white/10 my-2" title={grp.group} />
+                )}
+
+                {/* Group Items (rendered if expanded or in collapsed icon strip) */}
+                {(isExpanded || isCollapsed) && (
+                  <nav className="space-y-0.5">
+                    {grp.items.map((item) => {
+                      const Icon = item.icon;
+                      const active = isItemActive(item);
+
+                      return (
+                        <div key={item.label + item.path} className="relative group">
+                          <NavLink
+                            to={item.path}
+                            onClick={() => {
+                              if (window.innerWidth < 1024) onClose();
+                            }}
+                            className={`w-full flex items-center ${
+                              isCollapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2'
+                            } rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer ${
+                              active
+                                ? 'bg-[#a7f3d0] text-[#064e3b] shadow-xs font-bold'
+                                : 'text-emerald-100/75 hover:bg-white/10 hover:text-white'
+                            }`}
+                            title={isCollapsed ? item.label : undefined}
+                          >
+                            <Icon
+                              className={`w-4 h-4 shrink-0 ${
+                                isCollapsed ? '' : 'mr-2.5'
+                              } ${active ? 'text-[#064e3b]' : 'text-emerald-300/70'}`}
+                            />
+                            {!isCollapsed && <span className="truncate">{item.label}</span>}
+                          </NavLink>
+
+                          {/* Floating Tooltip in Collapsed Desktop Mode */}
+                          {isCollapsed && (
+                            <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-slate-900 text-white text-xs font-medium shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 border border-slate-700/80">
+                              <span className="block font-bold text-[10px] text-emerald-400 uppercase tracking-wider">
+                                {grp.group}
+                              </span>
+                              <span>{item.label}</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </nav>
+                )}
+              </div>
+            );
+          })}
         </div>
 
-        {/* Footer info: Help & Support + Version pill */}
-        <div className="p-3 border-t border-white/10 bg-[#041f16] flex items-center justify-between text-xs text-emerald-200/70">
+        {/* Footer: Help & Support, Collapse Toggle, Version */}
+        <div className="p-3 border-t border-white/10 bg-[#041f16] flex items-center justify-between text-xs text-emerald-200/70 shrink-0">
           <Link
             to="/settings"
             onClick={onClose}
-            className="flex items-center gap-2 hover:text-white transition-colors"
+            className="flex items-center gap-2 hover:text-white transition-colors truncate"
+            title="Help & Support"
           >
-            <Headphones className="w-4 h-4 text-emerald-400" />
-            <span className="font-medium text-[11px]">Help & Support</span>
+            <Headphones className="w-4 h-4 text-emerald-400 shrink-0" />
+            {!isCollapsed && <span className="font-medium text-[11px] truncate">Help & Support</span>}
           </Link>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800/60">
-            v1.0.0
-          </span>
+
+          {/* Desktop Expand/Collapse Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            className="hidden lg:flex items-center justify-center p-1.5 rounded-lg text-emerald-300/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {isCollapsed ? (
+              <ChevronsRight className="w-4 h-4" />
+            ) : (
+              <ChevronsLeft className="w-4 h-4" />
+            )}
+          </button>
+
+          {!isCollapsed && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800/60 shrink-0">
+              v1.0.0
+            </span>
+          )}
         </div>
       </aside>
     </>

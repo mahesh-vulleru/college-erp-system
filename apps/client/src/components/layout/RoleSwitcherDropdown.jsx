@@ -10,10 +10,11 @@ import {
   BookOpen,
   BookCheck,
   ChevronDown,
-  CheckCircle2
+  CheckCircle2,
+  Bus
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { ROLES } from '@college-erp/shared';
+import { ROLES, ROLE_LABELS } from '@college-erp/shared';
 
 const ROLES_LIST = [
   {
@@ -71,8 +72,53 @@ const ROLES_LIST = [
     desc: 'Book circulation, issue, return and reservation operations',
     icon: BookCheck,
     path: '/library-staff'
+  },
+  {
+    id: ROLES.TRANSPORT_ADMIN,
+    name: 'Transport Admin',
+    desc: 'Fleet monitoring, bus routes, drivers, and tracking',
+    icon: Bus,
+    path: '/transport'
   }
 ];
+
+const TRANSPORT_ROLES_MAP = {
+  [ROLES.TRANSPORT_ADMIN]: {
+    id: ROLES.TRANSPORT_ADMIN,
+    name: 'Transport Admin',
+    desc: 'Fleet monitoring, bus routes, drivers, and tracking',
+    icon: Bus,
+    path: '/transport'
+  },
+  [ROLES.TRANSPORT_SUPERVISOR]: {
+    id: ROLES.TRANSPORT_SUPERVISOR,
+    name: 'Transport Supervisor',
+    desc: 'Daily transit schedules, trips, and dispatch operations',
+    icon: Bus,
+    path: '/transport?tab=supervisor'
+  },
+  [ROLES.BUS_DRIVER]: {
+    id: ROLES.BUS_DRIVER,
+    name: 'Bus Driver',
+    desc: 'Daily driver transit console and trip updates',
+    icon: Bus,
+    path: '/transport?tab=driver_portal'
+  },
+  [ROLES.BUS_ATTENDANT]: {
+    id: ROLES.BUS_ATTENDANT,
+    name: 'Bus Attendant',
+    desc: 'Student bus boarding and transit attendance check',
+    icon: Bus,
+    path: '/transport?tab=attendance'
+  },
+  [ROLES.PARENT]: {
+    id: ROLES.PARENT,
+    name: 'Parent / Guardian',
+    desc: 'Student transport tracking and arrival notifications',
+    icon: Bus,
+    path: '/transport?tab=parent'
+  }
+};
 
 export const RoleSwitcherDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -81,10 +127,16 @@ export const RoleSwitcherDropdown = () => {
   const location = useLocation();
   const { user } = useAuth();
 
-  // Determine current active role from user or current path
-  const currentRole = user?.role || 'principal';
+  // Determine current active role from authenticated user
+  const currentRole = (user?.role || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
 
   const getCurrentRoleInfo = () => {
+    // 1. Direct match on transport roles
+    if (TRANSPORT_ROLES_MAP[currentRole]) {
+      return TRANSPORT_ROLES_MAP[currentRole];
+    }
+
+    // 2. Direct match on pathname for navigation context
     const path = location.pathname;
     if (path.startsWith('/admin')) return ROLES_LIST[0];
     if (path.startsWith('/principal')) return ROLES_LIST[1];
@@ -94,9 +146,26 @@ export const RoleSwitcherDropdown = () => {
     if (path.startsWith('/accounts') || path.startsWith('/fees')) return ROLES_LIST[5];
     if (path.startsWith('/library-staff')) return ROLES_LIST[7];
     if (path.startsWith('/library')) return ROLES_LIST[6];
+    if (path.startsWith('/transport')) {
+      return ROLES_LIST[8] || TRANSPORT_ROLES_MAP[ROLES.TRANSPORT_ADMIN];
+    }
 
+    // 3. Match user role in general list
     const found = ROLES_LIST.find((r) => r.id === currentRole);
-    return found || ROLES_LIST[1];
+    if (found) return found;
+
+    // 4. Default fallback to user assigned role label if available
+    if (ROLE_LABELS[currentRole]) {
+      return {
+        id: currentRole,
+        name: ROLE_LABELS[currentRole],
+        desc: 'Institutional user portal',
+        icon: Building2,
+        path: '/principal'
+      };
+    }
+
+    return ROLES_LIST[1]; // Principal fallback
   };
 
   const activeRoleInfo = getCurrentRoleInfo();
@@ -117,15 +186,16 @@ export const RoleSwitcherDropdown = () => {
     navigate(role.path);
   };
 
-  const userRole = (user?.role || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
-  const isSuperAdmin = userRole === 'super_admin' || userRole === 'admin' || userRole === 'superadmin' || userRole === 'super_administrator';
+  const isSuperAdmin = currentRole === 'super_admin' || currentRole === 'admin' || currentRole === 'superadmin' || currentRole === 'super_administrator';
 
   // For non-superadmin users: display assigned role as a static, non-clickable label
   if (!isSuperAdmin) {
+    const userRoleItem = TRANSPORT_ROLES_MAP[currentRole] || ROLES_LIST.find((r) => r.id === currentRole) || activeRoleInfo;
+    const DisplayIcon = userRoleItem.icon || Building2;
     return (
       <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-[#072c1f] text-white text-xs sm:text-sm font-semibold tracking-wide shadow-xs border border-emerald-900/60 select-none">
-        <IconComponent className="w-4 h-4 text-emerald-300 shrink-0" />
-        <span className="truncate max-w-[140px] sm:max-w-none">{activeRoleInfo.name}</span>
+        <DisplayIcon className="w-4 h-4 text-emerald-300 shrink-0" />
+        <span className="truncate max-w-[140px] sm:max-w-none">{userRoleItem.name}</span>
       </div>
     );
   }
@@ -136,7 +206,7 @@ export const RoleSwitcherDropdown = () => {
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-[#072c1f] hover:bg-[#0a3a2b] text-white text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-xs border border-emerald-900/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+        className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-[#072c1f] hover:bg-[#0a3a2b] text-white text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-xs border border-emerald-900/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 cursor-pointer"
       >
         <IconComponent className="w-4 h-4 text-emerald-300 shrink-0" />
         <span className="truncate max-w-[120px] sm:max-w-none">{activeRoleInfo.name}</span>
@@ -151,10 +221,10 @@ export const RoleSwitcherDropdown = () => {
             <span className="text-xs font-bold text-slate-800 tracking-wide">
               Select Institutional Role <span className="text-rose-500">*</span>
             </span>
-            <span className="text-[10px] text-slate-500 font-medium">8 Portals Available</span>
+            <span className="text-[10px] text-slate-500 font-medium">{ROLES_LIST.length} Portals Available</span>
           </div>
 
-          {/* List of 8 Roles */}
+          {/* List of Roles */}
           <div className="p-2 space-y-1 max-h-[420px] overflow-y-auto">
             {ROLES_LIST.map((role) => {
               const RoleIcon = role.icon;
@@ -165,7 +235,7 @@ export const RoleSwitcherDropdown = () => {
                   key={role.id}
                   type="button"
                   onClick={() => handleSelectRole(role)}
-                  className={`w-full text-left p-2.5 rounded-xl transition-all flex items-start gap-3 group ${
+                  className={`w-full text-left p-2.5 rounded-xl transition-all flex items-start gap-3 group cursor-pointer ${
                     isCurrent
                       ? 'bg-emerald-50/80 border border-emerald-200/80'
                       : 'hover:bg-slate-50 border border-transparent'
@@ -204,4 +274,3 @@ export const RoleSwitcherDropdown = () => {
 };
 
 export default RoleSwitcherDropdown;
-

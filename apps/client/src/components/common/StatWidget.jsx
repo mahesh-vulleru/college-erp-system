@@ -87,7 +87,7 @@ export const StatWidget = ({
   return (
     <div className={`bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between ${className}`}>
       <div className="flex-1 min-w-0 pr-3">
-        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block truncate">
+        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block truncate" title={typeof title === 'string' ? title : undefined}>
           {title}
         </span>
         <div className="mt-1 text-xl sm:text-2xl font-bold tracking-tight text-slate-900 truncate">
@@ -110,7 +110,7 @@ export const StatWidget = ({
               </span>
             )}
             {displaySubtitle && (
-              <span className="text-[11px] text-slate-400 font-medium truncate">
+              <span className="text-[11px] text-slate-400 font-medium truncate" title={typeof displaySubtitle === 'string' ? displaySubtitle : undefined}>
                 {displaySubtitle}
               </span>
             )}

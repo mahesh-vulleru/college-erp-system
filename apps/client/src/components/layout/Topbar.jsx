@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import NotificationDropdown from './NotificationDropdown';
 import RoleSwitcherDropdown from './RoleSwitcherDropdown';
 import api from '../../api/apiClient';
+import { ROLE_LABELS } from '@college-erp/shared';
 
 export const Topbar = ({ onToggleSidebar }) => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -41,8 +42,8 @@ export const Topbar = ({ onToggleSidebar }) => {
     navigate(`/courses?q=${encodeURIComponent(term)}`);
   };
 
-  const displayName = user?.name || 'V. Mahesh';
-  const roleDisplay = user?.role ? user.role.replace(/_/g, ' ') : 'Administrator';
+  const displayName = user?.name || user?.fullName || (user?.email ? user.email.split('@')[0] : 'Institutional User');
+  const roleDisplay = user?.role ? (ROLE_LABELS[user.role] || user.role.replace(/_/g, ' ')) : 'User';
 
   return (
     <header className="h-16 bg-white border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-xs">
