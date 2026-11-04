@@ -13,7 +13,7 @@ const loginLimiter = rateLimit({
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  skip: () => process.env.NODE_ENV === 'test',
+  skip: () => process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development',
   message: {
     success: false,
     message: 'Too many login attempts. Please try again after 15 minutes.'

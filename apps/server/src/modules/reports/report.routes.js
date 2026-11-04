@@ -22,6 +22,13 @@ const router = express.Router();
 
 router.use(authenticate);
 
+// Default overview report
+router.get(
+  '/',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS),
+  getAcademicSummary
+);
+
 // Restricted executive summary reports
 router.get(
   '/academic-summary',
