@@ -7,6 +7,7 @@ import {
   BookOpen,
   CalendarCheck,
   CreditCard,
+  Coins,
   Bell,
   BarChart3,
   FileEdit,

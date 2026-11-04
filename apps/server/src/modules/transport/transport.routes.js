@@ -499,7 +499,7 @@ router.patch(
 // 10. ROLE-SPECIFIC PORTAL APIS (PHASE 2)
 // ---------------------------------------------------------------------------
 router.get(
-  '/driver/my-trips',
+  ['/driver/my-trips', '/driver/trips'],
   authorizeRoles(
     ROLES.SUPER_ADMIN,
     ROLES.TRANSPORT_ADMIN,

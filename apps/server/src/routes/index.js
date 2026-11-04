@@ -95,6 +95,7 @@ v1Router.use('/notices', noticeRoutes);
 v1Router.use('/reports', reportRoutes);
 v1Router.use('/audit-logs', auditRoutes);
 v1Router.use('/leaves', leaveRoutes);
+v1Router.use('/leave', leaveRoutes);
 
 // Institutional Modules
 v1Router.use('/accreditation', accreditationRoutes);
