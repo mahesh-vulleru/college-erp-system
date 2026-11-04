@@ -3,7 +3,10 @@ const {
   getTimetable,
   createTimetableSlot,
   updateTimetableSlot,
-  deleteTimetableSlot
+  deleteTimetableSlot,
+  getClashDetection,
+  getWorkloadBalancing,
+  getOptimizationSuggestions
 } = require('./timetable.controller');
 const { validateTimetableInput } = require('./timetable.validator');
 const authenticate = require('../../middleware/auth');
@@ -14,6 +17,25 @@ const { ROLES } = require('@college-erp/shared');
 const router = express.Router();
 
 router.use(authenticate);
+
+// Phase 3 Timetable Clash Detection, Workload Balancing & Optimization
+router.get(
+  '/clash-detection',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getClashDetection
+);
+
+router.get(
+  '/workload-balancing',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getWorkloadBalancing
+);
+
+router.get(
+  '/optimization-suggestions',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getOptimizationSuggestions
+);
 
 // Readable by all authenticated institutional users (Super Admin, Principal, HOD, Faculty, Student)
 router.get(

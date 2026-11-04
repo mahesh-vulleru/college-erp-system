@@ -213,5 +213,88 @@ async function exportAuditLogsCsv(req, res, next) {
 module.exports = {
   listAuditLogs,
   getAuditLogById,
-  exportAuditLogsCsv
+  exportAuditLogsCsv,
+  getSecurityAnalytics
 };
+
+/**
+ * GET /api/v1/audit-logs/security-analytics
+ * Aggregated security analytics: failed logins, privilege modifications, and sensitive access
+ */
+async function getSecurityAnalytics(req, res, next) {
+  try {
+    const [
+      totalAuditLogs,
+      failedLogins,
+      recentFailedLogins,
+      roleModifications,
+      suspiciousActivity
+    ] = await Promise.all([
+      AuditLog.countDocuments(),
+      AuditLog.countDocuments({
+        $or: [
+          { action: 'AUTH_LOGIN_FAILED' },
+          { outcome: 'failure' }
+        ]
+      }),
+      AuditLog.find({
+        $or: [
+          { action: 'AUTH_LOGIN_FAILED' },
+          { outcome: 'failure' }
+        ]
+      })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .select('action entityType ipAddress userAgent details outcome createdAt'),
+      AuditLog.find({
+        action: { $in: ['USER_UPDATED', 'ROLE_MODIFIED', 'USER_PROVISIONED'] },
+        'details.roleChanged': { $ne: null }
+      })
+        .sort({ createdAt: -1 })
+        .limit(15)
+        .populate('user', 'name email role'),
+      AuditLog.find({
+        action: {
+          $regex: /(DELETE|DROP|PURGE|EXPORT|SECURITY|PASSWORD_RESET)/i
+        }
+      })
+        .sort({ createdAt: -1 })
+        .limit(15)
+        .populate('user', 'name email role')
+    ]);
+
+    return sendSuccess(res, {
+      message: 'Security analytics and audit telemetry retrieved',
+      data: {
+        timestamp: new Date().toISOString(),
+        summary: {
+          totalAuditEvents: totalAuditLogs,
+          totalFailedAttempts: failedLogins,
+          totalPrivilegeChanges: roleModifications.length,
+          sensitiveOperationEvents: suspiciousActivity.length
+        },
+        recentFailedLogins,
+        recentPrivilegeChanges: roleModifications.map((log) => ({
+          id: log._id,
+          actor: log.user ? { name: log.user.name, email: log.user.email, role: log.user.role } : null,
+          action: log.action,
+          roleChanged: log.details?.roleChanged || null,
+          targetEmail: log.details?.email || null,
+          ipAddress: log.ipAddress,
+          timestamp: log.createdAt
+        })),
+        recentSensitiveOperations: suspiciousActivity.map((log) => ({
+          id: log._id,
+          actor: log.user ? { name: log.user.name, email: log.user.email, role: log.user.role } : null,
+          action: log.action,
+          entityType: log.entityType,
+          outcome: log.outcome,
+          ipAddress: log.ipAddress,
+          timestamp: log.createdAt
+        }))
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}

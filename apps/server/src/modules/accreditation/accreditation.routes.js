@@ -7,7 +7,8 @@ const {
   updateCriterion,
   deleteCriterion,
   addEvidenceDocument,
-  verifyEvidenceDocument
+  verifyEvidenceDocument,
+  getGapAnalysis
 } = require('./accreditation.controller');
 const {
   validateAccreditationCriterionInput,
@@ -21,6 +22,13 @@ const { ROLES } = require('@college-erp/shared');
 const router = express.Router();
 
 router.use(authenticate);
+
+// Phase 3 Accreditation Readiness & Gap Analysis
+router.get(
+  '/gap-analysis',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getGapAnalysis
+);
 
 // 1. High-level summary metrics
 router.get(

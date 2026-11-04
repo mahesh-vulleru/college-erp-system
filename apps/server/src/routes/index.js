@@ -24,6 +24,10 @@ const eventRoutes = require('../modules/events/institutionalEvent.routes');
 const libraryRoutes = require('../modules/library/library.routes');
 const transportRoutes = require('../modules/transport/transport.routes');
 const notificationRoutes = require('../modules/notifications/notification.routes');
+const assetRoutes = require('../modules/assets/asset.routes');
+const placementRoutes = require('../modules/placements/placement.routes');
+const communicationRoutes = require('../modules/communications/communication.routes');
+const systemRoutes = require('../modules/system/system.routes');
 
 const {
   getAttendanceOverview,
@@ -112,6 +116,12 @@ v1Router.use('/library', libraryRoutes);
 
 // Transport Management
 v1Router.use('/transport', transportRoutes);
+
+// Phase 3 Advanced Modules
+v1Router.use('/assets', assetRoutes);
+v1Router.use('/placements', placementRoutes);
+v1Router.use('/communications', communicationRoutes);
+v1Router.use('/system', systemRoutes);
 
 // Mount versioned API
 router.use('/v1', v1Router);

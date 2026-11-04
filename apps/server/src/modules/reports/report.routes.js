@@ -12,7 +12,8 @@ const {
   getResultsSummaryReport,
   getFinancialReport,
   getAdminActivityReport,
-  exportReportCsv
+  exportReportCsv,
+  getInstitutionalBI
 } = require('./report.controller');
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
@@ -21,6 +22,13 @@ const { ROLES } = require('@college-erp/shared');
 const router = express.Router();
 
 router.use(authenticate);
+
+// Phase 3 Institutional BI Endpoint
+router.get(
+  '/institutional-bi',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS),
+  getInstitutionalBI
+);
 
 // Default overview report
 router.get(

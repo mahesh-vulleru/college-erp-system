@@ -1,5 +1,10 @@
 const express = require('express');
-const { getResults, recordResult, batchRecordResults } = require('./result.controller');
+const {
+  getResults,
+  recordResult,
+  batchRecordResults,
+  getAcademicInsights
+} = require('./result.controller');
 const { validateResultInput } = require('./result.validator');
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
@@ -9,6 +14,19 @@ const { ROLES } = require('@college-erp/shared');
 const router = express.Router();
 
 router.use(authenticate);
+
+// Phase 3 Explainable Academic Risk & Pass Probability Intelligence
+router.get(
+  '/academic-insights',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.HOD,
+    ROLES.FACULTY,
+    ROLES.STUDENT
+  ),
+  getAcademicInsights
+);
 
 router.get(
   '/',

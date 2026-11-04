@@ -155,6 +155,171 @@ async function getAttendanceSummary(req, res, next) {
 module.exports = {
   getAttendanceRecords,
   markAttendanceBatch,
-  getAttendanceSummary
+  getAttendanceSummary,
+  getAttendanceIntelligence
 };
+
+/**
+ * GET /api/v1/attendance/intelligence
+ * Phase 3 Attendance Intelligence: 75% statutory recovery target, consecutive absence detection & edge-case validation
+ */
+async function getAttendanceIntelligence(req, res, next) {
+  try {
+    const query = {};
+
+    // Strict role scoping
+    if (req.user.role === ROLES.STUDENT) {
+      const studentProfile = await Student.findOne({ user: req.user._id });
+      if (!studentProfile) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.NOT_FOUND,
+          message: 'Student profile not linked to user account',
+          code: 'PROFILE_NOT_FOUND'
+        });
+      }
+      query.student = studentProfile._id;
+    } else if (req.user.role === ROLES.PARENT) {
+      if (req.user.studentId) {
+        query.student = req.user.studentId;
+      } else {
+        const student = await Student.findOne({
+          $or: [{ parentEmail: req.user.email }, { parentPhone: req.user.phone }]
+        });
+        if (student) {
+          query.student = student._id;
+        } else {
+          return sendSuccess(res, {
+            message: 'No student linked to parent profile',
+            data: { shortageAlerts: [], students: [] }
+          });
+        }
+      }
+    } else if (req.user.role === ROLES.HOD) {
+      let hodDept = null;
+      if (req.user.department) {
+        hodDept = await Department.findOne({
+          $or: [{ name: req.user.department }, { hod: req.user._id }]
+        });
+      } else {
+        hodDept = await Department.findOne({ hod: req.user._id });
+      }
+      if (hodDept) {
+        const deptStudents = await Student.find({ department: hodDept._id }).select('_id');
+        query.student = { $in: deptStudents.map((s) => s._id) };
+      }
+    } else if (req.query.student) {
+      if (mongoose.Types.ObjectId.isValid(req.query.student)) {
+        query.student = req.query.student;
+      }
+    }
+
+    if (req.query.subject && mongoose.Types.ObjectId.isValid(req.query.subject)) {
+      query.subject = req.query.subject;
+    }
+
+    // Group attendance records by student
+    const studentIds = query.student?.$in
+      ? query.student.$in
+      : query.student
+      ? [query.student]
+      : await Student.find(query.department ? { department: query.department } : {}).limit(100).distinct('_id');
+
+    const students = await Student.find({ _id: { $in: studentIds } })
+      .populate('user', 'name email')
+      .populate('department', 'name code');
+
+    const analyses = await Promise.all(
+      students.map(async (student) => {
+        const studentRecords = await Attendance.find({ student: student._id })
+          .sort({ date: -1 })
+          .populate('subject', 'name code');
+
+        const totalConducted = studentRecords.length;
+        const totalAttended = studentRecords.filter((r) => r.status === 'present').length;
+        const totalAbsent = studentRecords.filter((r) => r.status === 'absent').length;
+
+        // 1. Percentage & Shortage (Edge-case: 0 total classes)
+        const currentPercentage = totalConducted > 0
+          ? Number(((totalAttended / totalConducted) * 100).toFixed(1))
+          : 0;
+
+        const isShortage = totalConducted > 0 && currentPercentage < 75.0;
+
+        // 2. Classes Required to Recover to 75%
+        // Formula: (A + x) / (T + x) >= 0.75  ==> x >= 3*T - 4*A
+        let classesRequiredFor75 = 0;
+        let classesCanAffordToMiss = 0;
+
+        if (totalConducted > 0) {
+          if (currentPercentage < 75.0) {
+            classesRequiredFor75 = Math.max(0, Math.ceil(3 * totalConducted - 4 * totalAttended));
+          } else {
+            // How many classes can student miss while maintaining >= 75%?
+            // Formula: A / (T + y) >= 0.75 ==> y <= (A - 0.75*T) / 0.75
+            classesCanAffordToMiss = Math.max(0, Math.floor((totalAttended - 0.75 * totalConducted) / 0.75));
+          }
+        }
+
+        // 3. Consecutive Absence Pattern Detection
+        let consecutiveAbsences = 0;
+        for (const record of studentRecords) {
+          if (record.status === 'absent') {
+            consecutiveAbsences++;
+          } else {
+            break;
+          }
+        }
+        const hasConsecutiveAbsenceWarning = consecutiveAbsences >= 3;
+
+        return {
+          studentId: student._id,
+          rollNumber: student.rollNumber,
+          name: student.user?.name || 'Student',
+          email: student.user?.email,
+          department: student.department?.name,
+          currentSemester: student.currentSemester,
+          attendance: {
+            totalConducted,
+            totalAttended,
+            totalAbsent,
+            currentPercentage,
+            statutoryThreshold: 75.0,
+            isShortage,
+            classesRequiredFor75,
+            classesCanAffordToMiss,
+            consecutiveAbsences,
+            hasConsecutiveAbsenceWarning,
+            standingStatus: totalConducted === 0
+              ? 'No attendance records yet'
+              : isShortage
+              ? 'Critical Shortage (<75%)'
+              : currentPercentage >= 90
+              ? 'Excellent (≥90%)'
+              : 'Good Standing (75-89%)'
+          }
+        };
+      })
+    );
+
+    const shortageList = analyses.filter((a) => a.attendance.isShortage);
+    const consecutiveWarningList = analyses.filter((a) => a.attendance.hasConsecutiveAbsenceWarning);
+
+    return sendSuccess(res, {
+      message: 'Attendance intelligence and recovery analytics generated',
+      data: {
+        timestamp: new Date().toISOString(),
+        summary: {
+          totalAnalyzed: analyses.length,
+          studentsWithShortage: shortageList.length,
+          studentsWithConsecutiveAbsenceAlerts: consecutiveWarningList.length,
+          overallHealthyCount: analyses.length - shortageList.length
+        },
+        students: analyses,
+        shortageAlerts: shortageList
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 

@@ -6,7 +6,8 @@ const {
   reviewLeave,
   escalateLeave,
   getWorkflowConfig,
-  updateWorkflowConfig
+  updateWorkflowConfig,
+  getWorkflowEscalations
 } = require('./leave.controller');
 const { validateLeaveApplyInput, validateLeaveReviewInput } = require('./leave.validator');
 const authenticate = require('../../middleware/auth');
@@ -17,6 +18,13 @@ const { ROLES } = require('@college-erp/shared');
 const router = express.Router();
 
 router.use(authenticate);
+
+// Phase 3 SLA Monitoring & Workflow Escalations
+router.get(
+  '/escalations',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  getWorkflowEscalations
+);
 
 // Workflow configuration endpoints
 router.get('/config', getWorkflowConfig);

@@ -527,6 +527,130 @@ async function verifyEvidenceDocument(req, res, next) {
   }
 }
 
+/**
+ * GET /api/v1/accreditation/gap-analysis
+ * Phase 3 Evidence-Linked Readiness & Gap Analysis (internal institutional preparedness indicator)
+ */
+async function getGapAnalysis(req, res, next) {
+  try {
+    const query = {};
+    if (req.query.framework) query.framework = req.query.framework;
+    if (req.query.department) query.department = req.query.department;
+
+    const criteria = await Accreditation.find(query)
+      .populate('department', 'name code')
+      .populate('assignedOwner', 'name email role')
+      .lean();
+
+    const gaps = [];
+    const categoryBreakdown = {};
+
+    let totalWeightage = 0;
+    let earnedWeightage = 0;
+    let totalVerifiedDocuments = 0;
+
+    criteria.forEach((crit) => {
+      const weight = Number(crit.weightage) || 100;
+      const compliance = Number(crit.compliancePercentage) || 0;
+      totalWeightage += weight;
+      earnedWeightage += (weight * (compliance / 100));
+
+      const docs = crit.evidenceDocuments || [];
+      const verifiedDocs = docs.filter((d) => d.verificationStatus === 'verified').length;
+      const pendingDocs = docs.filter((d) => d.verificationStatus === 'pending').length;
+      const rejectedDocs = docs.filter((d) => d.verificationStatus === 'rejected').length;
+      totalVerifiedDocuments += verifiedDocs;
+
+      const category = crit.category || 'General';
+      if (!categoryBreakdown[category]) {
+        categoryBreakdown[category] = {
+          totalCriteria: 0,
+          completedCriteria: 0,
+          totalWeightage: 0,
+          earnedWeightage: 0,
+          verifiedDocuments: 0
+        };
+      }
+      categoryBreakdown[category].totalCriteria++;
+      categoryBreakdown[category].totalWeightage += weight;
+      categoryBreakdown[category].earnedWeightage += (weight * (compliance / 100));
+      categoryBreakdown[category].verifiedDocuments += verifiedDocs;
+      if (compliance >= 100 && verifiedDocs > 0) {
+        categoryBreakdown[category].completedCriteria++;
+      }
+
+      // Identify Gaps
+      const gapFlags = [];
+      if (docs.length === 0) {
+        gapFlags.push('MISSING_EVIDENCE_ATTACHMENTS');
+      }
+      if (compliance < 60) {
+        gapFlags.push('COMPLIANCE_BELOW_BENCHMARK');
+      }
+      if (rejectedDocs > 0) {
+        gapFlags.push('HAS_REJECTED_EVIDENCE_DOCUMENTS');
+      }
+
+      if (gapFlags.length > 0) {
+        gaps.push({
+          criterionId: crit._id,
+          code: crit.code,
+          title: crit.title,
+          category: crit.category,
+          framework: crit.framework,
+          weightage: weight,
+          currentCompliance: compliance,
+          department: crit.department?.name,
+          owner: crit.assignedOwner?.name,
+          evidenceStatus: {
+            totalAttached: docs.length,
+            verified: verifiedDocs,
+            pending: pendingDocs,
+            rejected: rejectedDocs
+          },
+          identifiedGaps: gapFlags,
+          remedialRecommendation: docs.length === 0
+            ? 'Upload verified institutional audit artifacts, syllabus minutes, or council records'
+            : rejectedDocs > 0
+            ? 'Replace rejected evidence with certified scanned document'
+            : 'Review criterion requirements to meet baseline threshold'
+        });
+      }
+    });
+
+    const overallReadinessScore = totalWeightage > 0
+      ? Number(((earnedWeightage / totalWeightage) * 100).toFixed(1))
+      : 0;
+
+    return sendSuccess(res, {
+      message: 'Accreditation gap analysis & institutional readiness evaluated',
+      data: {
+        timestamp: new Date().toISOString(),
+        advisoryDisclaimer: 'This evaluation represents an internal institutional preparedness metric and does not constitute official certification by NAAC, NBA, or statutory bodies.',
+        summary: {
+          totalCriteriaCount: criteria.length,
+          overallReadinessScorePercent: overallReadinessScore,
+          totalGapsIdentified: gaps.length,
+          totalEvidenceDocumentsVerified: totalVerifiedDocuments,
+          criteriaWithMissingEvidenceCount: gaps.filter((g) => g.identifiedGaps.includes('MISSING_EVIDENCE_ATTACHMENTS')).length
+        },
+        categoryReadiness: Object.entries(categoryBreakdown).map(([cat, val]) => ({
+          category: cat,
+          totalCriteria: val.totalCriteria,
+          completedCriteria: val.completedCriteria,
+          readinessPercentage: val.totalWeightage > 0
+            ? Number(((val.earnedWeightage / val.totalWeightage) * 100).toFixed(1))
+            : 0,
+          verifiedDocuments: val.verifiedDocuments
+        })),
+        gapItems: gaps
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   listCriteria,
   getCriteriaSummary,
@@ -535,6 +659,7 @@ module.exports = {
   updateCriterion,
   deleteCriterion,
   addEvidenceDocument,
-  verifyEvidenceDocument
+  verifyEvidenceDocument,
+  getGapAnalysis
 };
 

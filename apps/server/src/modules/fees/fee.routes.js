@@ -9,7 +9,8 @@ const {
   getInvoiceById,
   createInvoice,
   applyAdjustment,
-  exportInvoicesCsv
+  exportInvoicesCsv,
+  getFinancialForecasting
 } = require('./fee.controller');
 const { validateFeeStructureInput } = require('./fee.validator');
 const authenticate = require('../../middleware/auth');
@@ -20,6 +21,13 @@ const { ROLES } = require('@college-erp/shared');
 const router = express.Router();
 
 router.use(authenticate);
+
+// Phase 3 Financial Intelligence & Revenue Forecasting
+router.get(
+  '/forecasting',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS),
+  getFinancialForecasting
+);
 
 // Fee Structures (Plans)
 router.get(

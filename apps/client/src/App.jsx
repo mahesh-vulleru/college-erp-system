@@ -55,6 +55,7 @@ import DeadlineEventTrackerPage from './pages/principal/DeadlineEventTrackerPage
 import TransportPage from './pages/modules/TransportPage';
 import HostelPage from './pages/modules/HostelPage';
 import PlacementsPage from './pages/modules/PlacementsPage';
+import AssetManagementPage from './pages/assets/AssetManagementPage';
 import SettingsPage from './pages/modules/SettingsPage';
 
 import { ROLES } from '@college-erp/shared';
@@ -567,6 +568,14 @@ export const App = () => {
               <Route path="transport" element={<TransportPage />} />
               <Route path="hostel" element={<HostelPage />} />
               <Route path="placements" element={<PlacementsPage />} />
+              <Route
+                path="assets"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS, ROLES.LIBRARIAN, 'admin']}>
+                    <AssetManagementPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="settings" element={<SettingsPage />} />
 
               {/* Catch-all 404 inside layout */}

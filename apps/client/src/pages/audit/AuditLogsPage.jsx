@@ -48,6 +48,24 @@ export const AuditLogsPage = () => {
   const [selectedLog, setSelectedLog] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
+  // Phase 3 Security Analytics
+  const [analytics, setAnalytics] = useState(null);
+
+  const loadAnalytics = useCallback(async () => {
+    try {
+      const res = await api.getSecurityAnalytics();
+      if (res?.data) {
+        setAnalytics(res.data);
+      }
+    } catch {
+      // Non-blocking fallback
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAnalytics();
+  }, [loadAnalytics]);
+
   const loadLogs = useCallback(
     async (pageToLoad = 1) => {
       setIsLoading(true);
@@ -130,6 +148,57 @@ export const AuditLogsPage = () => {
           <Button variant="ghost" size="sm" onClick={() => loadLogs(pagination.page)} disabled={isLoading}>
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
+        </div>
+      </div>
+
+      {/* Security Analytics Summary Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+        <div className="p-3.5 rounded-xl bg-white border border-navy-100 shadow-subtle flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-navy-500 block">Total Events</span>
+            <span className="text-xl font-bold text-navy-900 mt-0.5 block font-mono">
+              {analytics?.totalEvents ?? pagination.total ?? '0'}
+            </span>
+          </div>
+          <div className="w-9 h-9 rounded-lg bg-teal-50 border border-teal-200/60 flex items-center justify-center text-teal-700">
+            <Layers className="w-4 h-4" />
+          </div>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-white border border-navy-100 shadow-subtle flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600 block">Security Alerts</span>
+            <span className="text-xl font-bold text-rose-700 mt-0.5 block font-mono">
+              {analytics?.failedEvents ?? '0'}
+            </span>
+          </div>
+          <div className="w-9 h-9 rounded-lg bg-rose-50 border border-rose-200/60 flex items-center justify-center text-rose-700">
+            <AlertTriangle className="w-4 h-4" />
+          </div>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-white border border-navy-100 shadow-subtle flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 block">Privileged Mutations</span>
+            <span className="text-xl font-bold text-amber-700 mt-0.5 block font-mono">
+              {analytics?.privilegedEvents ?? '0'}
+            </span>
+          </div>
+          <div className="w-9 h-9 rounded-lg bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-700">
+            <Lock className="w-4 h-4" />
+          </div>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-white border border-navy-100 shadow-subtle flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-sky-600 block">Unique Actors</span>
+            <span className="text-xl font-bold text-sky-700 mt-0.5 block font-mono">
+              {analytics?.uniqueActors ?? '1'}
+            </span>
+          </div>
+          <div className="w-9 h-9 rounded-lg bg-sky-50 border border-sky-200/60 flex items-center justify-center text-sky-700">
+            <User className="w-4 h-4" />
+          </div>
         </div>
       </div>
 

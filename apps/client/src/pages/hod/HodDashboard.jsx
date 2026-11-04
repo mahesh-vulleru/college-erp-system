@@ -268,6 +268,24 @@ export const HodDashboard = () => {
   const [performanceSemester, setPerformanceSemester] = useState('All');
   const [deadlinesFilter, setDeadlinesFilter] = useState('All');
 
+  // Phase 3 Timetable Optimization State
+  const [optimizationSuggestions, setOptimizationSuggestions] = useState(null);
+  const [isOptimizing, setIsOptimizing] = useState(false);
+
+  const loadOptimizationSuggestions = useCallback(async () => {
+    setIsOptimizing(true);
+    try {
+      const res = await api.getOptimizationSuggestions();
+      if (res?.data) {
+        setOptimizationSuggestions(res.data);
+      }
+    } catch {
+      // Non-blocking fallback
+    } finally {
+      setIsOptimizing(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (queryTab) {
       let targetTab = queryTab;
@@ -3596,7 +3614,48 @@ export const HodDashboard = () => {
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                   <span className="font-medium">All department timetable slots are conflict-free across rooms, faculty, and sections.</span>
                 </div>
-                <Badge variant="emerald" size="xs">Conflict-Free</Badge>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="emerald" size="xs">Conflict-Free</Badge>
+                  <Button
+                    variant="teal"
+                    size="xs"
+                    onClick={loadOptimizationSuggestions}
+                    isLoading={isOptimizing}
+                    icon={Sparkles}
+                  >
+                    Run Schedule Optimizer
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Timetable Optimizer Suggestions Card */}
+            {optimizationSuggestions && (
+              <div className="p-4 rounded-xl bg-white border border-teal-200/80 shadow-subtle space-y-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Sparkles className="w-4 h-4 text-teal-600" />
+                    <span className="font-bold text-slate-900">Schedule Optimization Telemetry</span>
+                  </div>
+                  <span className="text-[11px] font-mono text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                    Slots Analyzed: {optimizationSuggestions.totalSlots ?? deptTimetable.length}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {(optimizationSuggestions.suggestions && optimizationSuggestions.suggestions.length > 0) ? (
+                    <ul className="space-y-1.5">
+                      {optimizationSuggestions.suggestions.map((s, idx) => (
+                        <li key={idx} className="p-2.5 rounded-lg bg-teal-50/60 border border-teal-100 text-teal-900 flex items-start space-x-2">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0 mt-0.5" />
+                          <span>{typeof s === 'string' ? s : s.message || JSON.stringify(s)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-slate-500 py-1">Faculty workload is optimally balanced across all lecture hours and practical labs.</p>
+                  )}
+                </div>
               </div>
             )}
 
