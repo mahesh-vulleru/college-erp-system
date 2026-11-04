@@ -91,6 +91,80 @@ function resetWorkflowsToDefault() {
 }
 
 /**
+ * Resolve maximum approval stages needed based on applicant role and duration
+ */
+function resolveMaxStages(role, numberOfDays = 1) {
+  const config = activeWorkflows[role] || DEFAULT_WORKFLOWS[role] || { stages: [{ stage: 1, approverRole: ROLES.PRINCIPAL }] };
+  const stages = config.stages || [];
+  if (stages.length <= 1) return 1;
+
+  const stage2 = stages[1];
+  if (stage2.requireApprovalAboveDays && numberOfDays <= stage2.requireApprovalAboveDays) {
+    return 1;
+  }
+  return stages.length;
+}
+
+/**
+ * Determine the approver role for a specific stage
+ */
+function getApproverRoleForStage(applicantRole, stageNumber) {
+  const config = activeWorkflows[applicantRole] || DEFAULT_WORKFLOWS[applicantRole];
+  const stages = config?.stages || [];
+  const found = stages.find((s) => s.stage === stageNumber);
+  if (found) return found.approverRole;
+  if (stages.length > 0) return stages[stages.length - 1].approverRole;
+  return ROLES.PRINCIPAL;
+}
+
+/**
+ * Dynamically resolve the designated approver User entity
+ */
+async function resolveApproverUser({ applicantUser, applicantRole, departmentId, stageNumber }) {
+  if (mongoose.connection.readyState !== 1) {
+    return null;
+  }
+  const approverRole = getApproverRoleForStage(applicantRole, stageNumber);
+
+  try {
+    if (approverRole === ROLES.FACULTY) {
+      if (departmentId) {
+        const deptFaculty = await Faculty.findOne({ department: departmentId }).populate('user');
+        if (deptFaculty?.user) return deptFaculty.user;
+      }
+      const anyFaculty = await Faculty.findOne().populate('user');
+      if (anyFaculty?.user) return anyFaculty.user;
+    } else if (approverRole === ROLES.HOD) {
+      if (departmentId) {
+        const dept = await Department.findById(departmentId).populate('hod');
+        if (dept?.hod) return dept.hod;
+      }
+      const hodUser = await User.findOne({ role: ROLES.HOD, status: 'active' });
+      if (hodUser) return hodUser;
+    } else if (approverRole === ROLES.TRANSPORT_SUPERVISOR) {
+      const supervisor = await User.findOne({ role: ROLES.TRANSPORT_SUPERVISOR, status: 'active' });
+      if (supervisor) return supervisor;
+    } else if (approverRole === ROLES.TRANSPORT_ADMIN) {
+      const transportAdmin = await User.findOne({ role: ROLES.TRANSPORT_ADMIN, status: 'active' });
+      if (transportAdmin) return transportAdmin;
+    } else if (approverRole === ROLES.LIBRARIAN) {
+      const librarianUser = await User.findOne({ role: ROLES.LIBRARIAN, status: 'active' });
+      if (librarianUser) return librarianUser;
+    } else if (approverRole === ROLES.PRINCIPAL) {
+      const principalUser = await User.findOne({ role: ROLES.PRINCIPAL, status: 'active' });
+      if (principalUser) return principalUser;
+    } else if (approverRole === ROLES.SUPER_ADMIN) {
+      const adminUser = await User.findOne({ role: ROLES.SUPER_ADMIN, status: 'active' });
+      if (adminUser) return adminUser;
+    }
+  } catch (err) {
+    console.error('Error resolving approver user:', err.message);
+  }
+
+  return null;
+}
+
+/**
  * Determine the initial approver for a leave request based on applicant's profile
  */
 async function determineInitialApprover(applicantUser, leaveType, daysCount) {
@@ -168,5 +242,8 @@ module.exports = {
   getActiveWorkflows,
   updateActiveWorkflows,
   resetWorkflowsToDefault,
+  resolveMaxStages,
+  getApproverRoleForStage,
+  resolveApproverUser,
   determineInitialApprover
 };

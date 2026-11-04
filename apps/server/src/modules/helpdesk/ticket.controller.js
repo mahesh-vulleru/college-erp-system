@@ -9,7 +9,9 @@ const logger = require('../../utils/logger');
  */
 async function createTicket(req, res, next) {
   try {
-    const { title, description, category, priority, assignedDepartment } = req.body;
+    const title = req.body.title || req.body.subject;
+    const description = req.body.description || req.body.message;
+    const { category, priority, assignedDepartment } = req.body;
 
     if (!title || !description) {
       return sendError(res, {
@@ -18,10 +20,23 @@ async function createTicket(req, res, next) {
       });
     }
 
+    const categoryMap = {
+      academic: 'Academic',
+      examination: 'Examination',
+      accounts: 'Fee & Accounts',
+      fees: 'Fee & Accounts',
+      library: 'Library',
+      transport: 'Transport & Fleet',
+      hostel: 'Hostel & Mess',
+      it_support: 'IT & Technical Support',
+      general: 'General'
+    };
+    const normalizedCategory = categoryMap[String(category || '').toLowerCase()] || category || 'General';
+
     const ticket = await HelpdeskTicket.create({
       title,
       description,
-      category: category || 'General',
+      category: normalizedCategory,
       priority: priority || 'medium',
       assignedDepartment: assignedDepartment || 'General Administration',
       submittedBy: req.user._id,
@@ -163,7 +178,8 @@ async function getTicketById(req, res, next) {
 async function addTicketComment(req, res, next) {
   try {
     const { id } = req.params;
-    const { comment, isInternal } = req.body;
+    const comment = req.body.comment || req.body.message;
+    const { isInternal } = req.body;
 
     if (!comment || !comment.trim()) {
       return sendError(res, {

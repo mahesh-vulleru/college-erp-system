@@ -13,12 +13,12 @@ const logger = require('../../utils/logger');
  */
 async function configureSeatingPlan(req, res, next) {
   try {
+    const examinationId = req.body.examinationId || req.body.examination;
+    const hallName = req.body.hallName || req.body.roomNumber || 'Main Exam Hall';
+    const roomNumber = req.body.roomNumber || req.body.hallName;
+    const totalRows = req.body.totalRows || req.body.rows;
+    const seatsPerRow = req.body.seatsPerRow || req.body.columns;
     const {
-      examinationId,
-      hallName,
-      roomNumber,
-      totalRows,
-      seatsPerRow,
       studentIds,
       allocations: inputAllocations,
       invigilatorId,
@@ -58,6 +58,13 @@ async function configureSeatingPlan(req, res, next) {
       const seatSet = new Set();
 
       for (const alloc of inputAllocations) {
+        let roll = alloc.rollNumber;
+        if (!roll && alloc.student) {
+          const sDoc = await Student.findById(alloc.student);
+          if (sDoc) roll = sDoc.rollNumber;
+        }
+        alloc.rollNumber = roll || 'ENROLLED';
+
         const sId = alloc.student?.toString();
         const seatSig = alloc.seatNumber || `R${alloc.row}C${alloc.column}`;
 

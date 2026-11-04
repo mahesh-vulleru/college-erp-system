@@ -81,5 +81,21 @@ router.post(
   recordDownload
 );
 
+router.get(
+  '/:id/download',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.HOD,
+    ROLES.FACULTY,
+    ROLES.STUDENT,
+    ROLES.ACCOUNTS,
+    ROLES.LIBRARIAN,
+    ROLES.LIBRARY_STAFF,
+    ROLES.PARENT
+  ),
+  recordDownload
+);
+
 module.exports = router;
 

@@ -11,11 +11,11 @@ const logger = require('../../utils/logger');
  */
 async function uploadDocument(req, res, next) {
   try {
+    const originalName = req.body.originalName || req.body.fileName;
+    const mimeType = req.body.mimeType || 'application/pdf';
     const {
       title,
       category,
-      originalName,
-      mimeType,
       fileSize,
       ownerUserId,
       ownerStudentId,
@@ -30,11 +30,23 @@ async function uploadDocument(req, res, next) {
       });
     }
 
+    const docCategoryMap = {
+      academic: 'Student Academic',
+      identity: 'Identity & Verification',
+      certificate: 'Certificate',
+      financial: 'Fee Receipt',
+      transport: 'Transport Document',
+      administrative: 'Institutional Policy',
+      policy: 'Institutional Policy',
+      staff: 'Staff Document'
+    };
+    const normalizedCategory = docCategoryMap[String(category || '').toLowerCase()] || category || 'Student Academic';
+
     const fileKey = `doc_${Date.now()}_${Math.random().toString(36).substring(2, 9)}_${originalName.replace(/\s+/g, '_')}`;
 
     const document = await Document.create({
       title,
-      category: category || 'Student Academic',
+      category: normalizedCategory,
       fileKey,
       originalName,
       mimeType,
