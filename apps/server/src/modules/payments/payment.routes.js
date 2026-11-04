@@ -6,6 +6,10 @@ const {
   processRefund,
   getGatewayStatus
 } = require('./payment.controller');
+const {
+  getReconciliationSummary,
+  updatePaymentReconciliation
+} = require('./reconciliation.controller');
 const { validatePaymentInput } = require('./payment.validator');
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
@@ -15,6 +19,19 @@ const { ROLES } = require('@college-erp/shared');
 const router = express.Router();
 
 router.use(authenticate);
+
+// Fee Reconciliation & Duplicate Transaction Auditing
+router.get(
+  '/reconciliation',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.ACCOUNTS),
+  getReconciliationSummary
+);
+
+router.patch(
+  '/reconciliation/:id',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ACCOUNTS),
+  updatePaymentReconciliation
+);
 
 // Gateway configuration status check
 router.get(

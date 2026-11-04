@@ -102,6 +102,24 @@ const paymentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     },
+    // Fee Reconciliation fields
+    reconciliationStatus: {
+      type: String,
+      enum: ['pending', 'reconciled', 'mismatched', 'flagged_duplicate'],
+      default: 'pending',
+      index: true
+    },
+    reconciliationNotes: {
+      type: String,
+      trim: true
+    },
+    reconciledBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    reconciledAt: {
+      type: Date
+    },
     remarks: {
       type: String,
       trim: true

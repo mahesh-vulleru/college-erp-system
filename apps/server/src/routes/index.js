@@ -7,6 +7,7 @@ const departmentRoutes = require('../modules/departments/department.routes');
 const courseRoutes = require('../modules/courses/course.routes');
 const subjectRoutes = require('../modules/subjects/subject.routes');
 const studentRoutes = require('../modules/students/student.routes');
+const parentLinkRoutes = require('../modules/students/parentLink.routes');
 const facultyRoutes = require('../modules/faculty/faculty.routes');
 const timetableRoutes = require('../modules/timetable/timetable.routes');
 const attendanceRoutes = require('../modules/attendance/attendance.routes');
@@ -24,6 +25,8 @@ const eventRoutes = require('../modules/events/institutionalEvent.routes');
 const libraryRoutes = require('../modules/library/library.routes');
 const transportRoutes = require('../modules/transport/transport.routes');
 const notificationRoutes = require('../modules/notifications/notification.routes');
+const helpdeskRoutes = require('../modules/helpdesk/ticket.routes');
+const documentRoutes = require('../modules/documents/document.routes');
 
 const {
   getAttendanceOverview,
@@ -63,6 +66,11 @@ v1Router.use('/departments', departmentRoutes);
 v1Router.use('/courses', courseRoutes);
 v1Router.use('/subjects', subjectRoutes);
 v1Router.use('/students', studentRoutes);
+
+// Parent Linkage (Phase 2 Module 12)
+v1Router.use('/parent-links', parentLinkRoutes);
+v1Router.use('/parent', parentLinkRoutes);
+
 v1Router.use('/faculty', facultyRoutes);
 v1Router.use('/timetable', timetableRoutes);
 v1Router.use('/attendance', attendanceRoutes);
@@ -107,6 +115,13 @@ v1Router.use('/calendar', eventRoutes.calendarRouter || eventRoutes);
 // Notifications System
 v1Router.use('/notifications', notificationRoutes);
 
+// Helpdesk & Grievances (Phase 2 Module 3)
+v1Router.use('/helpdesk', helpdeskRoutes);
+v1Router.use('/grievances', helpdeskRoutes);
+
+// Documents Management (Phase 2 Module 11)
+v1Router.use('/documents', documentRoutes);
+
 // Library
 v1Router.use('/library', libraryRoutes);
 
@@ -121,5 +136,9 @@ router.use('/library', libraryRoutes);
 router.use('/transport', transportRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/calendar', eventRoutes.calendarRouter || eventRoutes);
+router.use('/helpdesk', helpdeskRoutes);
+router.use('/documents', documentRoutes);
+router.use('/parent-links', parentLinkRoutes);
+router.use('/parent', parentLinkRoutes);
 
 module.exports = router;

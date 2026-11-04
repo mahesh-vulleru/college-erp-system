@@ -33,7 +33,11 @@ router.get(
     ROLES.STUDENT,
     ROLES.LIBRARIAN,
     ROLES.LIBRARY_STAFF,
-    ROLES.ACCOUNTS
+    ROLES.ACCOUNTS,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR,
+    ROLES.BUS_DRIVER,
+    ROLES.BUS_ATTENDANT
   ),
   listLeaveRequests
 );
@@ -49,12 +53,16 @@ router.get(
     ROLES.STUDENT,
     ROLES.LIBRARIAN,
     ROLES.LIBRARY_STAFF,
-    ROLES.ACCOUNTS
+    ROLES.ACCOUNTS,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR,
+    ROLES.BUS_DRIVER,
+    ROLES.BUS_ATTENDANT
   ),
   getLeaveRequestById
 );
 
-// Apply for leave (All authenticated institutional roles)
+// Apply for leave (All authenticated institutional & transport roles)
 router.post(
   '/',
   authorizeRoles(
@@ -65,7 +73,11 @@ router.post(
     ROLES.STUDENT,
     ROLES.LIBRARIAN,
     ROLES.LIBRARY_STAFF,
-    ROLES.ACCOUNTS
+    ROLES.ACCOUNTS,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR,
+    ROLES.BUS_DRIVER,
+    ROLES.BUS_ATTENDANT
   ),
   validateRequest(validateLeaveApplyInput),
   applyLeave
@@ -74,7 +86,15 @@ router.post(
 // Review leave (Approve / Reject) (Designated approvers)
 router.patch(
   '/:id/review',
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.LIBRARIAN),
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.HOD,
+    ROLES.FACULTY,
+    ROLES.LIBRARIAN,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR
+  ),
   validateRequest(validateLeaveReviewInput),
   reviewLeave
 );
@@ -82,7 +102,14 @@ router.patch(
 // Escalate leave request to higher authority
 router.post(
   '/:id/escalate',
-  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.LIBRARIAN),
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.HOD,
+    ROLES.LIBRARIAN,
+    ROLES.TRANSPORT_ADMIN,
+    ROLES.TRANSPORT_SUPERVISOR
+  ),
   escalateLeave
 );
 
