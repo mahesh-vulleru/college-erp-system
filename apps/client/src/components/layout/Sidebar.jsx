@@ -49,7 +49,13 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  Calendar
+  Calendar,
+  Target,
+  RotateCw,
+  Search,
+  FileText,
+  CheckCircle,
+  Coins
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '@college-erp/shared';
@@ -73,7 +79,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       try {
         localStorage.setItem('erp_sidebar_collapsed', String(next));
       } catch {
-        // storage fallback
+        // ignore
       }
       return next;
     });
@@ -107,6 +113,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       case 'librarian':
         return '/library';
       case 'transport_admin':
+      case 'transportadmin':
         return '/transport/admin';
       case 'transport_supervisor':
         return '/transport/supervisor';
@@ -124,85 +131,72 @@ export const Sidebar = ({ isOpen, onClose }) => {
   const dashboardPath = getRoleDashboardPath();
 
   // ---------------------------------------------------------------------------
-  // ROLE-SPECIFIC MENU GROUPS CONFIGURATION
+  // ROLE-SPECIFIC MENU GROUPS CONFIGURATION (APPROVED 13-ROLE MAPPING)
   // ---------------------------------------------------------------------------
   const roleMenuGroups = useMemo(() => {
-    // 1. TRANSPORT ADMIN
+    // 1. TRANSPORT ADMIN (Exact 19 verified features, zero duplication)
     if (role === 'transport_admin' || role === 'transportadmin') {
       return [
         {
           group: 'Overview',
           icon: LayoutDashboard,
           items: [
-            { label: 'Transport Dashboard', path: '/transport/admin', exact: true, icon: LayoutDashboard },
-            { label: 'Fleet Analytics', path: '/transport/admin?tab=analytics', icon: TrendingUp },
-            { label: 'Transport Overview', path: '/transport/admin?tab=overview', icon: Bus }
+            { label: 'Transport Overview', path: '/transport/admin', exact: true, icon: LayoutDashboard },
+            { label: 'Fleet Analytics', path: '/transport/admin?tab=analytics', icon: TrendingUp }
           ]
         },
         {
-          group: 'Fleet Management',
+          group: 'Fleet & Personnel',
           icon: Car,
           items: [
-            { label: 'Bus & Vehicle Fleet', path: '/transport/admin?tab=buses', icon: Bus },
-            { label: 'Driver Management', path: '/transport/admin?tab=drivers', icon: Users },
-            { label: 'Staff & Personnel', path: '/transport/admin?tab=drivers', icon: UserCheck },
-            { label: 'Vehicle Documents', path: '/transport/admin?tab=buses', icon: FileSpreadsheet },
-            { label: 'Vehicle Maintenance', path: '/transport/admin?tab=maintenance', icon: Wrench },
-            { label: 'Fuel Management', path: '/transport/admin?tab=fuel', icon: Fuel }
+            { label: 'Buses & Vehicles', path: '/transport/admin?tab=buses', icon: Bus },
+            { label: 'Routes & Stops', path: '/transport/admin?tab=routes', icon: MapPin },
+            { label: 'Drivers & Staff', path: '/transport/admin?tab=drivers', icon: Users },
+            { label: 'Student Allocations', path: '/transport/admin?tab=students', icon: GraduationCap }
           ]
         },
         {
-          group: 'Transport Operations',
+          group: 'Transit Operations',
           icon: Navigation,
           items: [
             { label: 'Trips & Dispatch', path: '/transport/admin?tab=trips', icon: Clock },
-            { label: 'Daily Transit Schedule', path: '/transport/admin?tab=schedule', icon: Calendar },
-            { label: 'Routes & Stops', path: '/transport/admin?tab=routes', icon: MapPin },
-            { label: 'Student Transport Allocation', path: '/transport/admin?tab=students', icon: GraduationCap },
-            { label: 'Student Attendance', path: '/transport/admin?tab=attendance', icon: UserCheck },
-            { label: 'Live GPS Tracking', path: '/transport/admin?tab=gps', icon: Activity },
-            { label: 'GPS Radar', path: '/transport/admin?tab=gps', icon: Radio }
+            { label: 'Daily Schedule', path: '/transport/admin?tab=schedule', icon: Calendar },
+            { label: 'Live GPS', path: '/transport/admin?tab=gps', icon: Activity },
+            { label: 'Student Attendance', path: '/transport/admin?tab=attendance', icon: UserCheck }
           ]
         },
         {
-          group: 'Finance',
+          group: 'Maintenance & Fuel',
+          icon: Wrench,
+          items: [
+            { label: 'Maintenance', path: '/transport/admin?tab=maintenance', icon: Wrench },
+            { label: 'Fuel', path: '/transport/admin?tab=fuel', icon: Fuel }
+          ]
+        },
+        {
+          group: 'Finance & Accounts',
           icon: CreditCard,
           items: [
-            { label: 'Transport Fees', path: '/transport/admin?tab=fees', icon: DollarSign },
-            { label: 'Fee Collection', path: '/transport/admin?tab=fees', icon: Receipt },
-            { label: 'Pending Payments', path: '/transport/admin?tab=expenses', icon: AlertCircle },
-            { label: 'Payment History', path: '/transport/admin?tab=fees', icon: FileSpreadsheet }
+            { label: 'Fees', path: '/transport/admin?tab=fees', icon: DollarSign },
+            { label: 'Expenses', path: '/transport/admin?tab=expenses', icon: CreditCard }
           ]
         },
         {
-          group: 'Safety & Communication',
+          group: 'Safety & Grievance',
           icon: ShieldAlert,
           items: [
-            { label: 'Safety Management', path: '/transport/admin?tab=safety', icon: ShieldCheck },
-            { label: 'Complaints Management', path: '/transport/admin?tab=complaints', icon: MessageSquare },
-            { label: 'Emergency Management', path: '/transport/admin?tab=safety', icon: AlertTriangle },
-            { label: 'Transport Announcements', path: '/transport/admin?tab=announcements', icon: Megaphone },
-            { label: 'Notifications', path: '/notices', icon: Bell }
+            { label: 'Safety & SOS', path: '/transport/admin?tab=safety', icon: ShieldAlert },
+            { label: 'Complaints', path: '/transport/admin?tab=complaints', icon: MessageSquare },
+            { label: 'Announcements', path: '/transport/admin?tab=announcements', icon: Megaphone }
           ]
         },
         {
-          group: 'Reports',
+          group: 'Reports & Settings',
           icon: BarChart3,
           items: [
-            { label: 'Transport Analytics', path: '/transport/admin?tab=analytics', icon: TrendingUp },
-            { label: 'Transport Reports', path: '/transport/admin?tab=reports', icon: FileSpreadsheet },
-            { label: 'Fleet Reports', path: '/transport/admin?tab=reports', icon: Bus },
-            { label: 'Driver Reports', path: '/transport/admin?tab=reports', icon: Users },
-            { label: 'Attendance Reports', path: '/transport/admin?tab=reports', icon: CalendarCheck },
-            { label: 'Financial Reports', path: '/transport/admin?tab=reports', icon: Receipt }
-          ]
-        },
-        {
-          group: 'Settings',
-          icon: Settings,
-          items: [
-            { label: 'Transport Settings', path: '/transport/admin?tab=settings', icon: Settings },
-            { label: 'Transport Configuration', path: '/transport/admin?tab=settings', icon: Sliders }
+            { label: 'Reports', path: '/transport/admin?tab=reports', icon: BarChart3 },
+            { label: 'Institutional Calendar', path: '/calendar', icon: CalendarCheck },
+            { label: 'Settings', path: '/transport/admin?tab=settings', icon: Settings }
           ]
         }
       ];
@@ -212,138 +206,81 @@ export const Sidebar = ({ isOpen, onClose }) => {
     if (role === 'principal') {
       return [
         {
-          group: 'Main',
+          group: 'Executive Leadership',
           icon: Building2,
           items: [
             { label: 'Principal Dashboard', path: '/principal', exact: true, icon: LayoutDashboard },
-            { label: 'Institutional Overview', path: '/overview', icon: Building2 },
-            { label: 'Executive Analytics', path: '/principal?tab=analytics', icon: BarChart3 }
+            { label: 'Institutional Health', path: '/overview', icon: Building2 },
+            { label: 'Institutional Goals & KPIs', path: '/principal/goals', icon: Target },
+            { label: 'Accreditation & Compliance', path: '/principal/accreditation', icon: ShieldCheck }
           ]
         },
         {
-          group: 'Academic Management',
+          group: 'Academic Governance',
           icon: GraduationCap,
           items: [
-            { label: 'Departments', path: '/departments', icon: Building2 },
-            { label: 'Academic Programs', path: '/courses', icon: Layers },
-            { label: 'Courses & Subjects', path: '/subjects', icon: BookOpen },
-            { label: 'Academic Calendar', path: '/calendar', icon: Calendar },
-            { label: 'Timetable Management', path: '/timetable', icon: Clock },
-            { label: 'Academic Events', path: '/principal/events', icon: CalendarCheck },
-            { label: 'Examinations', path: '/examinations', icon: FileEdit },
-            { label: 'Results & Performance', path: '/results', icon: Award },
-            { label: 'Academic Reports', path: '/reports?type=academic', icon: BarChart3 }
+            { label: 'Academic Departments', path: '/departments', icon: Building2 },
+            { label: 'Programs & Courses', path: '/courses', icon: Layers },
+            { label: 'Academic Calendar', path: '/calendar', icon: CalendarCheck },
+            { label: 'Institutional Deadlines', path: '/principal/events', icon: Clock },
+            { label: 'Timetable Schedules', path: '/timetable', icon: Clock },
+            { label: 'Examinations Cell', path: '/examinations', icon: FileEdit },
+            { label: 'Results & Performance', path: '/results', icon: Award }
           ]
         },
         {
-          group: 'People Management',
+          group: 'People & Operations',
           icon: Users,
           items: [
-            { label: 'HOD Management', path: '/hod', icon: GitBranch },
-            { label: 'Faculty Management', path: '/faculty', icon: UserCheck },
-            { label: 'Student Management', path: '/students', icon: Users },
-            { label: 'Staff Directory', path: '/faculty', icon: UserCheck },
-            { label: 'Faculty Workload', path: '/timetable', icon: Clock },
-            { label: 'Attendance Overview', path: '/attendance', icon: CalendarCheck }
+            { label: 'Faculty Directory', path: '/faculty', icon: UserCheck },
+            { label: 'Student Registry', path: '/students', icon: Users },
+            { label: 'Attendance Records', path: '/attendance', icon: CalendarCheck },
+            { label: 'Fee Collection Overview', path: '/fees', icon: CreditCard },
+            { label: 'Executive Reports', path: '/reports', icon: BarChart3 },
+            { label: 'Campus Notices', path: '/notices', icon: MessageSquare }
           ]
         },
         {
-          group: 'Administration',
-          icon: ShieldCheck,
-          items: [
-            { label: 'Leave Management', path: '/principal?tab=leaves', icon: CalendarCheck },
-            { label: 'Leave Approvals', path: '/principal?tab=leaves', icon: CheckCircle2 },
-            { label: 'Institutional Communications', path: '/notices', icon: MessageSquare },
-            { label: 'Notifications', path: '/notices', icon: Bell },
-            { label: 'Meetings & Scheduling', path: '/calendar', icon: Calendar },
-            { label: 'Announcements', path: '/notices', icon: Megaphone },
-            { label: 'Institutional Events', path: '/principal/events', icon: CalendarCheck }
-          ]
-        },
-        {
-          group: 'Finance Overview',
-          icon: CreditCard,
-          items: [
-            { label: 'Financial Overview', path: '/fees', icon: CreditCard },
-            { label: 'Fee Collection Overview', path: '/fees', icon: Receipt },
-            { label: 'Pending Dues', path: '/fees', icon: AlertCircle },
-            { label: 'Financial Reports', path: '/reports?type=finance', icon: FileSpreadsheet }
-          ]
-        },
-        {
-          group: 'Campus Management',
-          icon: Landmark,
-          items: [
-            { label: 'Library Overview', path: '/library', icon: BookMarked },
-            { label: 'Transport Overview', path: '/transport', icon: Bus },
-            { label: 'Campus Operations', path: '/departments', icon: Building2 }
-          ]
-        },
-        {
-          group: 'Reports & Analytics',
-          icon: BarChart3,
-          items: [
-            { label: 'Academic Performance Reports', path: '/reports?type=academic', icon: BarChart3 },
-            { label: 'Department Reports', path: '/reports?type=department', icon: Building2 },
-            { label: 'Attendance Reports', path: '/reports?type=attendance', icon: CalendarCheck },
-            { label: 'Institutional Reports', path: '/reports', icon: FileSpreadsheet },
-            { label: 'Executive Reports', path: '/reports', icon: TrendingUp }
-          ]
-        },
-        {
-          group: 'Settings',
+          group: 'System Settings',
           icon: Settings,
           items: [
-            { label: 'Profile', path: '/settings?tab=profile', icon: User },
-            { label: 'Account Settings', path: '/settings?tab=account', icon: Key },
-            { label: 'Preferences', path: '/settings?tab=preferences', icon: Sliders }
+            { label: 'Profile Settings', path: '/settings?tab=profile', icon: User },
+            { label: 'Security & Access', path: '/settings?tab=security', icon: Key },
+            { label: 'Notifications', path: '/settings?tab=notifications', icon: Bell }
           ]
         }
       ];
     }
 
-    // 3. TRANSPORT SUPERVISOR
+    // 3. TRANSPORT SUPERVISOR (Exact 10 verified features, zero phantom analytics)
     if (role === 'transport_supervisor') {
       return [
         {
-          group: 'Overview',
-          icon: LayoutDashboard,
-          items: [
-            { label: 'Supervisor Dashboard', path: '/transport/supervisor', exact: true, icon: LayoutDashboard },
-            { label: 'Fleet Analytics', path: '/transport/supervisor?tab=overview', icon: TrendingUp }
-          ]
-        },
-        {
-          group: 'Transport Operations',
+          group: 'Dispatch Operations',
           icon: Navigation,
           items: [
+            { label: 'Supervisor Dashboard', path: '/transport/supervisor', exact: true, icon: LayoutDashboard },
             { label: 'Trips & Dispatch', path: '/transport/supervisor?tab=trips', icon: Clock },
-            { label: 'Daily Transit Schedule', path: '/transport/supervisor?tab=schedule', icon: Calendar },
-            { label: 'Student Attendance', path: '/transport/supervisor?tab=attendance', icon: UserCheck },
-            { label: 'Live GPS Tracking', path: '/transport/supervisor?tab=gps', icon: Activity }
+            { label: 'Daily Schedule', path: '/transport/supervisor?tab=schedule', icon: Calendar },
+            { label: 'Live GPS', path: '/transport/supervisor?tab=gps', icon: Activity },
+            { label: 'Student Attendance', path: '/transport/supervisor?tab=attendance', icon: UserCheck }
           ]
         },
         {
-          group: 'Fleet & Safety',
-          icon: Car,
+          group: 'Fleet Care & Safety',
+          icon: ShieldAlert,
           items: [
             { label: 'Maintenance Requests', path: '/transport/supervisor?tab=maintenance', icon: Wrench },
             { label: 'Safety & Emergency', path: '/transport/supervisor?tab=safety', icon: ShieldAlert },
-            { label: 'Grievances & Complaints', path: '/transport/supervisor?tab=complaints', icon: MessageSquare }
-          ]
-        },
-        {
-          group: 'Communication',
-          icon: MessageSquare,
-          items: [
-            { label: 'Announcements & Broadcasts', path: '/transport/supervisor?tab=announcements', icon: Megaphone },
-            { label: 'Notifications', path: '/notices', icon: Bell }
+            { label: 'Complaints', path: '/transport/supervisor?tab=complaints', icon: MessageSquare },
+            { label: 'Announcements', path: '/transport/supervisor?tab=announcements', icon: Megaphone },
+            { label: 'Institutional Calendar', path: '/calendar', icon: CalendarCheck }
           ]
         }
       ];
     }
 
-    // 4. BUS DRIVER
+    // 4. BUS DRIVER (4 verified tabs + Settings)
     if (role === 'bus_driver') {
       return [
         {
@@ -360,20 +297,20 @@ export const Sidebar = ({ isOpen, onClose }) => {
           items: [
             { label: 'Safety & Emergency SOS', path: '/transport/driver?tab=safety', icon: AlertTriangle },
             { label: 'Notices & Broadcasts', path: '/transport/driver?tab=announcements', icon: Megaphone },
-            { label: 'Settings', path: '/settings', icon: Settings }
+            { label: 'My Settings', path: '/settings', icon: Settings }
           ]
         }
       ];
     }
 
-    // 5. BUS ATTENDANT
+    // 5. BUS ATTENDANT (4 verified tabs + Settings)
     if (role === 'bus_attendant') {
       return [
         {
           group: 'Attendant Console',
           icon: UserCheck,
           items: [
-            { label: 'Student Bus Attendance', path: '/transport/attendant', exact: true, icon: UserCheck },
+            { label: 'Take Bus Attendance', path: '/transport/attendant', exact: true, icon: UserCheck },
             { label: 'Passenger Directory', path: '/transport/attendant?tab=roster', icon: Users },
             { label: 'Daily Transit Schedule', path: '/transport/attendant?tab=schedule', icon: Calendar }
           ]
@@ -382,32 +319,33 @@ export const Sidebar = ({ isOpen, onClose }) => {
           group: 'Communication',
           icon: MessageSquare,
           items: [
-            { label: 'Announcements', path: '/transport/attendant?tab=announcements', icon: Megaphone },
-            { label: 'Settings', path: '/settings', icon: Settings }
+            { label: 'Broadcast Announcements', path: '/transport/attendant?tab=announcements', icon: Megaphone },
+            { label: 'My Settings', path: '/settings', icon: Settings }
           ]
         }
       ];
     }
 
-    // 6. PARENT
+    // 6. PARENT (5 verified tabs + Calendar + Settings)
     if (role === 'parent') {
       return [
         {
-          group: 'Parent Portal',
+          group: 'Parent Ward Portal',
           icon: Users,
           items: [
-            { label: 'Transit & Live GPS', path: '/transport/parent', exact: true, icon: Bus },
+            { label: 'Live Bus & Transit Radar', path: '/transport/parent', exact: true, icon: Bus },
             { label: 'Academic Performance', path: '/transport/parent?tab=academic', icon: GraduationCap },
             { label: 'Attendance Records', path: '/transport/parent?tab=attendance', icon: CalendarCheck },
             { label: 'Fee Dues & Receipts', path: '/transport/parent?tab=fees', icon: CreditCard }
           ]
         },
         {
-          group: 'Communication',
+          group: 'Communication & Settings',
           icon: MessageSquare,
           items: [
-            { label: 'Transit Announcements', path: '/transport/parent?tab=announcements', icon: Megaphone },
-            { label: 'Settings', path: '/settings', icon: Settings }
+            { label: 'School Announcements', path: '/transport/parent?tab=announcements', icon: Megaphone },
+            { label: 'Academic Calendar', path: '/calendar', icon: CalendarCheck },
+            { label: 'My Settings', path: '/settings', icon: Settings }
           ]
         }
       ];
@@ -417,22 +355,23 @@ export const Sidebar = ({ isOpen, onClose }) => {
     if (role === 'super_admin' || role === 'admin' || role === 'superadmin' || role === 'super_administrator') {
       return [
         {
-          group: 'Main',
+          group: 'Overview & Access',
           icon: ShieldAlert,
           items: [
-            { label: 'System Admin Dashboard', path: '/admin', exact: true, icon: LayoutDashboard },
+            { label: 'Admin Dashboard', path: '/admin', exact: true, icon: LayoutDashboard },
             { label: 'User Management', path: '/admin/users', icon: Users },
-            { label: 'Institutional Overview', path: '/overview', icon: Building2 }
+            { label: 'System Overview Hub', path: '/overview', icon: Building2 }
           ]
         },
         {
           group: 'Academic Infrastructure',
           icon: GraduationCap,
           items: [
-            { label: 'Departments', path: '/departments', icon: Building2 },
-            { label: 'Courses & Programs', path: '/courses', icon: Layers },
-            { label: 'Timetable Schedules', path: '/timetable', icon: Clock },
-            { label: 'Examinations', path: '/examinations', icon: FileEdit }
+            { label: 'Academic Departments', path: '/departments', icon: Building2 },
+            { label: 'Programs & Courses', path: '/courses', icon: Layers },
+            { label: 'Class Timetables', path: '/timetable', icon: Clock },
+            { label: 'Academic Calendar', path: '/calendar', icon: CalendarCheck },
+            { label: 'Examinations System', path: '/examinations', icon: FileEdit }
           ]
         },
         {
@@ -441,7 +380,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
           items: [
             { label: 'Fee Administration', path: '/fees', icon: CreditCard },
             { label: 'Central Library', path: '/library', icon: BookMarked },
-            { label: 'Transport Fleet', path: '/transport', icon: Bus },
+            { label: 'Transport Fleet', path: '/transport/admin', icon: Bus },
             { label: 'Hostel System', path: '/hostel', icon: BedDouble },
             { label: 'Placements', path: '/placements', icon: Briefcase }
           ]
@@ -450,9 +389,9 @@ export const Sidebar = ({ isOpen, onClose }) => {
           group: 'Governance & Logs',
           icon: BarChart3,
           items: [
-            { label: 'System Audit Logs', path: '/audit-logs', icon: ShieldCheck },
+            { label: 'Security & Audit Logs', path: '/audit-logs', icon: ShieldCheck },
             { label: 'Executive Reports', path: '/reports', icon: BarChart3 },
-            { label: 'Communications', path: '/notices', icon: MessageSquare },
+            { label: 'Notice Board', path: '/notices', icon: MessageSquare },
             { label: 'System Settings', path: '/settings', icon: Settings }
           ]
         }
@@ -463,31 +402,33 @@ export const Sidebar = ({ isOpen, onClose }) => {
     if (role === 'hod') {
       return [
         {
-          group: 'Department',
+          group: 'Department Operations',
           icon: GitBranch,
           items: [
             { label: 'HOD Dashboard', path: '/hod', exact: true, icon: LayoutDashboard },
-            { label: 'Curriculum & Courses', path: '/courses', icon: BookOpen },
-            { label: 'Timetables & Slots', path: '/timetable', icon: Clock }
+            { label: 'Department Faculty', path: '/hod?tab=faculty', icon: UserCheck },
+            { label: 'Student Cohort', path: '/hod?tab=students', icon: Users },
+            { label: 'Department Timetable', path: '/hod?tab=timetable', icon: Clock }
           ]
         },
         {
-          group: 'Academics & Faculty',
+          group: 'Curriculum & Compliance',
           icon: GraduationCap,
           items: [
-            { label: 'Faculty Loads', path: '/faculty', icon: UserCheck },
-            { label: 'Department Students', path: '/students', icon: Users },
-            { label: 'Examinations', path: '/examinations', icon: FileEdit },
-            { label: 'Attendance Records', path: '/attendance', icon: CalendarCheck }
+            { label: 'Curriculum & Courses', path: '/hod?tab=curriculum', icon: BookOpen },
+            { label: 'Academic Risk Alerts', path: '/hod?tab=alerts', icon: AlertTriangle },
+            { label: 'Department Examinations', path: '/hod?tab=exams', icon: FileEdit }
           ]
         },
         {
-          group: 'Governance',
+          group: 'Governance & Requests',
           icon: ShieldCheck,
           items: [
-            { label: 'Staff Leaves & Approvals', path: '/hod?tab=leaves', icon: CalendarCheck },
+            { label: 'Staff Leave Approvals', path: '/hod?tab=leaves', icon: CalendarCheck },
+            { label: 'Attendance Register', path: '/attendance', icon: CalendarCheck },
+            { label: 'Academic Calendar', path: '/calendar', icon: CalendarCheck },
             { label: 'Department Reports', path: '/reports', icon: BarChart3 },
-            { label: 'Notices & Circulars', path: '/notices', icon: MessageSquare }
+            { label: 'Notice Board', path: '/notices', icon: MessageSquare }
           ]
         }
       ];
@@ -501,17 +442,19 @@ export const Sidebar = ({ isOpen, onClose }) => {
           icon: GraduationCap,
           items: [
             { label: 'Faculty Dashboard', path: '/faculty', exact: true, icon: LayoutDashboard },
-            { label: 'Attendance Marking', path: '/attendance', icon: CalendarCheck },
-            { label: 'Internal Exam Marks', path: '/examinations', icon: FileEdit },
-            { label: 'Class Timetable', path: '/timetable', icon: Clock },
-            { label: 'Assigned Subjects', path: '/courses', icon: BookOpen }
+            { label: 'Weekly Teaching Schedule', path: '/faculty?tab=timetable', icon: Clock },
+            { label: 'Assigned Subjects', path: '/faculty?tab=courses', icon: BookOpen },
+            { label: 'Student Class Roster', path: '/faculty?tab=roster', icon: Users },
+            { label: 'Internal Marks Entry', path: '/faculty?tab=exams', icon: FileEdit }
           ]
         },
         {
           group: 'Campus Services',
           icon: Landmark,
           items: [
-            { label: 'Apply for Leave', path: '/faculty?tab=leaves', icon: CalendarCheck },
+            { label: 'Apply for Leave', path: '/faculty?tab=leave', icon: CalendarCheck },
+            { label: 'Attendance Marking', path: '/attendance', icon: CalendarCheck },
+            { label: 'Academic Calendar', path: '/calendar', icon: CalendarCheck },
             { label: 'Library Catalog', path: '/library', icon: BookMarked },
             { label: 'Campus Notices', path: '/notices', icon: MessageSquare }
           ]
@@ -527,20 +470,20 @@ export const Sidebar = ({ isOpen, onClose }) => {
           icon: GraduationCap,
           items: [
             { label: 'Student Dashboard', path: '/student', exact: true, icon: LayoutDashboard },
-            { label: 'Attendance Percentage', path: '/attendance', icon: CalendarCheck },
+            { label: 'Attendance Records', path: '/attendance', icon: CalendarCheck },
             { label: 'Semester Results', path: '/results', icon: Award },
             { label: 'Class Timetable', path: '/timetable', icon: Clock },
-            { label: 'Courses Enrolled', path: '/courses', icon: BookOpen }
+            { label: 'Enrolled Courses', path: '/courses', icon: BookOpen }
           ]
         },
         {
           group: 'Campus Services',
           icon: Landmark,
           items: [
-            { label: 'Fee Dues & Payment', path: '/fees', icon: CreditCard },
+            { label: 'Fee Dues & Receipts', path: '/fees', icon: CreditCard },
             { label: 'Library Access', path: '/library', icon: BookMarked },
-            { label: 'Transport Tracking', path: '/transport', icon: Bus },
-            { label: 'Notice Board', path: '/notices', icon: MessageSquare }
+            { label: 'Academic Calendar', path: '/calendar', icon: CalendarCheck },
+            { label: 'Campus Notice Board', path: '/notices', icon: MessageSquare }
           ]
         }
       ];
@@ -550,37 +493,78 @@ export const Sidebar = ({ isOpen, onClose }) => {
     if (role === 'accounts' || role === 'accountant' || role === 'finance') {
       return [
         {
-          group: 'Finance & Ledger',
+          group: 'Finance & Ledgers',
           icon: Coins,
           items: [
             { label: 'Accounts Dashboard', path: '/accounts', exact: true, icon: LayoutDashboard },
-            { label: 'Fee Structures & Receipts', path: '/fees', icon: CreditCard },
-            { label: 'Payment Transactions', path: '/payments', icon: Receipt },
+            { label: 'Fee Plans & Schedules', path: '/fees?tab=structures', icon: Layers },
+            { label: 'Billing Invoices', path: '/fees?tab=invoices', icon: FileText },
+            { label: 'Payment Transactions', path: '/fees?tab=payments', icon: Receipt },
             { label: 'Student Fee Ledgers', path: '/students', icon: Users },
             { label: 'Audit Trail', path: '/audit-logs', icon: ShieldCheck },
-            { label: 'Financial Reports', path: '/reports', icon: BarChart3 }
+            { label: 'Financial Reports', path: '/reports?tab=finance', icon: BarChart3 },
+            { label: 'Academic Calendar', path: '/calendar', icon: CalendarCheck },
+            { label: 'Notice Board', path: '/notices', icon: Bell }
           ]
         }
       ];
     }
 
-    // 12. LIBRARIAN & LIBRARY STAFF
-    if (role === 'librarian' || role === 'library_staff' || role === 'librarystaff') {
-      const isStaff = role === 'library_staff' || role === 'librarystaff';
-      const rootPath = isStaff ? '/library-staff' : '/library';
+    // 12. LIBRARY STAFF (All 14 verified operational tabs)
+    if (role === 'library_staff' || role === 'librarystaff') {
+      return [
+        {
+          group: 'Circulation Desk',
+          icon: Clock,
+          items: [
+            { label: 'Staff Dashboard', path: '/library-staff', exact: true, icon: LayoutDashboard },
+            { label: 'Issue Books', path: '/library-staff?tab=issue-books', icon: CheckCircle },
+            { label: 'Return Books', path: '/library-staff?tab=return-books', icon: Clock },
+            { label: 'Renew Books', path: '/library-staff?tab=renew-books', icon: RotateCw },
+            { label: 'Active Issues', path: '/library-staff?tab=active-issues', icon: FileText },
+            { label: 'Overdue Books', path: '/library-staff?tab=overdue-books', icon: AlertTriangle }
+          ]
+        },
+        {
+          group: 'Catalog & Inventory',
+          icon: BookMarked,
+          items: [
+            { label: 'Search Books', path: '/library-staff?tab=search-books', icon: Search },
+            { label: 'Book Availability', path: '/library-staff?tab=availability', icon: BookOpen },
+            { label: 'Reservations Queue', path: '/library-staff?tab=reservations', icon: BookMarked },
+            { label: 'Member Patrons', path: '/library-staff?tab=members', icon: Users }
+          ]
+        },
+        {
+          group: 'Staff Activities & Leaves',
+          icon: UserCheck,
+          items: [
+            { label: 'My Transactions', path: '/library-staff?tab=my-transactions', icon: TrendingUp },
+            { label: 'Desk Notifications', path: '/library-staff?tab=notifications', icon: Bell },
+            { label: 'My Profile', path: '/library-staff?tab=profile', icon: User },
+            { label: 'Apply for Leave', path: '/library-staff?tab=leaves', icon: CalendarCheck }
+          ]
+        }
+      ];
+    }
+
+    // 13. LIBRARIAN (Chief Librarian Portal, 9 verified tabs)
+    if (role === 'librarian') {
       return [
         {
           group: 'Library Management',
           icon: BookMarked,
           items: [
-            { label: isStaff ? 'Staff Circulation Desk' : 'Chief Librarian Portal', path: rootPath, exact: true, icon: LayoutDashboard },
-            { label: 'Book Catalog & Accession', path: `${rootPath}?tab=books`, icon: BookOpen },
-            { label: 'Circulation Desk', path: `${rootPath}?tab=circulation`, icon: Clock },
-            { label: 'Member Patrons', path: `${rootPath}?tab=members`, icon: Users },
-            { label: 'Book Reservations', path: `${rootPath}?tab=reservations`, icon: BookMarked },
-            { label: 'Overdue & Fine Ledgers', path: `${rootPath}?tab=fines`, icon: DollarSign },
-            { label: 'Digital E-Library', path: `${rootPath}?tab=digital`, icon: Layers },
-            { label: 'Staff Leaves & Approvals', path: `${rootPath}?tab=leaves`, icon: CalendarCheck }
+            { label: 'Chief Librarian Portal', path: '/library', exact: true, icon: LayoutDashboard },
+            { label: 'Book Catalog', path: '/library?tab=books', icon: BookOpen },
+            { label: 'Categories Master', path: '/library?tab=categories', icon: Layers },
+            { label: 'Circulation Desk', path: '/library?tab=circulation', icon: Clock },
+            { label: 'Member Patrons', path: '/library?tab=members', icon: Users },
+            { label: 'Book Reservations', path: '/library?tab=reservations', icon: BookMarked },
+            { label: 'Overdue & Fine Ledgers', path: '/library?tab=fines', icon: DollarSign },
+            { label: 'Digital E-Library', path: '/library?tab=digital', icon: Layers },
+            { label: 'Library Rules & Settings', path: '/library?tab=settings', icon: Settings },
+            { label: 'Academic Calendar', path: '/calendar', icon: CalendarCheck }
           ]
         }
       ];
@@ -593,7 +577,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
         icon: LayoutDashboard,
         items: [
           { label: 'Dashboard', path: dashboardPath, exact: true, icon: LayoutDashboard },
-          { label: 'Academics', path: '/courses', icon: GraduationCap },
+          { label: 'Academic Calendar', path: '/calendar', icon: CalendarCheck },
           { label: 'Communications', path: '/notices', icon: MessageSquare }
         ]
       }
@@ -627,8 +611,8 @@ export const Sidebar = ({ isOpen, onClose }) => {
     // Check pathname
     const isMatchingPath =
       targetPath === currentPath ||
-      (targetPath === '/transport/admin' && currentPath === '/transport') ||
-      (targetPath === '/transport' && currentPath === '/transport/admin');
+      (targetPath === '/transport/admin' && (currentPath === '/transport' || currentPath === '/transport/admin')) ||
+      (targetPath === '/transport' && (currentPath === '/transport/admin' || currentPath === '/transport'));
 
     if (!isMatchingPath) {
       if (item.exact) return false;

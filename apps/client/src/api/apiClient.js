@@ -1646,8 +1646,125 @@ class ApiClient {
     return this.put(`/v1/calendar/${id}`, data);
   }
 
-  deleteCalendarEvent(id) {
+    deleteCalendarEvent(id) {
     return this.delete(`/v1/calendar/${id}`);
+  }
+
+  // -------------------------------------------------------------------------
+  // PHASE 2 CORE FUNCTIONAL MODULES APIS
+  // -------------------------------------------------------------------------
+
+  // Module 1: Student 360 Profile
+  getStudent360(id) {
+    return this.get(`/v1/students/${id}/360`);
+  }
+
+  getMyStudent360() {
+    return this.get('/v1/students/me/360');
+  }
+
+  // Module 12: Parent-Student Data Linkage
+  getParentLinkedChildren() {
+    return this.get('/v1/parent/my-children');
+  }
+
+  createParentLink(data) {
+    return this.post('/v1/parent-links', data);
+  }
+
+  getParentLinks(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/parent-links${qs ? `?${qs}` : ''}`);
+  }
+
+  updateParentLink(id, data) {
+    return this.put(`/v1/parent-links/${id}`, data);
+  }
+
+  deleteParentLink(id) {
+    return this.delete(`/v1/parent-links/${id}`);
+  }
+
+  // Module 3: Grievances & Helpdesk
+  getHelpdeskTickets(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/helpdesk${qs ? `?${qs}` : ''}`);
+  }
+
+  getHelpdeskTicketById(id) {
+    return this.get(`/v1/helpdesk/${id}`);
+  }
+
+  createHelpdeskTicket(data) {
+    return this.post('/v1/helpdesk', data);
+  }
+
+  addHelpdeskComment(id, data) {
+    return this.post(`/v1/helpdesk/${id}/comments`, data);
+  }
+
+  updateHelpdeskTicket(id, data) {
+    return this.patch(`/v1/helpdesk/${id}`, data);
+  }
+
+  // Module 6: Faculty Workload & Substitution
+  getFacultyWorkload(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/faculty/workload${qs ? `?${qs}` : ''}`);
+  }
+
+  getFacultySubstitutions(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/faculty/substitutions${qs ? `?${qs}` : ''}`);
+  }
+
+  createFacultySubstitution(data) {
+    return this.post('/v1/faculty/substitutions', data);
+  }
+
+  reviewFacultySubstitution(id, data) {
+    return this.patch(`/v1/faculty/substitutions/${id}`, data);
+  }
+
+  // Module 7: Examination Seating Management
+  getExamSeatingPlans(examinationId) {
+    return this.get(`/v1/examinations/${examinationId}/seating`);
+  }
+
+  configureExamSeating(data) {
+    return this.post('/v1/examinations/seating', data);
+  }
+
+  getStudentExamSeating(studentId) {
+    return this.get(`/v1/examinations/seating/student/${studentId}`);
+  }
+
+  // Module 8: Fee Reconciliation
+  getFeeReconciliationSummary(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/payments/reconciliation${qs ? `?${qs}` : ''}`);
+  }
+
+  updatePaymentReconciliation(id, data) {
+    return this.patch(`/v1/payments/reconciliation/${id}`, data);
+  }
+
+  // Module 11: Document Management
+  getDocuments(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/documents${qs ? `?${qs}` : ''}`);
+  }
+
+  getDocumentById(id) {
+    return this.get(`/v1/documents/${id}`);
+  }
+
+  uploadDocument(data) {
+    return this.post('/v1/documents', data);
+  }
+
+  recordDocumentDownload(id) {
+    return this.post(`/v1/documents/${id}/download`);
   }
 }
 

@@ -11,7 +11,9 @@ import {
   XCircle,
   Eye,
   CheckCircle,
-  Search
+  Search,
+  LayoutGrid,
+  Users
 } from 'lucide-react';
 import api from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
@@ -49,6 +51,53 @@ export const ExaminationsPage = () => {
   const [currentExamId, setCurrentExamId] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedExam, setSelectedExam] = useState(null);
+
+  // Seating Management
+  const [activeTab, setActiveTab] = useState('schedules'); // 'schedules' | 'seating'
+  const [isSeatingModalOpen, setIsSeatingModalOpen] = useState(false);
+  const [seatingPlans, setSeatingPlans] = useState([]);
+  const [loadingSeating, setLoadingSeating] = useState(false);
+  const [seatingExam, setSeatingExam] = useState(null);
+  const [seatingForm, setSeatingForm] = useState({
+    roomNumber: 'Hall-101',
+    totalCapacity: 40,
+    rows: 8,
+    columns: 5
+  });
+
+  const handleOpenSeating = async (exam) => {
+    setSeatingExam(exam);
+    setIsSeatingModalOpen(true);
+    setLoadingSeating(true);
+    try {
+      const res = await api.getExamSeating(exam._id);
+      setSeatingPlans(res.data || []);
+    } catch {
+      setSeatingPlans([]);
+    } finally {
+      setLoadingSeating(false);
+    }
+  };
+
+  const handleCreateSeatingPlan = async (e) => {
+    e.preventDefault();
+    if (!seatingExam) return;
+    try {
+      await api.createExamSeating({
+        examination: seatingExam._id,
+        roomNumber: seatingForm.roomNumber,
+        totalCapacity: Number(seatingForm.totalCapacity),
+        rows: Number(seatingForm.rows),
+        columns: Number(seatingForm.columns),
+        allocations: []
+      });
+      addToast({ type: 'success', title: 'Seating Hall Configured', message: `Room ${seatingForm.roomNumber} initialized.` });
+      const res = await api.getExamSeating(seatingExam._id);
+      setSeatingPlans(res.data || []);
+    } catch (err) {
+      addToast({ type: 'error', title: 'Failed to Configure', message: err.message });
+    }
+  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -381,6 +430,10 @@ export const ExaminationsPage = () => {
                   <Eye className="w-3.5 h-3.5 mr-1" />
                   Details
                 </Button>
+                <Button variant="ghost" size="xs" onClick={() => handleOpenSeating(exam)} className="text-indigo-600">
+                  <LayoutGrid className="w-3.5 h-3.5 mr-1" />
+                  Seating
+                </Button>
                 {isPrivileged && (
                   <>
                     <Button variant="ghost" size="xs" onClick={() => handleOpenEdit(exam)} className="text-teal-700">
@@ -555,6 +608,113 @@ export const ExaminationsPage = () => {
             <div className="flex justify-end pt-3 border-t">
               <Button variant="outline" size="sm" onClick={() => setIsDetailOpen(false)}>
                 Close
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+      {/* Hall Seating Plan Modal */}
+      {isSeatingModalOpen && seatingExam && (
+        <Modal
+          isOpen={isSeatingModalOpen}
+          onClose={() => setIsSeatingModalOpen(false)}
+          title={`Hall Seating Allocation: ${seatingExam.name}`}
+          size="lg"
+        >
+          <div className="space-y-4 text-xs">
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+              <div>
+                <span className="font-semibold text-navy-900">{seatingExam.examType}</span>
+                <span className="text-navy-500 ml-2">Venue: {seatingExam.venue}</span>
+              </div>
+              <Badge variant="cyan" size="xs">Room Config</Badge>
+            </div>
+
+            {loadingSeating ? (
+              <div className="py-8 text-center">
+                <RefreshCw className="w-6 h-6 text-teal-600 animate-spin mx-auto mb-2" />
+                <p className="text-navy-500">Loading hall allocations...</p>
+              </div>
+            ) : seatingPlans.length === 0 ? (
+              <div className="p-6 text-center border-dashed border border-slate-200 rounded-xl text-navy-400">
+                <LayoutGrid className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="font-semibold">No Examination Halls Configured Yet</p>
+                <p className="text-[11px] text-navy-500 mt-1">Configure examination room dimensions and capacity below.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {seatingPlans.map((plan) => (
+                  <div key={plan._id} className="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-bold text-navy-900 font-mono text-sm">{plan.roomNumber}</span>
+                        <Badge variant="emerald" size="xs">Capacity: {plan.totalCapacity} seats</Badge>
+                        <span className="text-navy-500 font-mono">({plan.rows} rows × {plan.columns} cols)</span>
+                      </div>
+                      <span className="text-navy-600 font-semibold">
+                        {plan.allocations?.length || 0} students assigned
+                      </span>
+                    </div>
+
+                    {plan.allocations?.length > 0 && (
+                      <div className="max-h-40 overflow-y-auto divide-y divide-slate-100 border border-slate-100 rounded-lg">
+                        {plan.allocations.map((alloc, idx) => (
+                          <div key={idx} className="p-2 flex justify-between items-center text-[11px]">
+                            <span className="font-mono font-bold text-teal-700">Seat {alloc.seatNumber}</span>
+                            <span className="font-semibold text-navy-800">{alloc.student?.rollNumber || alloc.student?.user?.name || 'Allocated Student'}</span>
+                            <span className="text-navy-400">Row {alloc.row}, Col {alloc.column}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {isPrivileged && (
+              <form onSubmit={handleCreateSeatingPlan} className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                <h4 className="font-bold text-navy-800 uppercase tracking-wider text-[11px]">Configure New Exam Hall</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <Input
+                    label="Room Number"
+                    value={seatingForm.roomNumber}
+                    onChange={(e) => setSeatingForm({ ...seatingForm, roomNumber: e.target.value })}
+                    required
+                  />
+                  <Input
+                    label="Capacity"
+                    type="number"
+                    value={seatingForm.totalCapacity}
+                    onChange={(e) => setSeatingForm({ ...seatingForm, totalCapacity: e.target.value })}
+                    required
+                  />
+                  <Input
+                    label="Rows"
+                    type="number"
+                    value={seatingForm.rows}
+                    onChange={(e) => setSeatingForm({ ...seatingForm, rows: e.target.value })}
+                    required
+                  />
+                  <Input
+                    label="Columns"
+                    type="number"
+                    value={seatingForm.columns}
+                    onChange={(e) => setSeatingForm({ ...seatingForm, columns: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <Button type="submit" variant="primary" size="xs">
+                    Initialize Hall
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            <div className="flex justify-end pt-2 border-t">
+              <Button variant="outline" size="sm" onClick={() => setIsSeatingModalOpen(false)}>
+                Done
               </Button>
             </div>
           </div>

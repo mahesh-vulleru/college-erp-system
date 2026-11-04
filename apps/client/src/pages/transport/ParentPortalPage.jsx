@@ -1,28 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Users,
   Bus,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  Receipt,
+  MessageSquare,
+  RefreshCw,
+  CreditCard,
+  UserCheck,
   GraduationCap,
   CalendarCheck,
-  Calendar,
-  CreditCard,
-  MessageSquare,
-  Award,
+  Megaphone,
   BookOpen,
-  FileText,
-  Clock,
-  MapPin,
-  Phone,
-  AlertTriangle,
-  RefreshCw,
-  CheckCircle2,
-  DollarSign,
-  Receipt
+  ArrowRight,
+  ShieldCheck,
+  FileText
 } from 'lucide-react';
 import Card from '../../components/common/Card';
-import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
+import Badge from '../../components/common/Badge';
 import { useToast } from '../../context/ToastContext';
 import api from '../../api/apiClient';
 
@@ -57,61 +56,85 @@ export const ParentPortalPage = () => {
   const [selectedChildIndex, setSelectedChildIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Academic details
-  const [attendance, setAttendance] = useState(null);
-  const [results, setResults] = useState([]);
-  const [fees, setFees] = useState(null);
+  // Student 360 data for the active child
+  const [child360, setChild360] = useState(null);
+  const [loading360, setLoading360] = useState(false);
 
-  const loadParentData = async () => {
+  const loadParentData = useCallback(async () => {
     setLoading(true);
     try {
-      const portalRes = await api.getParentTransportPortal();
-      if (portalRes && portalRes.children) {
-        setChildren(portalRes.children);
+      // 1. Try formal parent-student linkage endpoint
+      let linkedList = [];
+      try {
+        const linkRes = await api.getParentLinkedChildren();
+        if (linkRes && linkRes.success && Array.isArray(linkRes.data)) {
+          linkedList = linkRes.data;
+        }
+      } catch {
+        // Fallback to transport portal heuristic if link not yet migrated
       }
 
-      // Fetch academic data
-      try {
-        const attRes = await api.getAttendance();
-        if (attRes && attRes.data) setAttendance(attRes.data);
-      } catch {
-        // non-fatal
+      if (linkedList.length === 0) {
+        try {
+          const transportRes = await api.getParentTransportPortal();
+          if (transportRes && Array.isArray(transportRes.children)) {
+            linkedList = transportRes.children.map((c) => ({
+              studentId: c.studentId || c._id,
+              name: c.studentName,
+              rollNumber: c.rollNumber,
+              department: c.department,
+              relationship: 'Guardian'
+            }));
+          }
+        } catch {
+          // non-fatal
+        }
       }
 
-      try {
-        const resRes = await api.getResults();
-        if (resRes && resRes.data) setResults(resRes.data);
-      } catch {
-        // non-fatal
-      }
+      setChildren(linkedList);
 
-      try {
-        const feeRes = await api.getFees();
-        if (feeRes && feeRes.data) setFees(feeRes.data);
-      } catch {
-        // non-fatal
+      // Load 360 profile for active child if available
+      if (linkedList.length > 0) {
+        const target = linkedList[selectedChildIndex] || linkedList[0];
+        if (target && target.studentId) {
+          fetchChild360(target.studentId);
+        }
       }
     } catch (err) {
-      addToast(err.message || 'Failed to load parent portal', 'error');
+      addToast(err.message || 'Failed to load parent portal data', 'error');
     } finally {
       setLoading(false);
+    }
+  }, [addToast, selectedChildIndex]);
+
+  const fetchChild360 = async (studentId) => {
+    try {
+      setLoading360(true);
+      const res = await api.getStudent360(studentId);
+      if (res && res.success && res.data) {
+        setChild360(res.data);
+      }
+    } catch (err) {
+      // If 403 or unavailable, keep child360 null to show clear configuration status
+      setChild360(null);
+    } finally {
+      setLoading360(false);
     }
   };
 
   useEffect(() => {
     loadParentData();
-  }, []);
+  }, [loadParentData]);
 
-  const currentChild = children[selectedChildIndex] || {
-    studentName: 'Aarav Sharma',
-    rollNumber: 'APEX-CSE-2024-001',
-    department: 'Computer Science & Engineering',
-    semester: 'Semester 5',
-    overallAttendance: '88.5%',
-    cgpa: '8.4',
-    pickupStop: 'Benz Circle',
-    dropStop: 'Benz Circle'
+  const handleChildSelect = (idx) => {
+    setSelectedChildIndex(idx);
+    const child = children[idx];
+    if (child && child.studentId) {
+      fetchChild360(child.studentId);
+    }
   };
+
+  const currentChild = children[selectedChildIndex] || null;
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
@@ -131,7 +154,7 @@ export const ParentPortalPage = () => {
               Student Academic & Transit Dashboard
             </h1>
             <p className="text-sm text-emerald-100/80 font-light max-w-2xl">
-              Unified parental supervision: monitor your linked child's daily bus tracking, academic attendance, examination grades, and institutional fee statements.
+              Supervise your verified ward's daily transit radar, academic attendance, examination grades, and institutional fee ledgers.
             </p>
           </div>
 
@@ -154,42 +177,59 @@ export const ParentPortalPage = () => {
       </div>
 
       {/* 2. Child Selector & Summary Ribbon */}
-      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-lg shadow-2xs">
-            {currentChild.studentName?.charAt(0) || 'A'}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-slate-900">{currentChild.studentName}</h2>
-              <Badge variant="teal" size="sm">Enrolled</Badge>
+      {currentChild ? (
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-lg shadow-2xs">
+              {currentChild.name?.charAt(0) || 'S'}
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Roll: <span className="font-mono font-semibold text-emerald-900">{currentChild.rollNumber}</span> &bull; {currentChild.department || 'Computer Science'}
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-900">{currentChild.name}</h2>
+                <Badge variant="teal" size="sm">Verified Ward</Badge>
+                {currentChild.relationship && (
+                  <span className="text-[11px] text-slate-400 font-medium">({currentChild.relationship})</span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Roll Number: <span className="font-mono font-semibold text-emerald-900">{currentChild.rollNumber}</span> &bull; {currentChild.department || 'Department'}
+              </p>
+            </div>
+          </div>
+
+          {children.length > 1 && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-500 font-semibold">Switch Ward:</span>
+              {children.map((child, idx) => (
+                <button
+                  key={child.studentId || child.rollNumber || idx}
+                  type="button"
+                  onClick={() => handleChildSelect(idx)}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                    selectedChildIndex === idx
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  {child.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="bg-blue-50/70 border border-blue-200 rounded-2xl p-6 flex items-start gap-4">
+          <div className="p-2.5 rounded-xl bg-blue-100 text-blue-800 shrink-0">
+            <ShieldCheck className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-sm font-bold text-blue-950">Parent-Student Linkage Status</h3>
+            <p className="text-xs text-blue-800 leading-relaxed max-w-2xl">
+              No student profile is currently linked to your guardian account. To view your child's live bus tracking, examination grades, and fee receipts, contact the College Administration or Registrar to register your verified guardian relationship.
             </p>
           </div>
         </div>
-
-        {children.length > 1 && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 font-semibold">Select Child:</span>
-            {children.map((child, idx) => (
-              <button
-                key={child.rollNumber}
-                type="button"
-                onClick={() => setSelectedChildIndex(idx)}
-                className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                  selectedChildIndex === idx
-                    ? 'bg-emerald-700 text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                {child.studentName}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
 
       {/* 3. Navigation Tabs */}
       <div className="flex items-center gap-1.5 border-b border-slate-200 overflow-x-auto pb-2 scrollbar-none">
@@ -228,173 +268,208 @@ export const ParentPortalPage = () => {
         {/* Tab 2: Academic Performance */}
         {activeTab === 'academic' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block truncate">
-                  Cumulative Grade Point (CGPA)
-                </span>
-                <div className="text-2xl font-black text-slate-900 mt-1">8.42 / 10.0</div>
-                <span className="text-xs text-emerald-600 font-semibold block mt-1">First Class with Distinction</span>
-              </div>
-
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block truncate">
-                  Semester Standing
-                </span>
-                <div className="text-2xl font-black text-slate-900 mt-1">Semester 5</div>
-                <span className="text-xs text-teal-600 font-semibold block mt-1">2026–2027 Academic Year</span>
-              </div>
-
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block truncate">
-                  Credits Completed
-                </span>
-                <div className="text-2xl font-black text-slate-900 mt-1">112 / 160</div>
-                <span className="text-xs text-sky-600 font-semibold block mt-1">70% Degree Progress</span>
-              </div>
-            </div>
-
-            {/* Results Table */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-              <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Semester Examination Results</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">Verified grades and evaluation results from the institutional controller of examinations.</p>
+            {child360?.academics?.recentResults && child360.academics.recentResults.length > 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">Semester Examination Results</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Verified grades for {currentChild?.name || 'Student'}.</p>
+                  </div>
+                  <Badge variant="teal" size="sm">
+                    Average Score: {child360.academics.averageScore ?? 'N/A'}%
+                  </Badge>
                 </div>
-                <Badge variant="teal" size="sm">Published</Badge>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-slate-800">
-                  <thead className="bg-slate-50 text-slate-600 uppercase font-bold border-b border-slate-200">
-                    <tr>
-                      <th className="py-3 px-4">Subject Code</th>
-                      <th className="py-3 px-4">Subject Name</th>
-                      <th className="py-3 px-4">Internal Marks</th>
-                      <th className="py-3 px-4">End Semester</th>
-                      <th className="py-3 px-4">Total</th>
-                      <th className="py-3 px-4">Letter Grade</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {[
-                      { code: 'CS501', name: 'Design and Analysis of Algorithms', internal: '28/30', external: '62/70', total: '90/100', grade: 'O (Outstanding)' },
-                      { code: 'CS502', name: 'Database Management Systems', internal: '27/30', external: '58/70', total: '85/100', grade: 'A+ (Excellent)' },
-                      { code: 'CS503', name: 'Formal Languages & Automata Theory', internal: '25/30', external: '54/70', total: '79/100', grade: 'A (Very Good)' },
-                      { code: 'CS504', name: 'Computer Networks', internal: '29/30', external: '65/70', total: '94/100', grade: 'O (Outstanding)' },
-                      { code: 'CS505', name: 'Artificial Intelligence & Machine Learning', internal: '26/30', external: '60/70', total: '86/100', grade: 'A+ (Excellent)' }
-                    ].map((row) => (
-                      <tr key={row.code} className="hover:bg-slate-50/60">
-                        <td className="py-3 px-4 font-mono font-bold text-slate-900">{row.code}</td>
-                        <td className="py-3 px-4 font-medium">{row.name}</td>
-                        <td className="py-3 px-4">{row.internal}</td>
-                        <td className="py-3 px-4">{row.external}</td>
-                        <td className="py-3 px-4 font-bold text-emerald-800">{row.total}</td>
-                        <td className="py-3 px-4 font-bold text-slate-900">{row.grade}</td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs text-slate-800">
+                    <thead className="bg-slate-50 text-slate-600 uppercase font-bold border-b border-slate-200">
+                      <tr>
+                        <th className="py-3 px-4">Subject</th>
+                        <th className="py-3 px-4">Code</th>
+                        <th className="py-3 px-4">Marks</th>
+                        <th className="py-3 px-4">Grade</th>
+                        <th className="py-3 px-4">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {child360.academics.recentResults.map((res, i) => (
+                        <tr key={res.id || i} className="hover:bg-slate-50/60">
+                          <td className="py-3 px-4 font-medium">{res.subject || 'Course'}</td>
+                          <td className="py-3 px-4 font-mono text-slate-500">{res.subjectCode || 'N/A'}</td>
+                          <td className="py-3 px-4 font-bold text-emerald-800">{res.marks ?? 'N/A'}</td>
+                          <td className="py-3 px-4 font-bold text-slate-900">{res.grade || 'N/A'}</td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                              res.status === 'passed' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                            }`}>
+                              {res.status || 'Verified'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-8 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-800 mx-auto flex items-center justify-center">
+                  <GraduationCap className="w-6 h-6" />
+                </div>
+                <h4 className="text-sm font-bold text-amber-950">Academic Records Standby</h4>
+                <p className="text-xs text-amber-800 max-w-xl mx-auto leading-relaxed">
+                  No published semester examination results are currently on file for this student, or the evaluation session is in progress.
+                </p>
+                {currentChild && (
+                  <div className="text-[11px] text-amber-900 font-medium">
+                    Verified Ward: <span className="font-bold">{currentChild.name} ({currentChild.rollNumber})</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
         {/* Tab 3: Attendance Records */}
         {activeTab === 'attendance' && (
-          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900">Subject-Wise Classroom Attendance</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Verified bio-metric and lecture attendance recorded by faculty members.</p>
-              </div>
-              <Badge variant="teal" size="sm">Overall: 88.5%</Badge>
-            </div>
+          <div className="space-y-6">
+            {child360?.attendance ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Classes</span>
+                    <div className="text-xl font-black text-slate-900 mt-1">{child360.attendance.totalClasses || 0}</div>
+                  </div>
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Attended</span>
+                    <div className="text-xl font-black text-emerald-700 mt-1">{child360.attendance.presentClasses || 0}</div>
+                  </div>
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Absent</span>
+                    <div className="text-xl font-black text-rose-700 mt-1">{child360.attendance.absentClasses || 0}</div>
+                  </div>
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Attendance Rate</span>
+                    <div className="text-xl font-black text-teal-800 mt-1">{child360.attendance.percentage}%</div>
+                  </div>
+                </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-800">
-                <thead className="bg-slate-50 text-slate-600 uppercase font-bold border-b border-slate-200">
-                  <tr>
-                    <th className="py-3 px-4">Subject</th>
-                    <th className="py-3 px-4">Classes Conducted</th>
-                    <th className="py-3 px-4">Classes Attended</th>
-                    <th className="py-3 px-4">Percentage</th>
-                    <th className="py-3 px-4">Eligibility Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {[
-                    { subject: 'CS501 - Design & Analysis of Algorithms', total: 42, attended: 39, pct: '92.8%' },
-                    { subject: 'CS502 - Database Management Systems', total: 40, attended: 36, pct: '90.0%' },
-                    { subject: 'CS503 - Automata Theory', total: 38, attended: 32, pct: '84.2%' },
-                    { subject: 'CS504 - Computer Networks', total: 45, attended: 40, pct: '88.8%' },
-                    { subject: 'CS505 - Artificial Intelligence', total: 36, attended: 31, pct: '86.1%' }
-                  ].map((row) => (
-                    <tr key={row.subject} className="hover:bg-slate-50/60">
-                      <td className="py-3 px-4 font-semibold text-slate-900">{row.subject}</td>
-                      <td className="py-3 px-4">{row.total}</td>
-                      <td className="py-3 px-4 font-bold text-slate-800">{row.attended}</td>
-                      <td className="py-3 px-4 font-bold text-emerald-700">{row.pct}</td>
-                      <td className="py-3 px-4">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                          Eligible for Exams
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                {child360.attendance.subjectBreakdown && child360.attendance.subjectBreakdown.length > 0 && (
+                  <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                    <div className="p-4 border-b border-slate-100">
+                      <h4 className="text-xs font-bold uppercase text-slate-600 tracking-wider">Subject-Wise Breakdown</h4>
+                    </div>
+                    <div className="divide-y divide-slate-100">
+                      {child360.attendance.subjectBreakdown.map((s, idx) => (
+                        <div key={idx} className="p-4 flex items-center justify-between text-xs">
+                          <div>
+                            <span className="font-bold text-slate-900">{s.subjectName}</span>
+                            <span className="text-slate-400 ml-2">({s.subjectCode})</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-slate-500">{s.present} / {s.total} Lectures</span>
+                            <span className="font-bold text-emerald-800">{s.percentage}%</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-8 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-800 mx-auto flex items-center justify-center">
+                  <CalendarCheck className="w-6 h-6" />
+                </div>
+                <h4 className="text-sm font-bold text-amber-950">Attendance Records Standby</h4>
+                <p className="text-xs text-amber-800 max-w-xl mx-auto leading-relaxed">
+                  Classroom biometric attendance logs are being compiled for this semester. Live bus boarding attendance is available under the <strong>Live Bus & Transit Tracking</strong> tab.
+                </p>
+                {currentChild && (
+                  <div className="text-[11px] text-amber-900 font-medium">
+                    Verified Ward: <span className="font-bold">{currentChild.name} ({currentChild.rollNumber})</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
         {/* Tab 4: Fee Dues & Receipts */}
         {activeTab === 'fees' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200">
-                <span className="text-[10px] font-bold text-emerald-700 uppercase block">Total Fees Paid</span>
-                <span className="text-xl font-bold text-emerald-950 mt-1 block">₹ 85,000</span>
-                <span className="text-xs text-emerald-600 mt-1 block">Tuition & Library Cleared</span>
-              </div>
-              <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200">
-                <span className="text-[10px] font-bold text-amber-700 uppercase block">Transport Fee</span>
-                <span className="text-xl font-bold text-amber-950 mt-1 block">₹ 14,000</span>
-                <span className="text-xs text-amber-700 mt-1 block">Annual Transit Fee Cleared</span>
-              </div>
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                <span className="text-[10px] font-bold text-slate-600 uppercase block">Pending Dues</span>
-                <span className="text-xl font-bold text-slate-900 mt-1 block">₹ 0</span>
-                <span className="text-xs text-emerald-600 mt-1 block">No Outstanding Balance</span>
-              </div>
-            </div>
+            {child360?.finances ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Billed</span>
+                    <div className="text-xl font-black text-slate-900 mt-1">₹{child360.finances.totalInvoiced?.toLocaleString() || 0}</div>
+                  </div>
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Paid</span>
+                    <div className="text-xl font-black text-emerald-700 mt-1">₹{child360.finances.totalPaid?.toLocaleString() || 0}</div>
+                  </div>
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pending Dues</span>
+                    <div className="text-xl font-black text-amber-700 mt-1">₹{child360.finances.pendingBalance?.toLocaleString() || 0}</div>
+                  </div>
+                </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-              <div className="p-5 border-b border-slate-100">
-                <h3 className="text-sm font-bold text-slate-900">Payment History & Official Receipts</h3>
-              </div>
-              <div className="p-4 space-y-2 text-xs">
-                {[
-                  { receiptNo: 'REC-2026-0891', date: '15 Aug 2026', desc: 'Semester 5 Tuition Fee', amount: '₹ 85,000', method: 'Online NetBanking' },
-                  { receiptNo: 'REC-2026-0412', date: '01 Jul 2026', desc: 'Annual Transport Transit Bus Fee', amount: '₹ 14,000', method: 'UPI Payment' }
-                ].map((rec) => (
-                  <div key={rec.receiptNo} className="p-3 bg-slate-50 rounded-xl flex items-center justify-between border border-slate-200/70">
-                    <div>
-                      <span className="font-mono font-bold text-emerald-900 block">{rec.receiptNo}</span>
-                      <span className="text-slate-600 block">{rec.desc} &bull; {rec.date}</span>
+                {child360.finances.recentPayments && child360.finances.recentPayments.length > 0 && (
+                  <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                    <div className="p-4 border-b border-slate-100">
+                      <h4 className="text-xs font-bold uppercase text-slate-600 tracking-wider">Payment Transaction History</h4>
                     </div>
-                    <div className="text-right">
-                      <span className="font-bold text-slate-900 block">{rec.amount}</span>
-                      <span className="text-[10px] text-emerald-600 font-semibold">{rec.method} &bull; Verified</span>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs text-slate-800">
+                        <thead className="bg-slate-50 text-slate-600 uppercase font-bold border-b border-slate-200">
+                          <tr>
+                            <th className="py-3 px-4">Receipt #</th>
+                            <th className="py-3 px-4">Date</th>
+                            <th className="py-3 px-4">Method</th>
+                            <th className="py-3 px-4">Amount</th>
+                            <th className="py-3 px-4">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {child360.finances.recentPayments.map((p, idx) => (
+                            <tr key={p.id || idx} className="hover:bg-slate-50/60">
+                              <td className="py-3 px-4 font-mono font-bold text-slate-900">{p.receiptNumber}</td>
+                              <td className="py-3 px-4 text-slate-500">{new Date(p.date).toLocaleDateString()}</td>
+                              <td className="py-3 px-4">{p.method}</td>
+                              <td className="py-3 px-4 font-bold text-emerald-800">₹{p.amount?.toLocaleString()}</td>
+                              <td className="py-3 px-4">
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800">
+                                  {p.status || 'Completed'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
-                ))}
+                )}
               </div>
-            </div>
+            ) : (
+              <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-8 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-800 mx-auto flex items-center justify-center">
+                  <CreditCard className="w-6 h-6" />
+                </div>
+                <h4 className="text-sm font-bold text-amber-950">Tuition Fee Ledger Standby</h4>
+                <p className="text-xs text-amber-800 max-w-xl mx-auto leading-relaxed">
+                  Fee invoices and transaction ledgers are updated following accounting reconciliation. Contact the Accounts Desk for fee statements.
+                </p>
+                {currentChild && (
+                  <div className="text-[11px] text-amber-900 font-medium">
+                    Verified Ward: <span className="font-bold">{currentChild.name} ({currentChild.rollNumber})</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Tab 5: Announcements */}
+        {/* Tab 5: Announcements & Broadcasts */}
         {activeTab === 'announcements' && <AnnouncementsManagementView />}
       </div>
     </div>
@@ -402,4 +477,3 @@ export const ParentPortalPage = () => {
 };
 
 export default ParentPortalPage;
-

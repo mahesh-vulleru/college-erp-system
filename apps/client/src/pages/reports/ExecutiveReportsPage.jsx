@@ -33,15 +33,26 @@ export const ExecutiveReportsPage = () => {
   const { user } = useAuth();
   const { addToast } = useToast();
 
-  const [searchParams] = useSearchParams();
-  const queryTab = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState(queryTab || 'enrollment'); // 'enrollment' | 'faculty' | 'attendance' | 'results' | 'finance' | 'activity'
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rawTab = searchParams.get('tab') || searchParams.get('type');
+  const normalizeTab = (t) => {
+    if (!t) return 'enrollment';
+    const s = t.toLowerCase();
+    if (s === 'academic' || s === 'results' || s === 'grades') return 'results';
+    if (s === 'finance' || s === 'fees') return 'finance';
+    if (s === 'attendance') return 'attendance';
+    if (s === 'faculty' || s === 'workload') return 'faculty';
+    if (s === 'activity' || s === 'admin') return 'activity';
+    if (s === 'enrollment' || s === 'department' || s === 'overview') return 'enrollment';
+    return 'enrollment';
+  };
+  const [activeTab, setActiveTab] = useState(normalizeTab(rawTab));
 
   useEffect(() => {
-    if (queryTab) {
-      setActiveTab(queryTab);
+    if (rawTab) {
+      setActiveTab(normalizeTab(rawTab));
     }
-  }, [queryTab]);
+  }, [rawTab]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Report Data States

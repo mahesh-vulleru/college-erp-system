@@ -6,6 +6,11 @@ const {
   updateExam,
   deleteExam
 } = require('./exam.controller');
+const {
+  configureSeatingPlan,
+  getExamSeatingPlans,
+  getStudentExamSeating
+} = require('./examSeating.controller');
 const { validateExamInput } = require('./exam.validator');
 const authenticate = require('../../middleware/auth');
 const { authorizeRoles } = require('../../middleware/rbac');
@@ -16,11 +21,31 @@ const router = express.Router();
 
 router.use(authenticate);
 
+// Seating arrangements
+router.post(
+  '/seating',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY),
+  configureSeatingPlan
+);
+
+router.get(
+  '/:examinationId/seating',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.PARENT),
+  getExamSeatingPlans
+);
+
+router.get(
+  '/seating/student/:studentId',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, ROLES.PARENT),
+  getStudentExamSeating
+);
+
 router.get(
   '/',
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
   listExams
 );
+
 router.get(
   '/:id',
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
