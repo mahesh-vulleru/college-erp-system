@@ -52,20 +52,24 @@ export const DailyScheduleView = () => {
   };
 
   const getStatusBadge = (status) => {
-    switch (status) {
-      case 'scheduled':
-        return <Badge variant="info">Scheduled</Badge>;
-      case 'started':
-      case 'in_progress':
-        return <Badge variant="warning">In Progress</Badge>;
+    const s = String(status || '').toLowerCase();
+    switch (s) {
       case 'completed':
-        return <Badge variant="success">Completed</Badge>;
+        return <Badge variant="success" size="xs">Completed</Badge>;
+      case 'in_progress':
+      case 'in-progress':
+      case 'started':
+        return <Badge variant="warning" size="xs">In Progress</Badge>;
+      case 'upcoming':
+        return <Badge variant="info" size="xs">Upcoming</Badge>;
+      case 'scheduled':
+        return <Badge variant="info" size="xs">Scheduled</Badge>;
       case 'delayed':
-        return <Badge variant="error">Delayed</Badge>;
+        return <Badge variant="danger" size="xs">Delayed</Badge>;
       case 'cancelled':
-        return <Badge variant="neutral">Cancelled</Badge>;
+        return <Badge variant="neutral" size="xs">Cancelled</Badge>;
       default:
-        return <Badge variant="neutral">{status}</Badge>;
+        return <Badge variant="info" size="xs">{status || 'Upcoming'}</Badge>;
     }
   };
 

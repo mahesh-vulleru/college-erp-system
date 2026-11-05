@@ -20,7 +20,8 @@ import {
   ExternalLink,
   CheckCircle2,
   CalendarCheck,
-  Award
+  Award,
+  X
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import CampusBuildingGraphic from '../../components/common/CampusBuildingGraphic';
@@ -707,13 +708,26 @@ export const AccountsDashboard = () => {
           }
         >
           <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              id="search-invoices"
-              placeholder="Search by invoice number or roll number..."
-              value={invoiceSearchQuery}
-              onChange={(e) => setInvoiceSearchQuery(e.target.value)}
-              icon={Search}
-            />
+            <div className="relative">
+              <Input
+                id="search-invoices"
+                placeholder="Search by invoice number or roll number..."
+                value={invoiceSearchQuery}
+                onChange={(e) => setInvoiceSearchQuery(e.target.value)}
+                icon={Search}
+              />
+              {invoiceSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setInvoiceSearchQuery('')}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
+                  title="Clear search"
+                  aria-label="Clear search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
             <Select
               id="filter-invoice-status"
               value={invoiceStatusFilter}

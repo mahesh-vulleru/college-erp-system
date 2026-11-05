@@ -1233,8 +1233,9 @@ export const TransportAdminDashboard = () => {
             />
           </div>
 
-          <div className="text-xs text-navy-500 font-medium">
-            Inactive Vehicles: {(buses || []).filter((b) => (b.currentStatus || b.status)?.toLowerCase() === 'inactive').length}
+          <div className="flex items-center gap-4 text-xs text-navy-500 font-medium">
+            <span>Total Vehicles: {buses?.length || 0}</span>
+            <span>Inactive Vehicles: {(buses || []).filter((b) => (b.currentStatus || b.status)?.toLowerCase() === 'inactive').length}</span>
           </div>
 
           {/* Buses Table */}
@@ -1242,7 +1243,7 @@ export const TransportAdminDashboard = () => {
             <div className="p-12 text-center text-xs text-navy-500">Loading fleet records...</div>
           ) : buses.length === 0 ? (
             <EmptyState
-              title="No buses found"
+              title="No vehicles found"
               description="Adjust your search criteria or register a new bus to the college transport fleet."
               icon={Bus}
               action={{

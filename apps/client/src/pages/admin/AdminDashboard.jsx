@@ -67,6 +67,9 @@ export const AdminDashboard = () => {
   const { addToast } = useToast();
   const { user } = useAuth();
 
+  // Personalized greeting display name from logged-in user profile
+  const adminDisplayName = user?.name || user?.fullName || (user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : null) || user?.email?.split('@')[0] || 'Super Admin';
+
   const [searchParams, setSearchParams] = useSearchParams();
   const queryTab = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState(queryTab || 'users'); // 'users' | 'audit' | 'roles' | 'settings' | 'leaves' | 'health'
@@ -592,7 +595,15 @@ export const AdminDashboard = () => {
     <div className="space-y-6">
       {/* 1. Header Banner */}
       <DashboardHeaderBanner
-        title="Super Admin Control Center"
+        title={
+          <span className="inline-flex flex-wrap items-center gap-3">
+            <span>Super Admin Control Center</span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200/80 shadow-2xs font-sans tracking-normal align-middle">
+              <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+              <span>Welcome back, {adminDisplayName}</span>
+            </span>
+          </span>
+        }
         subtitle="Institutional user provisioning, system security, RBAC matrix, and infrastructure diagnostics."
         academicYear="2026 – 2027"
       />
