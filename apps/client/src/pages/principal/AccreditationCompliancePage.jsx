@@ -46,6 +46,9 @@ export const AccreditationCompliancePage = () => {
     categoryProgress: []
   });
 
+  // Phase 3 Gap Analysis State
+  const [gapAnalysis, setGapAnalysis] = useState(null);
+
   // Filters & Pagination
   const [selectedFramework, setSelectedFramework] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -109,7 +112,11 @@ export const AccreditationCompliancePage = () => {
       if (selectedDept !== 'all') params.department = selectedDept;
       if (searchQuery.trim()) params.search = searchQuery.trim();
 
-      const res = await api.getAccreditationCriteria(params);
+      const [res, gapRes] = await Promise.all([
+        api.getAccreditationCriteria(params),
+        api.getAccreditationGapAnalysis({ framework: selectedFramework !== 'all' ? selectedFramework : undefined }).catch(() => ({ data: null }))
+      ]);
+
       if (res?.data) {
         setCriteria(res.data.criteria || []);
         if (res.data.summary) setSummary(res.data.summary);
@@ -117,6 +124,9 @@ export const AccreditationCompliancePage = () => {
           setTotalPages(res.data.pagination.totalPages || 1);
           setTotalRecords(res.data.pagination.total || 0);
         }
+      }
+      if (gapRes?.data) {
+        setGapAnalysis(gapRes.data);
       }
     } catch (err) {
       addToast({
@@ -519,6 +529,57 @@ export const AccreditationCompliancePage = () => {
               </div>
             ))}
           </div>
+        </Card>
+      )}
+
+      {/* Phase 3 Gap Analysis & Readiness Assessment */}
+      {gapAnalysis && (
+        <Card
+          title={`Accreditation Gap Analysis & Readiness Score (${gapAnalysis.framework || 'NAAC'})`}
+          subtitle="Real-time compliance deficit identification and departmental readiness benchmarking"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            <div className="p-3.5 rounded-xl bg-teal-50 border border-teal-200">
+              <span className="text-[11px] font-bold text-teal-800 uppercase block">Institutional Readiness Score</span>
+              <span className="text-2xl font-black text-teal-950 mt-1 block font-mono">
+                {gapAnalysis.readinessScore ?? 0}%
+              </span>
+              <span className="text-[10px] text-teal-700">Fulfilled: {gapAnalysis.fulfilledCriteria ?? 0} of {gapAnalysis.totalCriteria ?? 0}</span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200">
+              <span className="text-[11px] font-bold text-rose-800 uppercase block">Deficit Percentage</span>
+              <span className="text-2xl font-black text-rose-950 mt-1 block font-mono">
+                {gapAnalysis.deficitPercentage ?? 0}%
+              </span>
+              <span className="text-[10px] text-rose-700">Unfulfilled Criteria: {gapAnalysis.unfulfilledCriteria ?? 0}</span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200">
+              <span className="text-[11px] font-bold text-amber-800 uppercase block">High-Risk Deficits</span>
+              <span className="text-2xl font-black text-amber-950 mt-1 block font-mono">
+                {gapAnalysis.highRiskDeficits?.length ?? 0}
+              </span>
+              <span className="text-[10px] text-amber-700">Weightage &gt; 100 or overdue</span>
+            </div>
+          </div>
+
+          {gapAnalysis.highRiskDeficits?.length > 0 && (
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-slate-800 block">Critical Unfulfilled Criteria Requiring Executive Attention:</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                {gapAnalysis.highRiskDeficits.map((d, i) => (
+                  <div key={i} className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
+                    <div>
+                      <span className="font-mono font-bold text-rose-700 mr-2">{d.code}</span>
+                      <span className="text-slate-800">{d.title}</span>
+                    </div>
+                    <Badge variant="rose" size="xs">{d.weightage || 100} pts</Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </Card>
       )}
 

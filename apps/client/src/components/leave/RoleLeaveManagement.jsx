@@ -111,6 +111,40 @@ export const RoleLeaveManagement = ({ defaultTab = 'auto' }) => {
   // Workflow Config State
   const [workflowConfig, setWorkflowConfig] = useState(null);
 
+  // Phase 3 SLA Escalations State
+  const [escalations, setEscalations] = useState(null);
+
+  const loadEscalations = useCallback(async () => {
+    if (!isPrincipal && !isHod && !isSuperAdmin) return;
+    try {
+      const res = await api.getWorkflowEscalations();
+      if (res?.data) {
+        setEscalations(res.data);
+      }
+    } catch {
+      // Non-blocking
+    }
+  }, [isPrincipal, isHod, isSuperAdmin]);
+
+  const handleEscalate = async (leaveId) => {
+    try {
+      await api.escalateWorkflowLeave(leaveId, { reason: 'SLA Delay Escalation' });
+      addToast({
+        type: 'warning',
+        title: 'Workflow SLA Escalated',
+        message: 'Leave application escalated to higher-tier institutional authority.'
+      });
+      loadLeaves();
+      loadEscalations();
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Escalation Failed',
+        message: err.message || 'Failed to escalate leave'
+      });
+    }
+  };
+
   // Load Leave Data
   const loadLeaves = useCallback(async () => {
     setIsLoading(true);
@@ -154,7 +188,8 @@ export const RoleLeaveManagement = ({ defaultTab = 'auto' }) => {
 
   useEffect(() => {
     loadLeaves();
-  }, [loadLeaves]);
+    loadEscalations();
+  }, [loadLeaves, loadEscalations]);
 
   // Load Workflow Config for Super Admin
   const loadWorkflowConfig = async () => {
@@ -456,6 +491,21 @@ export const RoleLeaveManagement = ({ defaultTab = 'auto' }) => {
         </div>
       </div>
 
+      {/* SLA Escalation Warning Banner */}
+      {escalations?.pendingEscalations?.length > 0 && activeTab === 'approvals' && (
+        <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center justify-between gap-3">
+          <div className="flex items-center space-x-2.5">
+            <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <span>
+              <strong>Workflow SLA Alert:</strong> {escalations.pendingEscalations.length} pending leave application(s) have exceeded the {escalations.slaThresholdHours || 48}-hour SLA review threshold.
+            </span>
+          </div>
+          <span className="text-[11px] font-bold text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-full border border-amber-300">
+            SLA Breach Triggered
+          </span>
+        </div>
+      )}
+
       {/* 4. Filters & Search Bar */}
       <div className="flex flex-col sm:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
@@ -594,12 +644,19 @@ export const RoleLeaveManagement = ({ defaultTab = 'auto' }) => {
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <Badge
-                          variant={isApproved ? 'success' : isRejected ? 'danger' : 'amber'}
-                          size="xs"
-                        >
-                          {lv.status ? lv.status.toUpperCase() : 'PENDING'}
-                        </Badge>
+                        <div className="flex flex-col gap-1 items-start">
+                          <Badge
+                            variant={isApproved ? 'success' : isRejected ? 'danger' : 'amber'}
+                            size="xs"
+                          >
+                            {lv.status ? lv.status.toUpperCase() : 'PENDING'}
+                          </Badge>
+                          {lv.isEscalated && (
+                            <span className="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded">
+                              ESCALATED SLA
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       <td className="py-3.5 px-4 text-right">
@@ -616,6 +673,18 @@ export const RoleLeaveManagement = ({ defaultTab = 'auto' }) => {
                           >
                             Details
                           </Button>
+
+                          {isPending && !lv.isEscalated && (isPrincipal || isSuperAdmin || isHod) && (
+                            <Button
+                              variant="danger"
+                              size="xs"
+                              icon={AlertTriangle}
+                              onClick={() => handleEscalate(lv._id || lv.id)}
+                              title="Escalate overdue leave SLA to next tier"
+                            >
+                              Escalate
+                            </Button>
+                          )}
 
                           {canReview && (
                             <Button

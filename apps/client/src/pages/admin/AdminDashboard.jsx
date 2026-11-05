@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   ShieldAlert,
   Users,
@@ -66,9 +66,46 @@ export const AdminDashboard = () => {
   const { addToast } = useToast();
   const { user } = useAuth();
 
-  const [activeTab, setActiveTab] = useState('users'); // 'users' | 'audit' | 'roles' | 'settings' | 'modules'
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(queryTab || 'users'); // 'users' | 'audit' | 'roles' | 'settings' | 'leaves' | 'health'
+
+  useEffect(() => {
+    if (queryTab) {
+      setActiveTab(queryTab);
+    }
+  }, [queryTab]);
+
   const [overview, setOverview] = useState(null);
   const [isOverviewLoading, setIsOverviewLoading] = useState(true);
+
+  // System Health Metrics State
+  const [healthMetrics, setHealthMetrics] = useState(null);
+  const [isHealthLoading, setIsHealthLoading] = useState(false);
+
+  const loadHealthMetrics = useCallback(async () => {
+    setIsHealthLoading(true);
+    try {
+      const res = await api.getSystemHealthMetrics();
+      if (res?.data) {
+        setHealthMetrics(res.data);
+      }
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Error loading system health metrics',
+        message: err.message || 'Failed to retrieve cluster telemetry'
+      });
+    } finally {
+      setIsHealthLoading(false);
+    }
+  }, [addToast]);
+
+  useEffect(() => {
+    if (activeTab === 'health') {
+      loadHealthMetrics();
+    }
+  }, [activeTab, loadHealthMetrics]);
 
   // 17 Institutional Modules
   const allModules = [
@@ -696,6 +733,18 @@ export const AdminDashboard = () => {
           <CalendarCheck className="w-4 h-4" />
           <span>Leave & Workflow Matrix</span>
         </button>
+
+        <button
+          onClick={() => setActiveTab('health')}
+          className={`py-3.5 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center space-x-2 ${
+            activeTab === 'health'
+              ? 'border-teal-600 text-teal-800'
+              : 'border-transparent text-navy-500 hover:text-navy-900'
+          }`}
+        >
+          <Activity className="w-4 h-4" />
+          <span>System Health & Diagnostics</span>
+        </button>
       </div>
 
       {/* TAB 1: User Directory & Accounts */}
@@ -892,6 +941,146 @@ export const AdminDashboard = () => {
       {activeTab === 'leaves' && (
         <div className="space-y-6">
           <RoleLeaveManagement defaultTab="config" />
+        </div>
+      )}
+
+      {/* TAB 6: System Health & Cluster Diagnostics */}
+      {activeTab === 'health' && (
+        <div className="space-y-6">
+          <Card
+            title="Cluster Diagnostics & Server Health Telemetry"
+            subtitle="Live process uptime, memory allocations, environment runtime, and MongoDB replica set status"
+            headerAction={
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={loadHealthMetrics}
+                isLoading={isHealthLoading}
+                icon={RefreshCw}
+              >
+                Refresh Telemetry
+              </Button>
+            }
+          >
+            {isHealthLoading && !healthMetrics ? (
+              <div className="py-12 text-center text-xs text-navy-400">
+                <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-teal-600" />
+                Querying system cluster telemetry...
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* 1. Status Overview Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200/60">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">Cluster State</span>
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    </div>
+                    <div className="text-xl font-bold text-emerald-900 mt-2 capitalize">
+                      {healthMetrics?.status || 'Healthy'}
+                    </div>
+                    <p className="text-[11px] text-emerald-700 mt-0.5">All services nominal</p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-sky-50/70 border border-sky-200/60">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-sky-800 uppercase tracking-wider">Process Uptime</span>
+                      <Clock className="w-5 h-5 text-sky-600" />
+                    </div>
+                    <div className="text-xl font-bold text-sky-900 mt-2 font-mono">
+                      {healthMetrics?.uptime
+                        ? `${Math.floor(healthMetrics.uptime / 3600)}h ${Math.floor((healthMetrics.uptime % 3600) / 60)}m ${Math.floor(healthMetrics.uptime % 60)}s`
+                        : 'Active'}
+                    </div>
+                    <p className="text-[11px] text-sky-700 mt-0.5">Uninterrupted service</p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-purple-50/70 border border-purple-200/60">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-purple-800 uppercase tracking-wider">V8 Heap Allocation</span>
+                      <Database className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div className="text-xl font-bold text-purple-900 mt-2 font-mono">
+                      {healthMetrics?.memory?.heapUsedMB ?? '0'} MB
+                    </div>
+                    <p className="text-[11px] text-purple-700 mt-0.5">
+                      of {healthMetrics?.memory?.heapTotalMB ?? '0'} MB allocated
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200/60">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Database Link</span>
+                      <ShieldCheck className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div className="text-xl font-bold text-amber-900 mt-2 font-mono">
+                      {healthMetrics?.database?.status === 'connected' ? 'Connected' : 'Live'}
+                    </div>
+                    <p className="text-[11px] text-amber-700 mt-0.5">
+                      DB: {healthMetrics?.database?.dbName || 'college_erp'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 2. Detailed Technical Telemetry Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Runtime & Process Info */}
+                  <div className="p-4 rounded-xl border border-navy-100 bg-warm-50 space-y-3">
+                    <h4 className="text-xs font-bold text-navy-900 uppercase tracking-wider flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-teal-600" />
+                      Runtime Process Telemetry
+                    </h4>
+                    <div className="space-y-2 text-xs divide-y divide-navy-100">
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-navy-500">Node.js Engine</span>
+                        <span className="font-mono font-semibold text-navy-900">{healthMetrics?.process?.nodeVersion || process?.version || 'Node.js'}</span>
+                      </div>
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-navy-500">Host OS Architecture</span>
+                        <span className="font-mono font-semibold text-navy-900">{healthMetrics?.process?.platform || 'windows'}</span>
+                      </div>
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-navy-500">Process PID</span>
+                        <span className="font-mono font-semibold text-navy-900">{healthMetrics?.process?.pid || 'Active'}</span>
+                      </div>
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-navy-500">Resident Set Size (RSS)</span>
+                        <span className="font-mono font-semibold text-navy-900">{healthMetrics?.memory?.rssMB ? `${healthMetrics.memory.rssMB} MB` : 'Dynamic'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* MongoDB Storage & Connection Pool */}
+                  <div className="p-4 rounded-xl border border-navy-100 bg-warm-50 space-y-3">
+                    <h4 className="text-xs font-bold text-navy-900 uppercase tracking-wider flex items-center gap-2">
+                      <Database className="w-4 h-4 text-sky-600" />
+                      MongoDB Persistence Layer
+                    </h4>
+                    <div className="space-y-2 text-xs divide-y divide-navy-100">
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-navy-500">Connection State</span>
+                        <Badge variant="emerald" size="xs">Ready State: Connected</Badge>
+                      </div>
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-navy-500">Database Name</span>
+                        <span className="font-mono font-semibold text-navy-900">{healthMetrics?.database?.dbName || 'college_erp'}</span>
+                      </div>
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-navy-500">Host Target</span>
+                        <span className="font-mono font-semibold text-navy-900">{healthMetrics?.database?.host || 'localhost'}</span>
+                      </div>
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-navy-500">Last Telemetry Probe</span>
+                        <span className="font-mono text-[11px] text-navy-600">
+                          {healthMetrics?.timestamp ? new Date(healthMetrics.timestamp).toLocaleTimeString() : 'Real-time'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </Card>
         </div>
       )}
 

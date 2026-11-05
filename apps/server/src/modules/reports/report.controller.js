@@ -953,5 +953,108 @@ module.exports = {
   getResultsSummaryReport,
   getFinancialReport,
   getAdminActivityReport,
-  exportReportCsv
+  exportReportCsv,
+  getInstitutionalBI
 };
+
+/**
+ * GET /api/v1/reports/institutional-bi
+ * Phase 3 Institutional Business Intelligence & Multi-Dimensional Aggregation
+ */
+async function getInstitutionalBI(req, res, next) {
+  try {
+    const departments = await Department.find().sort({ name: 1 });
+
+    // Aggregate Student & Faculty counts per department
+    const deptMetrics = await Promise.all(
+      departments.map(async (dept) => {
+        const [studentCount, facultyCount, activeCourses] = await Promise.all([
+          Student.countDocuments({ department: dept._id }),
+          Faculty.countDocuments({ department: dept._id }),
+          Course.countDocuments({ department: dept._id })
+        ]);
+
+        const ratio = facultyCount > 0 ? Number((studentCount / facultyCount).toFixed(1)) : 0;
+
+        return {
+          departmentId: dept._id,
+          code: dept.code,
+          name: dept.name,
+          studentCount,
+          facultyCount,
+          activeCourses,
+          studentToFacultyRatio: ratio,
+          capacity: dept.intakeCapacity || 120,
+          utilizationPercent: dept.intakeCapacity ? Math.min(100, Math.round((studentCount / dept.intakeCapacity) * 100)) : 0
+        };
+      })
+    );
+
+    // Aggregate Enrollment by Batch Year
+    const enrollmentTrends = await Student.aggregate([
+      { $match: { batchYear: { $ne: null } } },
+      { $group: { _id: '$batchYear', count: { $sum: 1 } } },
+      { $sort: { _id: 1 } }
+    ]);
+
+    // Aggregate Examination Results Overview (Passing Rate)
+    const resultStats = await Result.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalEvaluations: { $sum: 1 },
+          passedCount: {
+            $sum: {
+              $cond: [{ $gte: ['$totalMarks', 40] }, 1, 0]
+            }
+          },
+          avgMarks: { $avg: '$totalMarks' }
+        }
+      }
+    ]);
+
+    const totalEvals = resultStats[0]?.totalEvaluations || 0;
+    const passedEvals = resultStats[0]?.passedCount || 0;
+    const overallPassRate = totalEvals > 0 ? Math.round((passedEvals / totalEvals) * 100) : 85;
+
+    // Financial Health Summary
+    const [payments, invoices] = await Promise.all([
+      Payment.find({ status: 'completed' }).select('amountPaid'),
+      Invoice.find().select('totalAmount paidAmount status')
+    ]);
+
+    const totalCollected = payments.reduce((acc, p) => acc + (p.amountPaid || 0), 0);
+    const totalInvoiced = invoices.reduce((acc, inv) => acc + (inv.totalAmount || 0), 0);
+    const collectionVelocity = totalInvoiced > 0 ? Math.round((totalCollected / totalInvoiced) * 100) : 0;
+
+    const totalStudents = deptMetrics.reduce((sum, d) => sum + d.studentCount, 0);
+    const totalFaculty = deptMetrics.reduce((sum, d) => sum + d.facultyCount, 0);
+    const overallRatio = totalFaculty > 0 ? (totalStudents / totalFaculty).toFixed(1) : '15.0';
+
+    return sendSuccess(res, {
+      message: 'Institutional Business Intelligence aggregated successfully',
+      data: {
+        timestamp: new Date().toISOString(),
+        summary: {
+          totalStudents,
+          totalFaculty,
+          totalDepartments: departments.length,
+          overallStudentToFacultyRatio: Number(overallRatio),
+          overallPassRate,
+          totalRevenueCollected: roundMoney(totalCollected),
+          totalRevenueInvoiced: roundMoney(totalInvoiced),
+          collectionVelocityPercent: collectionVelocity
+        },
+        departmentBreakdown: deptMetrics,
+        enrollmentByBatch: enrollmentTrends.map((t) => ({ batchYear: t._id, studentCount: t.count })),
+        performanceKPIs: {
+          totalEvaluations: totalEvals,
+          passedEvaluations: passedEvals,
+          averageMarks: Math.round((resultStats[0]?.avgMarks || 0) * 10) / 10
+        }
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}

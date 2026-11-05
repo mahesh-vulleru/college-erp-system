@@ -1766,6 +1766,167 @@ class ApiClient {
   recordDocumentDownload(id) {
     return this.post(`/v1/documents/${id}/download`);
   }
+
+  // ---------------------------------------------------------------------------
+  // Phase 3 Advanced Intelligence & Operations APIs
+  // ---------------------------------------------------------------------------
+
+  // Module 12: System Health Monitoring
+  getSystemHealthMetrics() {
+    return this.get('/v1/system/health-metrics');
+  }
+
+  // Module 11: Security Analytics
+  getSecurityAnalytics() {
+    return this.get('/v1/audit-logs/security-analytics');
+  }
+
+  // Module 1: Institutional BI
+  getInstitutionalBI() {
+    return this.get('/v1/reports/institutional-bi');
+  }
+
+  // Module 2: Academic Risk Intelligence
+  getAcademicInsights(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/results/academic-insights${qs ? `?${qs}` : ''}`);
+  }
+
+  // Module 3: Attendance Intelligence
+  getAttendanceIntelligence(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/attendance/intelligence${qs ? `?${qs}` : ''}`);
+  }
+
+  // Module 4: AI Timetable Clash Detection & Workload
+  getTimetableClashes(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/timetable/clash-detection${qs ? `?${qs}` : ''}`);
+  }
+
+  getWorkloadBalancing() {
+    return this.get('/v1/timetable/workload-balancing');
+  }
+
+  getTimetableWorkloadBalancing() {
+    return this.get('/v1/timetable/workload-balancing');
+  }
+
+  getTimetableSuggestions() {
+    return this.get('/v1/timetable/optimization-suggestions');
+  }
+
+  // Module 5: Workflow Engine & SLA Escalation
+  getWorkflowEscalations() {
+    return this.get('/v1/leaves/escalations');
+  }
+
+  escalateWorkflowLeave(id, remarks = '') {
+    return this.post(`/v1/leaves/${id}/escalate`, { remarks });
+  }
+
+  // Module 6: Communication Management
+  getCommunicationTemplates(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/communications/templates${qs ? `?${qs}` : ''}`);
+  }
+
+  createCommunicationTemplate(data) {
+    return this.post('/v1/communications/templates', data);
+  }
+
+  sendCommunicationBroadcast(data) {
+    return this.post('/v1/communications/broadcast', data);
+  }
+
+  getCommunicationLogs(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/communications/logs${qs ? `?${qs}` : ''}`);
+  }
+
+  // Module 7: Financial Forecasting
+  getFinancialForecasting() {
+    return this.get('/v1/fees/forecasting');
+  }
+
+  // Module 8: Asset Management
+  getAssets(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/assets${qs ? `?${qs}` : ''}`);
+  }
+
+  getAssetById(id) {
+    return this.get(`/v1/assets/${id}`);
+  }
+
+  createAsset(data) {
+    return this.post('/v1/assets', data);
+  }
+
+  updateAsset(id, data) {
+    return this.put(`/v1/assets/${id}`, data);
+  }
+
+  deleteAsset(id) {
+    return this.delete(`/v1/assets/${id}`);
+  }
+
+  addAssetMaintenance(id, data) {
+    return this.post(`/v1/assets/${id}/maintenance`, data);
+  }
+
+  // Module 9: Placement & Training
+  getPlacementCompanies(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/placements/companies${qs ? `?${qs}` : ''}`);
+  }
+
+  createPlacementCompany(data) {
+    return this.post('/v1/placements/companies', data);
+  }
+
+  getPlacementDrives(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/placements/drives${qs ? `?${qs}` : ''}`);
+  }
+
+  getPlacementDriveById(id) {
+    return this.get(`/v1/placements/drives/${id}`);
+  }
+
+  createPlacementDrive(data) {
+    return this.post('/v1/placements/drives', data);
+  }
+
+  updatePlacementDrive(id, data) {
+    return this.put(`/v1/placements/drives/${id}`, data);
+  }
+
+  applyToPlacementDrive(id, data = {}) {
+    return this.post(`/v1/placements/drives/${id}/apply`, data);
+  }
+
+  getMyPlacementApplications() {
+    return this.get('/v1/placements/my-applications');
+  }
+
+  getDriveApplications(driveId) {
+    return this.get(`/v1/placements/drives/${driveId}/applications`);
+  }
+
+  updatePlacementApplicationStatus(id, data) {
+    return this.patch(`/v1/placements/applications/${id}/status`, data);
+  }
+
+  getPlacementAnalytics() {
+    return this.get('/v1/placements/analytics');
+  }
+
+  // Module 10: Accreditation Gap Analysis
+  getAccreditationGapAnalysis(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.get(`/v1/accreditation/gap-analysis${qs ? `?${qs}` : ''}`);
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL);

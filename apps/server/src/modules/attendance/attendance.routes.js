@@ -2,7 +2,8 @@ const express = require('express');
 const {
   getAttendanceRecords,
   markAttendanceBatch,
-  getAttendanceSummary
+  getAttendanceSummary,
+  getAttendanceIntelligence
 } = require('./attendance.controller');
 const { getAttendanceOverview } = require('../reports/report.controller');
 const { validateAttendanceBatchInput } = require('./attendance.validator');
@@ -14,6 +15,20 @@ const { ROLES } = require('@college-erp/shared');
 const router = express.Router();
 
 router.use(authenticate);
+
+// Phase 3 Attendance Intelligence: 75% shortage recovery & consecutive absence detection
+router.get(
+  '/intelligence',
+  authorizeRoles(
+    ROLES.SUPER_ADMIN,
+    ROLES.PRINCIPAL,
+    ROLES.HOD,
+    ROLES.FACULTY,
+    ROLES.STUDENT,
+    ROLES.PARENT
+  ),
+  getAttendanceIntelligence
+);
 
 router.get(
   '/',

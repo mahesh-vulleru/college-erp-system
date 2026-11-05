@@ -710,6 +710,28 @@ async function escalateLeave(req, res, next) {
       });
     }
 
+    // Prevent duplicate immediate escalation
+    const lastHistory = leave.approvalHistory?.[leave.approvalHistory.length - 1];
+    if (
+      lastHistory &&
+      lastHistory.action === 'escalated' &&
+      Date.now() - new Date(lastHistory.timestamp).getTime() < 60000
+    ) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.CONFLICT,
+        message: 'A duplicate escalation was recently processed for this request. Please wait before escalating again.',
+        code: 'DUPLICATE_ESCALATION'
+      });
+    }
+
+    if (leave.currentApproverRole === ROLES.SUPER_ADMIN) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: 'Leave request is already at the highest institutional authority level (Super Admin) and cannot be escalated further',
+        code: 'MAX_ESCALATION_REACHED'
+      });
+    }
+
     // Determine escalated approver role
     let nextRole = ROLES.PRINCIPAL;
     if (leave.currentApproverRole === ROLES.FACULTY) {
@@ -795,6 +817,81 @@ function updateWorkflowConfig(req, res) {
   });
 }
 
+/**
+ * GET /api/v1/leaves/escalations
+ * SLA monitoring and overdue escalation candidate detection
+ */
+async function getWorkflowEscalations(req, res, next) {
+  try {
+    const query = { status: 'pending' };
+
+    // Scoping
+    if (req.user.role === ROLES.HOD) {
+      const hodDept = await resolveHodDepartment(req.user);
+      if (hodDept) query.department = hodDept._id;
+    }
+
+    const pendingLeaves = await Leave.find(query)
+      .populate('applicant', 'name email role')
+      .populate('department', 'name code')
+      .populate('currentApprover', 'name email role')
+      .sort({ createdAt: 1 })
+      .lean();
+
+    const standardSlaHours = 48; // 48-hour SLA standard for institutional approvals
+
+    const tasks = pendingLeaves.map((leave) => {
+      const createdTime = new Date(leave.createdAt).getTime();
+      const elapsedHours = Math.floor((Date.now() - createdTime) / (1000 * 60 * 60));
+      const isOverdue = elapsedHours >= standardSlaHours;
+      const slaRemainingHours = Math.max(0, standardSlaHours - elapsedHours);
+
+      const escalationHistory = (leave.approvalHistory || []).filter((h) => h.action === 'escalated');
+
+      return {
+        id: leave._id,
+        applicationId: leave.applicationId,
+        applicantName: leave.applicantName || leave.applicant?.name,
+        applicantRole: leave.applicantRole,
+        department: leave.department?.name,
+        leaveType: leave.leaveType,
+        numberOfDays: leave.numberOfDays,
+        approvalStage: leave.approvalStage,
+        currentApproverRole: leave.currentApproverRole,
+        currentApproverName: leave.currentApprover?.name || null,
+        createdAt: leave.createdAt,
+        sla: {
+          standardHours: standardSlaHours,
+          elapsedHours,
+          remainingHours: slaRemainingHours,
+          isOverdue,
+          slaBreached: elapsedHours > standardSlaHours
+        },
+        escalationHistoryCount: escalationHistory.length,
+        canEscalate: leave.currentApproverRole !== ROLES.SUPER_ADMIN
+      };
+    });
+
+    const overdueTasks = tasks.filter((t) => t.sla.isOverdue);
+
+    return sendSuccess(res, {
+      message: 'Workflow SLA monitoring telemetry retrieved',
+      data: {
+        timestamp: new Date().toISOString(),
+        summary: {
+          totalPendingTasks: tasks.length,
+          overdueSlaTasks: overdueTasks.length,
+          onTrackTasks: tasks.length - overdueTasks.length
+        },
+        overdueTasks,
+        allPendingTasks: tasks
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   listLeaveRequests,
   getLeaveRequestById,
@@ -802,5 +899,6 @@ module.exports = {
   reviewLeave,
   escalateLeave,
   getWorkflowConfig,
-  updateWorkflowConfig
+  updateWorkflowConfig,
+  getWorkflowEscalations
 };

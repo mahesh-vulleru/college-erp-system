@@ -137,7 +137,7 @@ export const StudentDashboard = () => {
   const [myExams, setMyExams] = useState([]);
 
   const [myTransport, setMyTransport] = useState(null);
-
+  const [attendanceIntelligence, setAttendanceIntelligence] = useState(null);
   const [selectedHallTicketExam, setSelectedHallTicketExam] = useState(null);
 
   const [payNowInvoice, setPayNowInvoice] = useState(null);
@@ -271,9 +271,7 @@ export const StudentDashboard = () => {
       if (isStudentRole) {
 
         // Load student self data
-
-        const [profRes, attRes, resRes, payRes, subjRes, timeRes, invRes, notRes, examRes, transRes] = await Promise.all([
-
+        const [profRes, attRes, resRes, payRes, subjRes, timeRes, invRes, notRes, examRes, transRes, intelRes] = await Promise.all([
           api.getMyStudentProfile().catch(() => ({ data: null })),
 
           api.getAttendance().catch(() => ({ data: [] })),
@@ -291,9 +289,8 @@ export const StudentDashboard = () => {
           api.getNotices().catch(() => ({ data: [] })),
 
           api.getExams().catch(() => ({ data: [] })),
-
-          api.getMyStudentTransport().catch(() => ({ data: null }))
-
+          api.getMyStudentTransport().catch(() => ({ data: null })),
+          api.getAttendanceIntelligence().catch(() => ({ data: null }))
         ]);
 
 
@@ -317,7 +314,7 @@ export const StudentDashboard = () => {
         if (examRes?.data) setMyExams(Array.isArray(examRes.data) ? examRes.data : []);
 
         if (transRes?.data) setMyTransport(transRes.data);
-
+        if (intelRes?.data) setAttendanceIntelligence(intelRes.data);
       } else {
 
         // Load administrative directory
@@ -1635,45 +1632,107 @@ export const StudentDashboard = () => {
         {/* TAB 3: Attendance Summary */}
 
         {studentActiveTab === 'attendance' && (
+          <div className="space-y-6">
+            {/* Phase 3 Attendance Intelligence & 75% Recovery Card */}
+            {attendanceIntelligence && (
+              <div className="p-4 rounded-xl bg-white border border-navy-100 shadow-subtle space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <h3 className="text-xs font-bold text-navy-950 uppercase tracking-wider flex items-center gap-2">
+                      <CalendarCheck className="w-4 h-4 text-teal-600" />
+                      Attendance Eligibility & 75% Shortage Target
+                    </h3>
+                    <p className="text-[11px] text-navy-500 mt-0.5">
+                      Statutory institutional threshold required for semester examination eligibility
+                    </p>
+                  </div>
+                  <Badge
+                    variant={attendanceIntelligence.isEligible ? 'success' : 'danger'}
+                    size="sm"
+                  >
+                    {attendanceIntelligence.isEligible ? 'EXAM ELIGIBLE (>= 75%)' : 'SHORTAGE ALERT (< 75%)'}
+                  </Badge>
+                </div>
 
-          <Card title="Subject Attendance Register" subtitle="Real-time period attendance records">
-
-            {myAttendance.length === 0 ? (
-
-              <p className="text-xs text-navy-400 py-6 text-center">No attendance sessions recorded yet for your roll number.</p>
-
-            ) : (
-
-              <div className="space-y-2">
-
-                {myAttendance.slice(0, 10).map((att) => (
-
-                  <div key={att._id} className="p-3 rounded-xl bg-warm-50 border border-navy-100 flex items-center justify-between text-xs">
-
-                    <div>
-
-                      <span className="font-bold text-navy-900 block">{att.subject?.name || 'Class Session'}</span>
-
-                      <span className="text-navy-500 text-[11px] font-mono">Date: {new Date(att.date).toLocaleDateString()}</span>
-
-                    </div>
-
-                    <Badge variant={att.status === 'present' ? 'success' : 'danger'} size="xs">
-
-                      {att.status.toUpperCase()}
-
-                    </Badge>
-
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="p-3 rounded-xl bg-warm-50 border border-navy-100">
+                    <span className="text-[10px] font-bold text-navy-500 uppercase block">Current Attendance</span>
+                    <span className="text-lg font-bold text-navy-950 mt-0.5 block font-mono">
+                      {attendanceIntelligence.percentage ?? 0}%
+                    </span>
+                    <span className="text-[10px] text-navy-400">
+                      {attendanceIntelligence.presentSessions ?? 0} of {attendanceIntelligence.totalSessions ?? 0} sessions
+                    </span>
                   </div>
 
-                ))}
+                  <div className="p-3 rounded-xl bg-warm-50 border border-navy-100">
+                    <span className="text-[10px] font-bold text-navy-500 uppercase block">Classes to Reach 75%</span>
+                    <span className={`text-lg font-bold mt-0.5 block font-mono ${attendanceIntelligence.classesNeededFor75 > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                      {attendanceIntelligence.classesNeededFor75 > 0 ? `${attendanceIntelligence.classesNeededFor75} sessions` : 'Achieved'}
+                    </span>
+                    <span className="text-[10px] text-navy-400">
+                      {attendanceIntelligence.classesNeededFor75 > 0 ? '100% consecutive attendance required' : 'Threshold maintained'}
+                    </span>
+                  </div>
 
+                  <div className="p-3 rounded-xl bg-warm-50 border border-navy-100">
+                    <span className="text-[10px] font-bold text-navy-500 uppercase block">Consecutive Absences</span>
+                    <span className={`text-lg font-bold mt-0.5 block font-mono ${attendanceIntelligence.consecutiveAbsences >= 3 ? 'text-rose-600' : 'text-navy-900'}`}>
+                      {attendanceIntelligence.consecutiveAbsences ?? 0}
+                    </span>
+                    <span className="text-[10px] text-navy-400">
+                      {attendanceIntelligence.consecutiveAbsences >= 3 ? 'Urgent notice triggered' : 'Normal attendance trend'}
+                    </span>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-warm-50 border border-navy-100">
+                    <span className="text-[10px] font-bold text-navy-500 uppercase block">Threshold Status</span>
+                    <span className="text-xs font-semibold text-navy-900 mt-1 block">
+                      {attendanceIntelligence.status || (attendanceIntelligence.isEligible ? 'Good Standing' : 'Shortage Risk')}
+                    </span>
+                    <span className="text-[10px] text-navy-400">Rule: min 75% required</span>
+                  </div>
+                </div>
+
+                {/* Progress bar */}
+                <div>
+                  <div className="flex justify-between text-[11px] text-navy-600 mb-1 font-mono">
+                    <span>Current: {attendanceIntelligence.percentage ?? 0}%</span>
+                    <span>Target: 75%</span>
+                  </div>
+                  <div className="w-full bg-navy-100 rounded-full h-2 overflow-hidden">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-500 ${
+                        (attendanceIntelligence.percentage ?? 0) >= 75 ? 'bg-emerald-600' : 'bg-rose-500'
+                      }`}
+                      style={{ width: `${Math.min(100, attendanceIntelligence.percentage ?? 0)}%` }}
+                    />
+                  </div>
+                </div>
               </div>
 
             )}
 
-          </Card>
-
+            <Card title="Subject Attendance Register" subtitle="Real-time period attendance records">
+              {myAttendance.length === 0 ? (
+                <p className="text-xs text-navy-400 py-6 text-center">No attendance sessions recorded yet for your roll number.</p>
+              ) : (
+                <div className="space-y-2">
+                  {myAttendance.slice(0, 10).map((att) => (
+                    <div key={att._id} className="p-3 rounded-xl bg-warm-50 border border-navy-100 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-bold text-navy-900 block">{att.subject?.name || 'Class Session'}</span>
+                        <span className="text-navy-500 text-[11px] font-mono">Date: {new Date(att.date).toLocaleDateString()}</span>
+                      </div>
+                      <Badge variant={att.status === 'present' ? 'success' : 'danger'} size="xs">
+                        {att.status.toUpperCase()}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </div>
         )}
 
 

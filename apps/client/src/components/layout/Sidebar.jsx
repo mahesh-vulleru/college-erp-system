@@ -55,8 +55,7 @@ import {
   RotateCw,
   Search,
   FileText,
-  CheckCircle,
-  Coins
+  CheckCircle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '@college-erp/shared';
@@ -242,6 +241,52 @@ export const Sidebar = ({ isOpen, onClose }) => {
           ]
         },
         {
+          group: 'Administration',
+          icon: ShieldCheck,
+          items: [
+            { label: 'Leave Management', path: '/principal?tab=leaves', icon: CalendarCheck },
+            { label: 'Leave Approvals', path: '/principal?tab=leaves', icon: CheckCircle2 },
+            { label: 'Institutional Communications', path: '/notices', icon: MessageSquare },
+            { label: 'Notifications', path: '/notices', icon: Bell },
+            { label: 'Meetings & Scheduling', path: '/calendar', icon: Calendar },
+            { label: 'Announcements', path: '/notices', icon: Megaphone },
+            { label: 'Institutional Events', path: '/principal/events', icon: CalendarCheck }
+          ]
+        },
+        {
+          group: 'Finance Overview',
+          icon: CreditCard,
+          items: [
+            { label: 'Financial Overview', path: '/fees', icon: CreditCard },
+            { label: 'Fee Collection Overview', path: '/fees', icon: Receipt },
+            { label: 'Pending Dues', path: '/fees', icon: AlertCircle },
+            { label: 'Financial Reports', path: '/reports?type=finance', icon: FileSpreadsheet }
+          ]
+        },
+        {
+          group: 'Campus Management',
+          icon: Landmark,
+          items: [
+            { label: 'Library Overview', path: '/library', icon: BookMarked },
+            { label: 'Transport Overview', path: '/transport', icon: Bus },
+            { label: 'Campus Assets & Inventory', path: '/assets', icon: Wrench },
+            { label: 'Placements & Careers', path: '/placements', icon: Briefcase },
+            { label: 'Campus Operations', path: '/departments', icon: Building2 }
+          ]
+        },
+        {
+          group: 'Reports & Analytics',
+          icon: BarChart3,
+          items: [
+            { label: 'Academic Performance Reports', path: '/reports?type=academic', icon: BarChart3 },
+            { label: 'Accreditation Readiness', path: '/principal/accreditation', icon: Award },
+            { label: 'Department Reports', path: '/reports?type=department', icon: Building2 },
+            { label: 'Attendance Reports', path: '/reports?type=attendance', icon: CalendarCheck },
+            { label: 'Institutional Reports', path: '/reports', icon: FileSpreadsheet },
+            { label: 'Executive Reports', path: '/reports', icon: TrendingUp }
+          ]
+        },
+        {
           group: 'System Settings',
           icon: Settings,
           items: [
@@ -383,13 +428,15 @@ export const Sidebar = ({ isOpen, onClose }) => {
             { label: 'Central Library', path: '/library', icon: BookMarked },
             { label: 'Transport Fleet', path: '/transport/admin', icon: Bus },
             { label: 'Hostel System', path: '/hostel', icon: BedDouble },
-            { label: 'Placements', path: '/placements', icon: Briefcase }
+            { label: 'Placements', path: '/placements', icon: Briefcase },
+            { label: 'Campus Assets & Inventory', path: '/assets', icon: Wrench }
           ]
         },
         {
           group: 'Governance & Logs',
           icon: BarChart3,
           items: [
+            { label: 'System Health & Diagnostics', path: '/admin?tab=health', icon: Activity },
             { label: 'Security & Audit Logs', path: '/audit-logs', icon: ShieldCheck },
             { label: 'Executive Reports', path: '/reports', icon: BarChart3 },
             { label: 'Notice Board', path: '/notices', icon: MessageSquare },
@@ -409,16 +456,19 @@ export const Sidebar = ({ isOpen, onClose }) => {
             { label: 'HOD Dashboard', path: '/hod', exact: true, icon: LayoutDashboard },
             { label: 'Department Faculty', path: '/hod?tab=faculty', icon: UserCheck },
             { label: 'Student Cohort', path: '/hod?tab=students', icon: Users },
-            { label: 'Department Timetable', path: '/hod?tab=timetable', icon: Clock }
+            { label: 'Department Timetable', path: '/hod?tab=timetable', icon: Clock },
+            { label: 'Curriculum & Courses', path: '/courses', icon: BookOpen }
           ]
         },
         {
           group: 'Curriculum & Compliance',
           icon: GraduationCap,
           items: [
-            { label: 'Curriculum & Courses', path: '/hod?tab=curriculum', icon: BookOpen },
-            { label: 'Academic Risk Alerts', path: '/hod?tab=alerts', icon: AlertTriangle },
-            { label: 'Department Examinations', path: '/hod?tab=exams', icon: FileEdit }
+            { label: 'Faculty Loads', path: '/faculty', icon: UserCheck },
+            { label: 'Department Students', path: '/students', icon: Users },
+            { label: 'Placements & Training', path: '/placements', icon: Briefcase },
+            { label: 'Department Examinations', path: '/examinations', icon: FileEdit },
+            { label: 'Academic Risk Alerts', path: '/hod?tab=alerts', icon: AlertTriangle }
           ]
         },
         {
@@ -446,16 +496,18 @@ export const Sidebar = ({ isOpen, onClose }) => {
             { label: 'Weekly Teaching Schedule', path: '/faculty?tab=timetable', icon: Clock },
             { label: 'Assigned Subjects', path: '/faculty?tab=courses', icon: BookOpen },
             { label: 'Student Class Roster', path: '/faculty?tab=roster', icon: Users },
-            { label: 'Internal Marks Entry', path: '/faculty?tab=exams', icon: FileEdit }
+            { label: 'Internal Marks Entry', path: '/faculty?tab=exams', icon: FileEdit },
+            { label: 'Academic Insights & Risk', path: '/faculty?tab=insights', icon: TrendingUp }
           ]
         },
         {
           group: 'Campus Services',
           icon: Landmark,
           items: [
-            { label: 'Apply for Leave', path: '/faculty?tab=leave', icon: CalendarCheck },
+            { label: 'Apply for Leave', path: '/faculty?tab=leaves', icon: CalendarCheck },
             { label: 'Attendance Marking', path: '/attendance', icon: CalendarCheck },
             { label: 'Academic Calendar', path: '/calendar', icon: CalendarCheck },
+            { label: 'Placement Recommendations', path: '/placements', icon: Briefcase },
             { label: 'Library Catalog', path: '/library', icon: BookMarked },
             { label: 'Campus Notices', path: '/notices', icon: MessageSquare }
           ]
@@ -481,6 +533,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
           group: 'Campus Services',
           icon: Landmark,
           items: [
+            { label: 'Training & Placements', path: '/placements', icon: Briefcase },
             { label: 'Fee Dues & Receipts', path: '/fees', icon: CreditCard },
             { label: 'Library Access', path: '/library', icon: BookMarked },
             { label: 'Academic Calendar', path: '/calendar', icon: CalendarCheck },
@@ -501,6 +554,8 @@ export const Sidebar = ({ isOpen, onClose }) => {
             { label: 'Fee Plans & Schedules', path: '/fees?tab=structures', icon: Layers },
             { label: 'Billing Invoices', path: '/fees?tab=invoices', icon: FileText },
             { label: 'Payment Transactions', path: '/fees?tab=payments', icon: Receipt },
+            { label: 'Financial Forecasting & Aging', path: '/accounts?tab=reconciliation', icon: TrendingUp },
+            { label: 'Asset & Equipment Ledger', path: '/assets', icon: Wrench },
             { label: 'Student Fee Ledgers', path: '/students', icon: Users },
             { label: 'Audit Trail', path: '/audit-logs', icon: ShieldCheck },
             { label: 'Financial Reports', path: '/reports?tab=finance', icon: BarChart3 },
@@ -557,14 +612,16 @@ export const Sidebar = ({ isOpen, onClose }) => {
           icon: BookMarked,
           items: [
             { label: 'Chief Librarian Portal', path: '/library', exact: true, icon: LayoutDashboard },
-            { label: 'Book Catalog', path: '/library?tab=books', icon: BookOpen },
+            { label: 'Book Catalog & Accession', path: '/library?tab=books', icon: BookOpen },
             { label: 'Categories Master', path: '/library?tab=categories', icon: Layers },
             { label: 'Circulation Desk', path: '/library?tab=circulation', icon: Clock },
             { label: 'Member Patrons', path: '/library?tab=members', icon: Users },
             { label: 'Book Reservations', path: '/library?tab=reservations', icon: BookMarked },
+            { label: 'Library Hardware & Terminals', path: '/assets?category=it_equipment', icon: Wrench },
             { label: 'Overdue & Fine Ledgers', path: '/library?tab=fines', icon: DollarSign },
             { label: 'Digital E-Library', path: '/library?tab=digital', icon: Layers },
             { label: 'Library Rules & Settings', path: '/library?tab=settings', icon: Settings },
+            { label: 'Staff Leaves & Approvals', path: '/library?tab=leaves', icon: CalendarCheck },
             { label: 'Academic Calendar', path: '/calendar', icon: CalendarCheck }
           ]
         }

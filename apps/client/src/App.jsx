@@ -57,7 +57,8 @@ import HostelPage from './pages/modules/HostelPage';
 import PlacementsPage from './pages/modules/PlacementsPage';
 import SettingsPage from './pages/modules/SettingsPage';
 import HelpdeskPage from './pages/helpdesk/HelpdeskPage';
-import DocumentsPage from './pages/documents/DocumentsPage';
+import DocumentsPage from './pages/documents/DocumentsPage';
+import AssetManagementPage from './pages/assets/AssetManagementPage';
 
 import { ROLES } from '@college-erp/shared';
 
@@ -602,7 +603,15 @@ export const App = () => {
               {/* Campus Operations & Settings */}
 
               <Route path="hostel" element={<HostelPage />} />
-              <Route path="placements" element={<PlacementsPage />} />
+              <Route path="placements" element={<PlacementsPage />} />
+              <Route
+                path="assets"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.ACCOUNTS, ROLES.LIBRARIAN, 'admin']}>
+                    <AssetManagementPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="settings" element={<SettingsPage />} />
 
               {/* Catch-all 404 inside layout */}

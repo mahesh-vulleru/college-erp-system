@@ -3,6 +3,7 @@ const Result = require('./result.model');
 const Examination = require('../examinations/exam.model');
 const Student = require('../students/student.model');
 const Department = require('../departments/department.model');
+const Attendance = require('../attendance/attendance.model');
 const { sendSuccess, sendError } = require('../../utils/response');
 const { HTTP_STATUS, ROLES } = require('@college-erp/shared');
 
@@ -245,5 +246,182 @@ async function batchRecordResults(req, res, next) {
 module.exports = {
   getResults,
   recordResult,
-  batchRecordResults
+  batchRecordResults,
+  getAcademicInsights
 };
+
+/**
+ * GET /api/v1/results/academic-insights
+ * Explainable statistical academic risk scoring & pass probability (no false AI/ML claims)
+ */
+async function getAcademicInsights(req, res, next) {
+  try {
+    const studentQuery = {};
+
+    // Scoping based on role
+    if (req.user.role === ROLES.STUDENT) {
+      const profile = await Student.findOne({ user: req.user._id });
+      if (!profile) {
+        return sendError(res, {
+          statusCode: HTTP_STATUS.NOT_FOUND,
+          message: 'Student profile not linked to user account',
+          code: 'PROFILE_NOT_FOUND'
+        });
+      }
+      studentQuery._id = profile._id;
+    } else if (req.user.role === ROLES.HOD) {
+      let hodDept = null;
+      if (req.user.department) {
+        hodDept = await Department.findOne({
+          $or: [{ name: req.user.department }, { hod: req.user._id }]
+        });
+      } else {
+        hodDept = await Department.findOne({ hod: req.user._id });
+      }
+      if (hodDept) {
+        studentQuery.department = hodDept._id;
+      }
+    } else if (req.query.department) {
+      if (mongoose.Types.ObjectId.isValid(req.query.department)) {
+        studentQuery.department = req.query.department;
+      }
+    }
+
+    if (req.query.semester) {
+      const sem = parseInt(req.query.semester, 10);
+      if (!isNaN(sem)) studentQuery.currentSemester = sem;
+    }
+
+    const students = await Student.find(studentQuery)
+      .populate('user', 'name email')
+      .populate('department', 'name code')
+      .limit(100);
+
+    const insights = await Promise.all(
+      students.map(async (student) => {
+        // 1. Attendance Metrics
+        const [totalSessions, presentSessions] = await Promise.all([
+          Attendance.countDocuments({ student: student._id }),
+          Attendance.countDocuments({ student: student._id, status: 'present' })
+        ]);
+
+        const attendancePct = totalSessions > 0
+          ? Math.round((presentSessions / totalSessions) * 100)
+          : 85; // default benchmark if not marked yet
+
+        // 2. Academic Performance & Backlog Metrics
+        const studentResults = await Result.find({ student: student._id });
+        let totalMarksSum = 0;
+        let evaluatedCount = 0;
+        let backlogCount = 0;
+
+        studentResults.forEach((r) => {
+          if (r.totalMarks !== undefined && r.totalMarks !== null) {
+            totalMarksSum += r.totalMarks;
+            evaluatedCount++;
+            if (r.totalMarks < 40 || r.status === 'fail') {
+              backlogCount++;
+            }
+          }
+        });
+
+        const marksPct = evaluatedCount > 0
+          ? Math.round(totalMarksSum / evaluatedCount)
+          : 70; // baseline
+
+        // 3. Statistical Risk Calculation Formula (Explainable, deterministic)
+        // Risk Score (0 - 100): Weighted combination of attendance deficit, marks deficit, and backlogs
+        const attendanceDeficit = Math.max(0, 75 - attendancePct);
+        const marksDeficit = Math.max(0, 50 - marksPct);
+        const calculatedRiskScore = Math.min(
+          100,
+          Math.round((attendanceDeficit * 1.5) + (marksDeficit * 1.2) + (backlogCount * 12))
+        );
+
+        // Pass Probability Formula (5% to 98%)
+        const calculatedPassProbability = Math.max(
+          5,
+          Math.min(98, Math.round((marksPct * 0.65) + (attendancePct * 0.35) - (backlogCount * 5)))
+        );
+
+        let riskLevel = 'low';
+        if (calculatedRiskScore >= 40 || attendancePct < 65 || backlogCount >= 2) {
+          riskLevel = 'high';
+        } else if (calculatedRiskScore >= 20 || attendancePct < 75 || backlogCount === 1) {
+          riskLevel = 'moderate';
+        }
+
+        // Explainable Factors List
+        const riskFactors = [];
+        if (attendancePct < 75) {
+          riskFactors.push(`Attendance below statutory 75% threshold (${attendancePct}%)`);
+        }
+        if (marksPct < 45) {
+          riskFactors.push(`Internal assessment average below 45% (${marksPct}/100)`);
+        }
+        if (backlogCount > 0) {
+          riskFactors.push(`${backlogCount} active subject backlog(s) recorded`);
+        }
+        if (riskFactors.length === 0) {
+          riskFactors.push('Academic indicators meet normal progression benchmarks');
+        }
+
+        // Recommended Intervention
+        let recommendedAction = 'Continue standard academic monitoring';
+        if (riskLevel === 'high') {
+          recommendedAction = 'Mandatory remedial tutorial and faculty mentor counseling';
+        } else if (riskLevel === 'moderate') {
+          recommendedAction = 'Attendance recovery notification and revision assignment';
+        }
+
+        return {
+          studentId: student._id,
+          rollNumber: student.rollNumber,
+          name: student.user?.name || 'Student',
+          email: student.user?.email,
+          department: student.department?.name,
+          currentSemester: student.currentSemester,
+          metrics: {
+            attendancePercentage: attendancePct,
+            totalSessionsAttended: presentSessions,
+            totalSessionsConducted: totalSessions,
+            averageInternalMarks: marksPct,
+            activeBacklogs: backlogCount
+          },
+          intelligence: {
+            methodology: 'Deterministic Statistical Risk Indicator (Rule-based explainable heuristic)',
+            riskLevel,
+            riskScore: calculatedRiskScore,
+            passProbabilityPercent: calculatedPassProbability,
+            explainableFactors: riskFactors,
+            recommendedIntervention: recommendedAction
+          }
+        };
+      })
+    );
+
+    // Summary counts
+    const highRiskCount = insights.filter((i) => i.intelligence.riskLevel === 'high').length;
+    const moderateRiskCount = insights.filter((i) => i.intelligence.riskLevel === 'moderate').length;
+    const lowRiskCount = insights.filter((i) => i.intelligence.riskLevel === 'low').length;
+
+    return sendSuccess(res, {
+      message: 'Academic insights and risk evaluation generated successfully',
+      data: {
+        timestamp: new Date().toISOString(),
+        summary: {
+          totalAnalyzed: insights.length,
+          highRiskCount,
+          moderateRiskCount,
+          lowRiskCount,
+          averagePassProbability: insights.length > 0
+            ? Math.round(insights.reduce((s, i) => s + i.intelligence.passProbabilityPercent, 0) / insights.length)
+            : 80
+        },
+        students: insights
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}

@@ -584,6 +584,116 @@ async function exportInvoicesCsv(req, res, next) {
   }
 }
 
+/**
+ * GET /api/v1/fees/forecasting
+ * Phase 3 Financial Intelligence & Overdue Aging Buckets
+ */
+async function getFinancialForecasting(req, res, next) {
+  try {
+    const invoices = await Invoice.find()
+      .populate('student', 'rollNumber')
+      .populate('feeStructure', 'name code')
+      .lean();
+
+    const now = Date.now();
+
+    const agingBuckets = {
+      current: { label: 'Current / Not Due', count: 0, totalAmount: 0 },
+      overdue1To30: { label: '1 – 30 Days Overdue', count: 0, totalAmount: 0 },
+      overdue31To60: { label: '31 – 60 Days Overdue', count: 0, totalAmount: 0 },
+      overdue61To90: { label: '61 – 90 Days Overdue', count: 0, totalAmount: 0 },
+      overdueAbove90: { label: '> 90 Days Overdue (High Risk)', count: 0, totalAmount: 0 }
+    };
+
+    let totalInvoiced = 0;
+    let totalCollected = 0;
+    let totalOutstanding = 0;
+    let fullyPaidCount = 0;
+
+    for (const inv of invoices) {
+      const balanceObj = await computeInvoiceBalance(inv);
+      const balance = balanceObj.outstandingBalance;
+
+      totalInvoiced += balanceObj.effectivePayable;
+      totalCollected += balanceObj.totalVerifiedPayments;
+      totalOutstanding += balance;
+
+      if (balance <= 0) {
+        fullyPaidCount++;
+        continue;
+      }
+
+      if (!inv.dueDate || new Date(inv.dueDate).getTime() >= now) {
+        agingBuckets.current.count++;
+        agingBuckets.current.totalAmount += balance;
+      } else {
+        const daysOverdue = Math.floor((now - new Date(inv.dueDate).getTime()) / (1000 * 60 * 60 * 24));
+        if (daysOverdue <= 30) {
+          agingBuckets.overdue1To30.count++;
+          agingBuckets.overdue1To30.totalAmount += balance;
+        } else if (daysOverdue <= 60) {
+          agingBuckets.overdue31To60.count++;
+          agingBuckets.overdue31To60.totalAmount += balance;
+        } else if (daysOverdue <= 90) {
+          agingBuckets.overdue61To90.count++;
+          agingBuckets.overdue61To90.totalAmount += balance;
+        } else {
+          agingBuckets.overdueAbove90.count++;
+          agingBuckets.overdueAbove90.totalAmount += balance;
+        }
+      }
+    }
+
+    // Round amounts
+    Object.keys(agingBuckets).forEach((k) => {
+      agingBuckets[k].totalAmount = roundMoney(agingBuckets[k].totalAmount);
+    });
+
+    // Statistical collection probability projection
+    // Current receivables have high expected recovery (90%), aging receivables depreciate
+    const projectedRecoveryAmount = roundMoney(
+      totalCollected +
+      agingBuckets.current.totalAmount * 0.90 +
+      agingBuckets.overdue1To30.totalAmount * 0.80 +
+      agingBuckets.overdue31To60.totalAmount * 0.60 +
+      agingBuckets.overdue61To90.totalAmount * 0.35 +
+      agingBuckets.overdueAbove90.totalAmount * 0.15
+    );
+
+    const highRiskDefaultAmount = roundMoney(
+      agingBuckets.overdue61To90.totalAmount + agingBuckets.overdueAbove90.totalAmount
+    );
+
+    return sendSuccess(res, {
+      message: 'Financial intelligence & overdue aging forecast generated',
+      data: {
+        timestamp: new Date().toISOString(),
+        methodology: 'Historical Aging Bucket Ledger (Statistical revenue recovery model)',
+        summary: {
+          totalInvoiced: roundMoney(totalInvoiced),
+          totalCollected: roundMoney(totalCollected),
+          totalOutstanding: roundMoney(totalOutstanding),
+          collectionRatePercent: totalInvoiced > 0 ? Number(((totalCollected / totalInvoiced) * 100).toFixed(1)) : 0,
+          totalInvoicesCount: invoices.length,
+          fullyPaidInvoicesCount: fullyPaidCount,
+          activeOutstandingInvoicesCount: invoices.length - fullyPaidCount
+        },
+        agingBuckets,
+        riskProjection: {
+          projectedTotalRecovery: projectedRecoveryAmount,
+          highRiskDefaultAmount,
+          highRiskDefaultAccountsCount: agingBuckets.overdue61To90.count + agingBuckets.overdueAbove90.count,
+          projectedUncollectablePercentage: totalOutstanding > 0
+            ? Number(((highRiskDefaultAmount / totalOutstanding) * 100).toFixed(1))
+            : 0
+        }
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   listFeeStructures,
   getFeeStructureById,
@@ -595,5 +705,6 @@ module.exports = {
   createInvoice,
   applyAdjustment,
   exportInvoicesCsv,
-  computeInvoiceBalance
+  computeInvoiceBalance,
+  getFinancialForecasting
 };
