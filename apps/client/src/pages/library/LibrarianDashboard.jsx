@@ -1187,6 +1187,10 @@ export const LibrarianDashboard = () => {
               </Button>
             </div>
 
+            <div className="text-xs text-slate-500 font-medium mb-3">
+              {books.length > 0 ? `Showing ${books.length} books` : 'No books found'}
+            </div>
+
             <Table
               isLoading={isBooksLoading}
               data={books}
@@ -1293,7 +1297,7 @@ export const LibrarianDashboard = () => {
                   )
                 }
               ]}
-              emptyMessage="No books matching criteria found in library catalog"
+              emptyMessage="No books found"
             />
           </Card>
         </div>

@@ -1017,6 +1017,10 @@ export const LibraryStaffDashboard = () => {
             </div>
           </div>
 
+          <div className="text-xs text-navy-500 font-medium">
+            {books.length > 0 ? `Showing ${books.length} books` : 'No books found'}
+          </div>
+
           {books.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left">
@@ -1096,7 +1100,7 @@ export const LibraryStaffDashboard = () => {
             </div>
           ) : (
             <EmptyState
-              title="No books matching criteria"
+              title="No books found"
               description="Try adjusting your search terms or category filter."
             />
           )}
