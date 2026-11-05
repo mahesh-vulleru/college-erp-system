@@ -290,6 +290,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
           group: 'System Settings',
           icon: Settings,
           items: [
+            { label: 'Institution Profile', path: '/settings?tab=institution', icon: Building2 },
             { label: 'Profile Settings', path: '/settings?tab=profile', icon: User },
             { label: 'Security & Access', path: '/settings?tab=security', icon: Key },
             { label: 'Notifications', path: '/settings?tab=notifications', icon: Bell }
@@ -440,6 +441,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
             { label: 'Security & Audit Logs', path: '/audit-logs', icon: ShieldCheck },
             { label: 'Executive Reports', path: '/reports', icon: BarChart3 },
             { label: 'Notice Board', path: '/notices', icon: MessageSquare },
+            { label: 'Institution Profile', path: '/settings?tab=institution', icon: Building2 },
             { label: 'System Settings', path: '/settings', icon: Settings }
           ]
         }

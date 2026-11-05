@@ -1923,6 +1923,20 @@ class ApiClient {
   }
 
   // Module 10: Accreditation Gap Analysis
+  // Institutional Baseline Profile Management
+  getInstitutionProfile() {
+    return this.get('/v1/institution/profile');
+  }
+
+  updateInstitutionProfile(data) {
+    return this.put('/v1/institution/profile', data);
+  }
+
+  uploadInstitutionLogo(logoPayload) {
+    const payload = typeof logoPayload === 'string' ? { logoUrl: logoPayload } : logoPayload;
+    return this.post('/v1/institution/logo', payload);
+  }
+
   getAccreditationGapAnalysis(params = {}) {
     const qs = new URLSearchParams(params).toString();
     return this.get(`/v1/accreditation/gap-analysis${qs ? `?${qs}` : ''}`);
