@@ -1190,15 +1190,25 @@ export const StudentDashboard = () => {
 
             title="Attendance"
 
-            value={`${attPercentage || 88}%`}
+            value={
+              <div className="flex items-center gap-2">
+                <span>{attPercentage}%</span>
+                <Badge
+                  variant={Number(attPercentage) >= 75 ? 'success' : 'danger'}
+                  size="xs"
+                >
+                  {Number(attPercentage) >= 75 ? 'Eligible' : 'Shortage'}
+                </Badge>
+              </div>
+            }
 
             icon={CalendarCheck}
 
-            trend="+1.5%"
+            trend={Number(attPercentage) >= 75 ? 'Eligible (≥75%)' : 'Shortage (<75%)'}
 
-            trendDirection="up"
+            trendDirection={Number(attPercentage) >= 75 ? 'up' : 'down'}
 
-            color="emerald"
+            color={Number(attPercentage) >= 75 ? 'emerald' : 'rose'}
 
           />
 
@@ -1728,10 +1738,10 @@ export const StudentDashboard = () => {
                     </p>
                   </div>
                   <Badge
-                    variant={attendanceIntelligence.isEligible ? 'success' : 'danger'}
+                    variant={Number(attPercentage) >= 75 ? 'success' : 'danger'}
                     size="sm"
                   >
-                    {attendanceIntelligence.isEligible ? 'EXAM ELIGIBLE (>= 75%)' : 'SHORTAGE ALERT (< 75%)'}
+                    {Number(attPercentage) >= 75 ? 'Eligible' : 'Shortage'}
                   </Badge>
                 </div>
 
@@ -2290,11 +2300,19 @@ export const StudentDashboard = () => {
 
                   </div>
 
-                  <div className="flex justify-between py-1">
+                  <div className="flex justify-between items-center py-1">
 
                     <span className="text-slate-500">Attendance Compliance</span>
 
-                    <span className="font-mono font-bold text-emerald-700">{attPercentage}% (Eligible)</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono font-bold text-slate-800">{attPercentage}%</span>
+                      <Badge
+                        variant={Number(attPercentage) >= 75 ? 'success' : 'danger'}
+                        size="xs"
+                      >
+                        {Number(attPercentage) >= 75 ? 'Eligible' : 'Shortage'}
+                      </Badge>
+                    </div>
 
                   </div>
 
