@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
+  X,
   Search,
   RefreshCw,
   FileText,
@@ -192,6 +193,7 @@ export const LibraryStaffDashboard = () => {
     try {
       const res = await api.getCirculationIssues({
         status: issueStatusFilter,
+        filter: issueStatusFilter === 'overdue' ? 'overdue' : undefined,
         search: issueSearch,
         limit: 100
       });
@@ -1732,8 +1734,8 @@ export const LibraryStaffDashboard = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="sm:col-span-2">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div className={issueStatusFilter || issueSearch ? "sm:col-span-2" : "sm:col-span-3"}>
               <Input
                 placeholder="Search by patron name, accession number, or title..."
                 value={issueSearch}
@@ -1747,11 +1749,26 @@ export const LibraryStaffDashboard = () => {
                 onChange={(e) => setIssueStatusFilter(e.target.value)}
                 options={[
                   { value: '', label: 'All Active Issues' },
-                  { value: 'issued', label: 'Issued (Within Term)' },
-                  { value: 'overdue', label: 'Overdue Only' }
+                  { value: 'overdue', label: 'Overdue Books Only' },
+                  { value: 'issued', label: 'Issued (Within Term)' }
                 ]}
               />
             </div>
+            {(issueStatusFilter || issueSearch) && (
+              <div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setIssueStatusFilter('');
+                    setIssueSearch('');
+                  }}
+                  className="w-full text-xs h-9 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5 mr-1" /> Clear Filter
+                </Button>
+              </div>
+            )}
           </div>
 
           {issues.length > 0 ? (

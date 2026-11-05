@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
+  X,
   Plus,
   Search,
   Download,
@@ -253,11 +254,26 @@ export const LibrarianDashboard = () => {
     }
   }, [memberSearch, memberRoleFilter]);
 
+  const isIssueOverdue = useCallback((row) => {
+    if (!row) return false;
+    if (row.status === 'overdue') return true;
+    if (row.status === 'returned') return false;
+    if (!row.dueDate) return false;
+    return new Date(row.dueDate).getTime() < Date.now();
+  }, []);
+
+  const calculateDaysLate = useCallback((dueDate) => {
+    if (!dueDate) return 0;
+    const diff = Date.now() - new Date(dueDate).getTime();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  }, []);
+
   const fetchIssues = useCallback(async () => {
     setIsIssuesLoading(true);
     try {
       const res = await api.getCirculationIssues({
         status: issueStatusFilter,
+        filter: issueStatusFilter === 'overdue' ? 'overdue' : undefined,
         search: issueSearch,
         limit: 100
       });
@@ -271,6 +287,34 @@ export const LibrarianDashboard = () => {
       setIsIssuesLoading(false);
     }
   }, [issueStatusFilter, issueSearch]);
+
+  const displayedIssues = useMemo(() => {
+    let list = issues;
+    if (issueStatusFilter === 'overdue') {
+      list = list.filter((item) => isIssueOverdue(item));
+    } else if (issueStatusFilter === 'issued') {
+      list = list.filter((item) => item.status === 'issued' && !isIssueOverdue(item));
+    } else if (issueStatusFilter === 'returned') {
+      list = list.filter((item) => item.status === 'returned');
+    }
+    if (issueSearch && issueSearch.trim()) {
+      const q = issueSearch.toLowerCase().trim();
+      list = list.filter(
+        (item) =>
+          item.issueNumber?.toLowerCase().includes(q) ||
+          item.book?.title?.toLowerCase().includes(q) ||
+          item.bookCopy?.accessionNumber?.toLowerCase().includes(q) ||
+          item.user?.name?.toLowerCase().includes(q) ||
+          item.member?.name?.toLowerCase().includes(q) ||
+          item.member?.membershipNumber?.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [issues, issueStatusFilter, issueSearch, isIssueOverdue]);
+
+  const overdueCount = useMemo(() => {
+    return issues.filter((item) => isIssueOverdue(item)).length;
+  }, [issues, isIssueOverdue]);
 
   const fetchReservations = useCallback(async () => {
     setIsReservationsLoading(true);
@@ -1282,27 +1326,67 @@ export const LibrarianDashboard = () => {
         <div className="space-y-4">
           <Card className="p-4 sm:p-5">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
-              <div className="flex items-center space-x-2 w-full sm:w-auto">
-                <div className="relative flex-1 sm:w-64">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                <div className="relative flex-1 sm:w-64 min-w-[200px]">
                   <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
                   <input
                     type="text"
                     value={issueSearch}
                     onChange={(e) => setIssueSearch(e.target.value)}
-                    placeholder="Search by issue #, member, accession..."
-                    className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-rose-500"
+                    placeholder="Search by title, student, accession, issue #..."
+                    className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-rose-500 font-medium"
                   />
                 </div>
                 <select
                   value={issueStatusFilter}
                   onChange={(e) => setIssueStatusFilter(e.target.value)}
-                  className="text-xs border border-slate-200 rounded-lg px-2.5 py-2 bg-white"
+                  className="text-xs border border-slate-200 rounded-lg px-2.5 py-2 bg-white font-medium cursor-pointer"
                 >
                   <option value="">All Circulation Statuses</option>
-                  <option value="issued">Active Loans</option>
+                  <option value="overdue">Overdue Books Only</option>
+                  <option value="issued">Active Loans (Within Term)</option>
                   <option value="returned">Returned</option>
-                  <option value="overdue">Overdue</option>
                 </select>
+
+                <button
+                  type="button"
+                  onClick={() => setIssueStatusFilter(issueStatusFilter === 'overdue' ? '' : 'overdue')}
+                  className={`px-3 py-2 text-xs font-bold rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer ${
+                    issueStatusFilter === 'overdue'
+                      ? 'bg-rose-600 text-white border-rose-600 shadow-xs'
+                      : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                  }`}
+                  title="Filter books past scheduled return due date"
+                >
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  <span>Overdue Books</span>
+                  {overdueCount > 0 && (
+                    <span
+                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                        issueStatusFilter === 'overdue'
+                          ? 'bg-white text-rose-700'
+                          : 'bg-rose-600 text-white'
+                      }`}
+                    >
+                      {overdueCount}
+                    </span>
+                  )}
+                </button>
+
+                {(issueStatusFilter || issueSearch) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIssueStatusFilter('');
+                      setIssueSearch('');
+                    }}
+                    className="px-2.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-200 flex items-center gap-1 transition-colors cursor-pointer"
+                    title="Clear active circulation filters"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Clear Filter</span>
+                  </button>
+                )}
               </div>
 
               <div className="flex items-center space-x-2 w-full sm:w-auto">
@@ -1310,7 +1394,7 @@ export const LibrarianDashboard = () => {
                   variant="primary"
                   size="sm"
                   onClick={() => setIsIssueModalOpen(true)}
-                  className="bg-rose-600 hover:bg-rose-700 text-white border-none text-xs flex-1 sm:flex-initial"
+                  className="bg-rose-600 hover:bg-rose-700 text-white border-none text-xs flex-1 sm:flex-initial cursor-pointer"
                 >
                   <Clock className="w-3.5 h-3.5 mr-1" />
                   Issue Book
@@ -1319,7 +1403,7 @@ export const LibrarianDashboard = () => {
                   variant="secondary"
                   size="sm"
                   onClick={() => setIsReturnModalOpen(true)}
-                  className="bg-slate-800 hover:bg-slate-900 text-white border-none text-xs flex-1 sm:flex-initial"
+                  className="bg-slate-800 hover:bg-slate-900 text-white border-none text-xs flex-1 sm:flex-initial cursor-pointer"
                 >
                   <RotateCw className="w-3.5 h-3.5 mr-1" />
                   Return Book
@@ -1327,9 +1411,28 @@ export const LibrarianDashboard = () => {
               </div>
             </div>
 
+            {/* Overdue Active Banner Indicator */}
+            {issueStatusFilter === 'overdue' && (
+              <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-900 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                  <span>
+                    Showing <strong>{displayedIssues.length}</strong> overdue books that have exceeded their return due date.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIssueStatusFilter('')}
+                  className="text-rose-700 hover:text-rose-900 font-bold underline text-[11px] cursor-pointer"
+                >
+                  Clear Overdue Filter
+                </button>
+              </div>
+            )}
+
             <Table
               isLoading={isIssuesLoading}
-              data={issues}
+              data={displayedIssues}
               columns={[
                 {
                   header: 'Issue Number',
@@ -1340,10 +1443,10 @@ export const LibrarianDashboard = () => {
                   )
                 },
                 {
-                  header: 'Book & Accession',
+                  header: 'Book Title',
                   render: (row) => (
                     <div>
-                      <div className="font-semibold text-slate-900">{row.book?.title}</div>
+                      <div className="font-semibold text-slate-900">{row.book?.title || 'Unknown Title'}</div>
                       <div className="font-mono text-[11px] text-rose-700">
                         {row.bookCopy?.accessionNumber}
                       </div>
@@ -1351,57 +1454,72 @@ export const LibrarianDashboard = () => {
                   )
                 },
                 {
-                  header: 'Borrower / Patron',
+                  header: 'Student / Patron',
                   render: (row) => (
                     <div>
-                      <div className="font-medium text-slate-900">{row.member?.name}</div>
+                      <div className="font-medium text-slate-900">
+                        {row.user?.name || row.member?.name || 'Student Patron'}
+                      </div>
                       <div className="text-[11px] text-slate-500">
-                        {row.member?.membershipCardNumber} • {row.member?.role}
+                        {row.member?.membershipNumber || row.member?.membershipCardNumber || 'LIB-MEMBER'} • {row.user?.role || row.member?.memberType || 'Student'}
                       </div>
                     </div>
                   )
                 },
                 {
                   header: 'Issue & Due Dates',
-                  render: (row) => (
-                    <div className="text-xs">
-                      <div>Issued: {new Date(row.issueDate).toLocaleDateString()}</div>
-                      <div
-                        className={
-                          row.status === 'overdue'
-                            ? 'text-rose-600 font-bold'
-                            : 'text-slate-500 font-medium'
-                        }
-                      >
-                        Due: {new Date(row.dueDate).toLocaleDateString()}
+                  render: (row) => {
+                    const overdue = isIssueOverdue(row);
+                    const daysLate = calculateDaysLate(row.dueDate);
+                    return (
+                      <div className="text-xs space-y-0.5">
+                        <div className="text-slate-600">
+                          Issued: <span className="font-medium text-slate-800">{new Date(row.issueDate).toLocaleDateString()}</span>
+                        </div>
+                        <div
+                          className={
+                            overdue
+                              ? 'text-rose-600 font-bold flex items-center gap-1'
+                              : 'text-slate-500 font-medium'
+                          }
+                        >
+                          <span>Due: {new Date(row.dueDate).toLocaleDateString()}</span>
+                          {overdue && (
+                            <span className="text-[10px] bg-rose-50 text-rose-700 px-1.5 py-0.2 rounded font-semibold border border-rose-200">
+                              +{daysLate}d late
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )
+                    );
+                  }
                 },
                 {
                   header: 'Renewals',
                   render: (row) => (
                     <span className="text-xs font-semibold text-slate-700">
-                      {row.renewCount || 0} times
+                      {row.renewCount || row.renewalCount || 0} times
                     </span>
                   )
                 },
                 {
                   header: 'Status',
-                  render: (row) => (
-                    <Badge
-                      variant={
-                        row.status === 'returned'
-                          ? 'success'
-                          : row.status === 'overdue'
-                          ? 'danger'
-                          : 'primary'
-                      }
-                      className="text-[10px] capitalize"
-                    >
-                      {row.status}
-                    </Badge>
-                  )
+                  render: (row) => {
+                    const overdue = isIssueOverdue(row);
+                    const daysLate = calculateDaysLate(row.dueDate);
+                    if (row.status === 'returned') {
+                      return <Badge variant="success" className="text-[10px]">Returned</Badge>;
+                    }
+                    if (overdue) {
+                      return (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                          <AlertTriangle className="w-3 h-3 text-rose-600 shrink-0" />
+                          Overdue ({daysLate}d late)
+                        </span>
+                      );
+                    }
+                    return <Badge variant="primary" className="text-[10px]">Active Loan</Badge>;
+                  }
                 },
                 {
                   header: 'Actions',
@@ -1413,7 +1531,7 @@ export const LibrarianDashboard = () => {
                             size="sm"
                             variant="outline"
                             onClick={() => handleRenewBook(row._id)}
-                            className="text-[10px] py-1 px-2 border-slate-200"
+                            className="text-[10px] py-1 px-2 border-slate-200 cursor-pointer"
                           >
                             Renew
                           </Button>
@@ -1428,7 +1546,7 @@ export const LibrarianDashboard = () => {
                               });
                               setIsReturnModalOpen(true);
                             }}
-                            className="text-[10px] py-1 px-2 bg-rose-600 hover:bg-rose-700 text-white border-none"
+                            className="text-[10px] py-1 px-2 bg-rose-600 hover:bg-rose-700 text-white border-none cursor-pointer"
                           >
                             Return
                           </Button>
@@ -1438,7 +1556,11 @@ export const LibrarianDashboard = () => {
                   )
                 }
               ]}
-              emptyMessage="No circulation issue records found"
+              emptyMessage={
+                issueStatusFilter === 'overdue'
+                  ? 'No overdue books found. All borrowed books are currently within their due dates!'
+                  : 'No circulation issue records found'
+              }
             />
           </Card>
         </div>
