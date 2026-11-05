@@ -1233,6 +1233,10 @@ export const TransportAdminDashboard = () => {
             />
           </div>
 
+          <div className="text-xs text-navy-500 font-medium">
+            Inactive Vehicles: {(buses || []).filter((b) => (b.currentStatus || b.status)?.toLowerCase() === 'inactive').length}
+          </div>
+
           {/* Buses Table */}
           {busesLoading ? (
             <div className="p-12 text-center text-xs text-navy-500">Loading fleet records...</div>
