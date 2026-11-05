@@ -58,6 +58,7 @@ export const FeeManagementPage = () => {
   const [students, setStudents] = useState([]);
   const [gatewayStatus, setGatewayStatus] = useState(null);
   const [summary, setSummary] = useState(null);
+  const [reconciliationData, setReconciliationData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Filters
@@ -118,13 +119,14 @@ export const FeeManagementPage = () => {
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [invRes, structRes, payRes, deptRes, gwRes, studRes] = await Promise.all([
+      const [invRes, structRes, payRes, deptRes, gwRes, studRes, reconRes] = await Promise.all([
         api.getInvoices().catch(() => ({ data: [], meta: {} })),
         api.getFeeStructures().catch(() => ({ data: [] })),
         api.getPayments().catch(() => ({ data: [] })),
         api.getDepartments().catch(() => ({ data: [] })),
         api.getGatewayStatus().catch(() => ({ data: null })),
-        isStaff ? api.getStudents({ limit: 100 }).catch(() => ({ data: [] })) : Promise.resolve({ data: [] })
+        isStaff ? api.getStudents({ limit: 100 }).catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
+        isStaff ? api.getFeeReconciliation().catch(() => ({ data: null })) : Promise.resolve({ data: null })
       ]);
 
       if (invRes?.data) {
@@ -133,6 +135,7 @@ export const FeeManagementPage = () => {
       }
       if (structRes?.data) setFeeStructures(structRes.data);
       if (payRes?.data) setPayments(payRes.data);
+      if (reconRes?.data) setReconciliationData(reconRes.data);
       if (deptRes?.data) {
         setDepartments(deptRes.data);
         if (deptRes.data.length > 0 && !planForm.department) {
@@ -398,6 +401,17 @@ export const FeeManagementPage = () => {
           <CheckCircle2 className="w-4 h-4 mr-2" />
           Verified Transactions & Receipts ({payments.length})
         </button>
+        {isStaff && (
+          <button
+            onClick={() => setActiveTab('reconciliation')}
+            className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center ${
+              activeTab === 'reconciliation' ? 'border-teal-600 text-teal-700' : 'border-transparent text-navy-500 hover:text-navy-900'
+            }`}
+          >
+            <ShieldAlert className="w-4 h-4 mr-2" />
+            Fee Reconciliation & Audit
+          </button>
+        )}
       </div>
 
       {/* Tab 1: Invoices */}
@@ -681,6 +695,113 @@ export const FeeManagementPage = () => {
             emptyMessage="No payment transactions found."
           />
         </Card>
+      )}
+
+      {/* Tab 4: Fee Reconciliation & Audit */}
+      {activeTab === 'reconciliation' && isStaff && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatWidget
+              title="Reconciled Collections"
+              value={`₹${(reconciliationData?.metrics?.totalReconciled || 0).toLocaleString('en-IN')}`}
+              icon={CheckCircle2}
+              color="emerald"
+              subtitle="Audited and matched to bank"
+            />
+            <StatWidget
+              title="Pending Reconciliation"
+              value={`₹${(reconciliationData?.metrics?.totalUnreconciled || 0).toLocaleString('en-IN')}`}
+              icon={Clock}
+              color="amber"
+              subtitle="Awaiting cashier / bank audit"
+            />
+            <StatWidget
+              title="Mismatched Payments"
+              value={`₹${(reconciliationData?.metrics?.totalMismatched || 0).toLocaleString('en-IN')}`}
+              icon={AlertCircle}
+              color="rose"
+              subtitle="Discrepant ledger entries"
+            />
+            <StatWidget
+              title="Flagged Duplicates"
+              value={reconciliationData?.anomalies?.duplicateReferences?.length || 0}
+              icon={ShieldAlert}
+              color="indigo"
+              subtitle="Duplicate reference collisions"
+            />
+          </div>
+
+          <Card
+            title="Unreconciled Payments & Ledger Audit"
+            subtitle="Verify cashier journal entries against electronic bank statement references"
+          >
+            {(!reconciliationData?.unreconciledPayments || reconciliationData.unreconciledPayments.length === 0) ? (
+              <div className="py-8 text-center text-navy-400 text-xs">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                All payment receipts have been reconciled and verified against bank statements.
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100 text-xs">
+                {reconciliationData.unreconciledPayments.map((p) => (
+                  <div key={p._id} className="p-3 hover:bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-mono font-bold text-navy-900">{p.receiptNumber}</span>
+                        <Badge variant={p.reconciliationStatus === 'mismatched' ? 'rose' : 'amber'} size="xs">
+                          {p.reconciliationStatus || 'Pending Audit'}
+                        </Badge>
+                        <span className="text-navy-500 font-mono">Ref: {p.transactionReference || 'None'}</span>
+                      </div>
+                      <p className="text-navy-600 mt-0.5">
+                        {p.student?.user?.name || 'Student'} ({p.student?.rollNumber || 'N/A'}) • {p.paymentMethod}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center space-x-3 shrink-0">
+                      <span className="font-bold font-mono text-emerald-700">₹{Number(p.amountPaid || 0).toLocaleString('en-IN')}</span>
+                      <Button
+                        size="xs"
+                        variant="primary"
+                        onClick={async () => {
+                          try {
+                            await api.updateReconciliationStatus(p._id, {
+                              reconciliationStatus: 'reconciled',
+                              reconciliationNotes: 'Bank ledger verified'
+                            });
+                            addToast({ type: 'success', title: 'Payment Reconciled', message: `Receipt ${p.receiptNumber} marked reconciled.` });
+                            loadData();
+                          } catch (err) {
+                            addToast({ type: 'error', title: 'Audit Failed', message: err.message });
+                          }
+                        }}
+                      >
+                        Reconcile
+                      </Button>
+                      <Button
+                        size="xs"
+                        variant="outline"
+                        onClick={async () => {
+                          try {
+                            await api.updateReconciliationStatus(p._id, {
+                              reconciliationStatus: 'flagged_duplicate',
+                              reconciliationNotes: 'Suspicious duplicate transaction reference'
+                            });
+                            addToast({ type: 'info', title: 'Flagged', message: `Receipt ${p.receiptNumber} flagged for review.` });
+                            loadData();
+                          } catch (err) {
+                            addToast({ type: 'error', title: 'Action Failed', message: err.message });
+                          }
+                        }}
+                      >
+                        Flag
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        </div>
       )}
 
       {/* MODAL: Create Fee Plan */}

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Settings, User, Bell, Shield, Key, Save, CheckCircle, Database } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -8,7 +9,28 @@ export const SettingsPage = () => {
   const { user } = useAuth();
   const { addToast } = useToast();
 
-  const [activeTab, setActiveTab] = useState('profile');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryTab = searchParams.get('tab');
+  const normalizeTab = (t) => {
+    if (!t) return 'profile';
+    const s = t.toLowerCase();
+    if (s === 'account' || s === 'security' || s === 'password') return 'security';
+    if (s === 'preferences' || s === 'notifications' || s === 'alerts') return 'notifications';
+    if (s === 'profile' || s === 'identity') return 'profile';
+    return 'profile';
+  };
+  const [activeTab, setActiveTab] = useState(normalizeTab(queryTab));
+
+  useEffect(() => {
+    if (queryTab) {
+      setActiveTab(normalizeTab(queryTab));
+    }
+  }, [queryTab]);
+
+  const handleTabChange = (tabKey) => {
+    setActiveTab(tabKey);
+    setSearchParams({ tab: tabKey });
+  };
   const [formData, setFormData] = useState({
     name: user?.name || 'V. Mahesh',
     email: user?.email || 'admin@college.edu',
@@ -41,7 +63,7 @@ export const SettingsPage = () => {
         {/* Navigation Tabs */}
         <div className="flex items-center gap-2 pb-4 border-b border-slate-100 overflow-x-auto">
           <button
-            onClick={() => setActiveTab('profile')}
+            onClick={() => handleTabChange('profile')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'profile' ? 'bg-[#064e3b] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
@@ -49,7 +71,7 @@ export const SettingsPage = () => {
             <User className="w-3.5 h-3.5" /> Profile & Identity
           </button>
           <button
-            onClick={() => setActiveTab('notifications')}
+            onClick={() => handleTabChange('notifications')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'notifications' ? 'bg-[#064e3b] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
@@ -57,7 +79,7 @@ export const SettingsPage = () => {
             <Bell className="w-3.5 h-3.5" /> Notifications & Alerts
           </button>
           <button
-            onClick={() => setActiveTab('security')}
+            onClick={() => handleTabChange('security')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'security' ? 'bg-[#064e3b] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
