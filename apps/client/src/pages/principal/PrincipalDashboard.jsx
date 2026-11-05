@@ -72,6 +72,13 @@ export const PrincipalDashboard = () => {
   const [selectedReviewApproval, setSelectedReviewApproval] = useState(null);
   const [enrollmentPeriod, setEnrollmentPeriod] = useState('This Year');
 
+  // Current date for Principal Dashboard header badge: Today: DD MMM YYYY
+  const todayDate = new Date().toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+
   // Approval Workflow State
   const [approvals, setApprovals] = useState([
     {
@@ -351,7 +358,15 @@ export const PrincipalDashboard = () => {
     <div className="space-y-6">
       {/* 1. Dashboard Header Banner matching Screenshot 2 */}
       <DashboardHeaderBanner
-        title="Principal / Management Dashboard"
+        title={
+          <span className="inline-flex flex-wrap items-center gap-3">
+            <span>Principal / Management Dashboard</span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80 shadow-2xs font-sans tracking-normal align-middle">
+              <CalendarCheck className="w-3.5 h-3.5 text-emerald-600" />
+              Today: {todayDate}
+            </span>
+          </span>
+        }
         subtitle="Institutional analytics, academic overview, and executive governance."
         academicYear="2026 – 2027"
       />

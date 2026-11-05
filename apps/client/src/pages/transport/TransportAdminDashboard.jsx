@@ -1234,7 +1234,7 @@ export const TransportAdminDashboard = () => {
           </div>
 
           <div className="text-xs text-navy-500 font-medium">
-            Inactive Vehicles: {(buses || []).filter((b) => (b.currentStatus || b.status)?.toLowerCase() === 'inactive').length}
+            Showing {buses?.length || 0} vehicles
           </div>
 
           {/* Buses Table */}

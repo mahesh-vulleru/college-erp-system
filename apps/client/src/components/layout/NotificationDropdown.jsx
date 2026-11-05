@@ -43,7 +43,10 @@ export const NotificationDropdown = () => {
       const res = await api.getNotifications(params);
       if (res && res.success) {
         setNotifications(res.data || []);
-        setUnreadCount(res.unreadCount || 0);
+        const count = typeof res.unreadCount === 'number'
+          ? res.unreadCount
+          : (res.data ? res.data.filter((n) => !n.read).length : 0);
+        setUnreadCount(count);
       }
     } catch (err) {
       // Graceful fallback
@@ -150,11 +153,14 @@ export const NotificationDropdown = () => {
         onClick={() => setIsOpen((prev) => !prev)}
         className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors relative focus:outline-none cursor-pointer"
         title={unreadCount > 0 ? `${unreadCount} Unread Notifications` : 'Notifications'}
-        aria-label="View notifications"
+        aria-label={unreadCount > 0 ? `${unreadCount} unread notifications` : 'View notifications'}
       >
         <Bell className="w-4 h-4" />
         {unreadCount > 0 && (
-          <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-extrabold flex items-center justify-center shadow-xs">
+          <span
+            className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center shadow-xs leading-none"
+            title={`${unreadCount} unread`}
+          >
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
