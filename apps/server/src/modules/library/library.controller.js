@@ -523,7 +523,7 @@ async function listMembers(req, res, next) {
 
     const query = {};
     if (req.query.memberType) query.memberType = req.query.memberType;
-    if (req.query.status) query.status = req.query.status;
+    if (req.query.status && req.query.status !== 'overdue') query.status = req.query.status;
 
     if (req.query.q && typeof req.query.q === 'string' && req.query.q.trim()) {
       const regex = new RegExp(req.query.q.trim(), 'i');
@@ -1018,12 +1018,12 @@ async function listIssues(req, res, next) {
     const skip = (page - 1) * limit;
 
     const query = {};
-    if (req.query.status) query.status = req.query.status;
+    if (req.query.status && req.query.status !== 'overdue') query.status = req.query.status;
     if (req.query.member) query.member = req.query.member;
     if (req.query.book) query.book = req.query.book;
 
     // Filter overdue explicitly
-    if (req.query.filter === 'overdue') {
+    if (req.query.filter === 'overdue' || req.query.status === 'overdue') {
       query.status = { $in: ['issued', 'overdue'] };
       query.dueDate = { $lt: new Date() };
     }
@@ -1057,7 +1057,7 @@ async function listIssues(req, res, next) {
 async function listReservations(req, res, next) {
   try {
     const query = {};
-    if (req.query.status) query.status = req.query.status;
+    if (req.query.status && req.query.status !== 'overdue') query.status = req.query.status;
 
     const reservations = await BookReservation.find(query)
       .populate('book', 'title author isbn availableCopies')
@@ -1153,7 +1153,7 @@ async function cancelReservation(req, res, next) {
 async function listFines(req, res, next) {
   try {
     const query = {};
-    if (req.query.status) query.status = req.query.status;
+    if (req.query.status && req.query.status !== 'overdue') query.status = req.query.status;
 
     const fines = await LibraryFine.find(query)
       .populate('member', 'membershipNumber memberType department')
