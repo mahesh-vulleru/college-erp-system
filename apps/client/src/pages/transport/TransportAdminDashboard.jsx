@@ -1276,7 +1276,7 @@ export const TransportAdminDashboard = () => {
                       </td>
                       <td className="py-3 px-3">
                         <span className="font-mono bg-navy-100 px-2 py-0.5 rounded text-navy-800 font-semibold">
-                          {bus.registrationNumber}
+                          {bus.registrationNumber?.trim() || 'Not Available'}
                         </span>
                       </td>
                       <td className="py-3 px-3">
@@ -2213,7 +2213,7 @@ export const TransportAdminDashboard = () => {
               <div>
                 <span className="text-navy-500 block">Registration Number</span>
                 <span className="font-mono font-bold text-navy-950 text-sm">
-                  {selectedBusDetails.registrationNumber}
+                  {selectedBusDetails.registrationNumber?.trim() || 'Not Available'}
                 </span>
               </div>
               <div>
