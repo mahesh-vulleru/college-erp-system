@@ -1233,8 +1233,9 @@ export const TransportAdminDashboard = () => {
             />
           </div>
 
-          <div className="text-xs text-navy-500 font-medium">
-            Inactive Vehicles: {(buses || []).filter((b) => (b.currentStatus || b.status)?.toLowerCase() === 'inactive').length}
+          <div className="flex items-center gap-4 text-xs text-navy-500 font-medium">
+            <span>Total Vehicles: {buses?.length || 0}</span>
+            <span>Inactive Vehicles: {(buses || []).filter((b) => (b.currentStatus || b.status)?.toLowerCase() === 'inactive').length}</span>
           </div>
 
           {/* Buses Table */}
@@ -1260,6 +1261,7 @@ export const TransportAdminDashboard = () => {
                     <th className="py-3 px-3">Reg. Number</th>
                     <th className="py-3 px-3">Seating Capacity</th>
                     <th className="py-3 px-3">Assigned Route</th>
+                    <th className="py-3 px-3">Assigned Driver</th>
                     <th className="py-3 px-3">Status</th>
                     <th className="py-3 px-3 text-right">Actions</th>
                   </tr>
@@ -1295,6 +1297,15 @@ export const TransportAdminDashboard = () => {
                           </span>
                         ) : (
                           <span className="text-navy-400 italic">Unassigned</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-3">
+                        {(bus.assignedDriver?.fullName || bus.assignedDriver?.name || bus.driver?.fullName || bus.driver?.name || (typeof bus.assignedDriver === 'string' ? bus.assignedDriver : (typeof bus.driver === 'string' ? bus.driver : ''))) ? (
+                          <span className="font-medium text-navy-900">
+                            {bus.assignedDriver?.fullName || bus.assignedDriver?.name || bus.driver?.fullName || bus.driver?.name || bus.assignedDriver || bus.driver}
+                          </span>
+                        ) : (
+                          <span className="text-navy-400 italic">Not Assigned</span>
                         )}
                       </td>
                       <td className="py-3 px-3">
