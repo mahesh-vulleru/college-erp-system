@@ -609,6 +609,13 @@ export const FacultyDashboard = () => {
     const mySubjects = subjects.filter((s) => s.department?.name === myDeptName || !s.department);
     const myStudents = students.filter((s) => s.department?.name === myDeptName || !s.department);
 
+    // Dynamic count of classes scheduled for today
+    const todayDayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    const todayClasses = mySlots.filter(
+      (slot) => slot.dayOfWeek && slot.dayOfWeek.toLowerCase() === todayDayName.toLowerCase()
+    );
+    const todayClassesCount = todayClasses.length;
+
     return (
       <div className="space-y-6">
         {/* 1. Header Banner */}
@@ -618,8 +625,16 @@ export const FacultyDashboard = () => {
           academicYear="2026 – 2027"
         />
 
-        {/* 2. 5-KPI Cards Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        {/* 2. KPI Cards Row */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <DashboardKPICard
+            title="Today's Classes"
+            value={todayClassesCount}
+            icon={CalendarCheck}
+            trend={todayClassesCount > 0 ? `${todayDayName}` : 'No Classes Today'}
+            trendDirection={todayClassesCount > 0 ? 'up' : 'down'}
+            color="teal"
+          />
           <DashboardKPICard
             title="Total Students Taught"
             value={myStudents.length || 184}
@@ -776,8 +791,25 @@ export const FacultyDashboard = () => {
 
         {/* TAB 1: Weekly Timetable */}
         {facultyActiveTab === 'timetable' && (
-          <Card
-            title="Weekly Teaching Schedule & Timetable Slots"
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <StatWidget
+                title="Today's Classes"
+                value={`${todayClassesCount} ${todayClassesCount === 1 ? 'Class' : 'Classes'}`}
+                subtitle={`${todayDayName}'s Schedule`}
+                icon={CalendarCheck}
+                color="teal"
+              />
+              <StatWidget
+                title="Weekly Classes"
+                value={`${mySlots.length} Slots`}
+                subtitle="Weekly Teaching Schedule"
+                icon={Clock}
+                color="amber"
+              />
+            </div>
+            <Card
+              title="Weekly Teaching Schedule & Timetable Slots"
             subtitle="Lecture periods and classroom allotments assigned to your faculty profile"
           >
             {mySlots.length === 0 ? (
@@ -801,6 +833,7 @@ export const FacultyDashboard = () => {
               </div>
             )}
           </Card>
+          </div>
         )}
 
         {/* TAB 2: Courses */}
