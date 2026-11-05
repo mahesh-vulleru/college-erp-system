@@ -40,6 +40,20 @@ import AttendancePage from './pages/academics/AttendancePage';
 import ExaminationsPage from './pages/academics/ExaminationsPage';
 import ResultsPage from './pages/academics/ResultsPage';
 
+// Dedicated Examination Controller Dashboard & Operations
+import ExaminationControllerDashboard from './pages/examinations/ExaminationControllerDashboard';
+import ExaminationCalendarPage from './pages/examinations/ExaminationCalendarPage';
+import ExaminationSchedulingPage from './pages/examinations/ExaminationSchedulingPage';
+import ExamRegistrationsPage from './pages/examinations/ExamRegistrationsPage';
+import StudentEligibilityPage from './pages/examinations/StudentEligibilityPage';
+import HallTicketManagementPage from './pages/examinations/HallTicketManagementPage';
+import ExamAttendancePage from './pages/examinations/ExamAttendancePage';
+import MarksEntryPage from './pages/examinations/MarksEntryPage';
+import MarksVerificationPage from './pages/examinations/MarksVerificationPage';
+import ResultsProcessingPage from './pages/examinations/ResultsProcessingPage';
+import ResultsManagementPage from './pages/examinations/ResultsManagementPage';
+import ExaminationReportsPage from './pages/examinations/ExaminationReportsPage';
+
 // Phase 3 Institutional Administration Pages
 import FeeManagementPage from './pages/fees/FeeManagementPage';
 import NoticeBoardPage from './pages/notices/NoticeBoardPage';
@@ -501,6 +515,104 @@ export const App = () => {
                 element={
                   <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
                     <ResultsPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Dedicated Examination Controller Dashboard & Operations */}
+              <Route
+                path="examinations/controller"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, 'admin']}>
+                    <ExaminationControllerDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="examinations/calendar"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
+                    <ExaminationCalendarPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="examinations/scheduling"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, 'admin']}>
+                    <ExaminationSchedulingPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="examinations/registrations"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
+                    <ExamRegistrationsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="examinations/eligibility"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, 'admin']}>
+                    <StudentEligibilityPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="examinations/hall-tickets"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
+                    <HallTicketManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="examinations/attendance"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, 'admin']}>
+                    <ExamAttendancePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="examinations/marks-entry"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, 'admin']}>
+                    <MarksEntryPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="examinations/marks-verification"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, 'admin']}>
+                    <MarksVerificationPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="examinations/results-processing"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, 'admin']}>
+                    <ResultsProcessingPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="examinations/results"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT, 'admin']}>
+                    <ResultsManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="examinations/reports"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, 'admin']}>
+                    <ExaminationReportsPage />
                   </ProtectedRoute>
                 }
               />

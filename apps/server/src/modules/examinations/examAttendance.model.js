@@ -46,3 +46,4 @@ examAttendanceSchema.index({ examination: 1, date: 1 });
 const ExamAttendance = mongoose.model('ExamAttendance', examAttendanceSchema);
 
 module.exports = ExamAttendance;
+

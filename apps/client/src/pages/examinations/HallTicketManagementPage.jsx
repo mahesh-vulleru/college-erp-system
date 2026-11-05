@@ -368,3 +368,4 @@ export const HallTicketManagementPage = () => {
 };
 
 export default HallTicketManagementPage;
+

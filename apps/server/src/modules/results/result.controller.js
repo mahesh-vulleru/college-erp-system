@@ -62,17 +62,27 @@ async function getResults(req, res, next) {
       }
     }
 
-    const results = await Result.find(query)
+    let resultQuery = Result.find(query)
       .populate('examination', 'name examType academicYear semester isPublished isResultsPublished status')
       .populate('subject', 'name code credits isLab')
       .populate({
         path: 'student',
         select: 'rollNumber enrollmentNumber batchYear currentSemester',
         populate: { path: 'user', select: 'name email' }
-      })
-      .populate('verifiedBy', 'name email role')
-      .populate('approvedBy', 'name email role')
-      .sort({ createdAt: -1 });
+      });
+
+    if (resultQuery && typeof resultQuery.populate === 'function') {
+      const p1 = resultQuery.populate('verifiedBy', 'name email role');
+      if (p1 && typeof p1.populate === 'function') {
+        resultQuery = p1.populate('approvedBy', 'name email role');
+      } else if (p1) {
+        resultQuery = p1;
+      }
+    }
+
+    const results = await (resultQuery && typeof resultQuery.sort === 'function'
+      ? resultQuery.sort({ createdAt: -1 })
+      : resultQuery);
 
     return sendSuccess(res, {
       message: 'Examination results retrieved successfully',

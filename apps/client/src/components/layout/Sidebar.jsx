@@ -237,6 +237,24 @@ export const Sidebar = ({ isOpen, onClose }) => {
           ]
         },
         {
+          group: 'Examinations & Control',
+          icon: FileEdit,
+          items: [
+            { label: 'Controller Dashboard', path: '/examinations/controller', icon: LayoutDashboard },
+            { label: 'Examination Calendar', path: '/examinations/calendar', icon: Calendar },
+            { label: 'Examination Scheduling', path: '/examinations/scheduling', icon: Clock },
+            { label: 'Student Registrations', path: '/examinations/registrations', icon: UserCheck },
+            { label: 'Student Eligibility', path: '/examinations/eligibility', icon: ShieldCheck },
+            { label: 'Hall Ticket Management', path: '/examinations/hall-tickets', icon: Award },
+            { label: 'Exam Attendance', path: '/examinations/attendance', icon: CalendarCheck },
+            { label: 'Marks Entry', path: '/examinations/marks-entry', icon: FileEdit },
+            { label: 'Marks Verification', path: '/examinations/marks-verification', icon: CheckCircle2 },
+            { label: 'Results Processing', path: '/examinations/results-processing', icon: Activity },
+            { label: 'Results Management', path: '/examinations/results', icon: Award },
+            { label: 'Examination Reports', path: '/examinations/reports', icon: BarChart3 }
+          ]
+        },
+        {
           group: 'People Management',
           icon: Users,
           items: [
@@ -440,6 +458,24 @@ export const Sidebar = ({ isOpen, onClose }) => {
           ]
         },
         {
+          group: 'Examinations & Control',
+          icon: FileEdit,
+          items: [
+            { label: 'Controller Dashboard', path: '/examinations/controller', icon: LayoutDashboard },
+            { label: 'Examination Calendar', path: '/examinations/calendar', icon: Calendar },
+            { label: 'Examination Scheduling', path: '/examinations/scheduling', icon: Clock },
+            { label: 'Student Registrations', path: '/examinations/registrations', icon: UserCheck },
+            { label: 'Student Eligibility', path: '/examinations/eligibility', icon: ShieldCheck },
+            { label: 'Hall Ticket Management', path: '/examinations/hall-tickets', icon: Award },
+            { label: 'Exam Attendance', path: '/examinations/attendance', icon: CalendarCheck },
+            { label: 'Marks Entry', path: '/examinations/marks-entry', icon: FileEdit },
+            { label: 'Marks Verification', path: '/examinations/marks-verification', icon: CheckCircle2 },
+            { label: 'Results Processing', path: '/examinations/results-processing', icon: Activity },
+            { label: 'Results Management', path: '/examinations/results', icon: Award },
+            { label: 'Examination Reports', path: '/examinations/reports', icon: BarChart3 }
+          ]
+        },
+        {
           group: 'Campus Portals',
           icon: Landmark,
           items: [
@@ -490,6 +526,24 @@ export const Sidebar = ({ isOpen, onClose }) => {
           ]
         },
         {
+          group: 'Examinations & Control',
+          icon: FileEdit,
+          items: [
+            { label: 'Controller Dashboard', path: '/examinations/controller', icon: LayoutDashboard },
+            { label: 'Examination Calendar', path: '/examinations/calendar', icon: Calendar },
+            { label: 'Examination Scheduling', path: '/examinations/scheduling', icon: Clock },
+            { label: 'Student Registrations', path: '/examinations/registrations', icon: UserCheck },
+            { label: 'Student Eligibility', path: '/examinations/eligibility', icon: ShieldCheck },
+            { label: 'Hall Ticket Management', path: '/examinations/hall-tickets', icon: Award },
+            { label: 'Exam Attendance', path: '/examinations/attendance', icon: CalendarCheck },
+            { label: 'Marks Entry', path: '/examinations/marks-entry', icon: FileEdit },
+            { label: 'Marks Verification', path: '/examinations/marks-verification', icon: CheckCircle2 },
+            { label: 'Results Processing', path: '/examinations/results-processing', icon: Activity },
+            { label: 'Results Management', path: '/examinations/results', icon: Award },
+            { label: 'Examination Reports', path: '/examinations/reports', icon: BarChart3 }
+          ]
+        },
+        {
           group: 'Governance',
           icon: ShieldCheck,
           items: [
@@ -512,7 +566,9 @@ export const Sidebar = ({ isOpen, onClose }) => {
             { label: 'Faculty Dashboard', path: '/faculty', exact: true, icon: LayoutDashboard },
             { label: 'Academic Insights & Risk', path: '/faculty?tab=insights', icon: TrendingUp },
             { label: 'Attendance Marking', path: '/attendance', icon: CalendarCheck },
-            { label: 'Internal Exam Marks', path: '/examinations', icon: FileEdit },
+            { label: 'Marks Entry Sheet', path: '/examinations/marks-entry', icon: FileEdit },
+            { label: 'Exam Hall Attendance', path: '/examinations/attendance', icon: CalendarCheck },
+            { label: 'Examination Calendar', path: '/examinations/calendar', icon: Calendar },
             { label: 'Class Timetable', path: '/timetable', icon: Clock },
             { label: 'Assigned Subjects', path: '/courses', icon: BookOpen }
           ]
@@ -539,7 +595,9 @@ export const Sidebar = ({ isOpen, onClose }) => {
           items: [
             { label: 'Student Dashboard', path: '/student', exact: true, icon: LayoutDashboard },
             { label: 'Attendance Percentage', path: '/attendance', icon: CalendarCheck },
-            { label: 'Semester Results', path: '/results', icon: Award },
+            { label: 'Semester Results', path: '/examinations/results', icon: Award },
+            { label: 'Exam Hall Ticket', path: '/examinations/hall-tickets', icon: Award },
+            { label: 'Examination Calendar', path: '/examinations/calendar', icon: Calendar },
             { label: 'Class Timetable', path: '/timetable', icon: Clock },
             { label: 'Courses Enrolled', path: '/courses', icon: BookOpen }
           ]

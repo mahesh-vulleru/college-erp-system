@@ -80,3 +80,4 @@ examRegistrationSchema.index({ student: 1 });
 const ExamRegistration = mongoose.model('ExamRegistration', examRegistrationSchema);
 
 module.exports = ExamRegistration;
+
