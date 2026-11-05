@@ -1232,20 +1232,34 @@ export const LibrarianDashboard = () => {
                   render: (row) => (
                     <div className="flex items-center space-x-1.5">
                       <span className="font-bold text-emerald-700 text-xs">
-                        {row.availableCopiesCount ?? row.availableCopies}
+                        {row.availableCopiesCount ?? row.availableCopies ?? 0}
                       </span>
                       <span className="text-slate-400 text-xs">/</span>
                       <span className="font-semibold text-slate-800 text-xs">
-                        {row.copiesCount ?? row.totalCopies}
+                        {row.copiesCount ?? row.totalCopies ?? 0}
                       </span>
                     </div>
                   )
                 },
                 {
+                  header: 'Availability',
+                  render: (row) => {
+                    const avail = row.availableCopiesCount ?? row.availableCopies ?? (row.copies ? row.copies.filter((c) => c.status === 'available').length : 0);
+                    return (
+                      <Badge
+                        variant={avail > 0 ? 'success' : 'danger'}
+                        className="text-[10px]"
+                      >
+                        {avail > 0 ? `${avail} Available` : 'Out of Stock'}
+                      </Badge>
+                    );
+                  }
+                },
+                {
                   header: 'Status',
                   render: (row) => (
                     <Badge
-                      variant={row.status === 'active' ? 'success' : 'neutral'}
+                      variant={row.status === 'active' ? 'neutral' : 'warning'}
                       className="text-[10px] capitalize"
                     >
                       {row.status}
