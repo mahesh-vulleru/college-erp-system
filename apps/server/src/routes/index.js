@@ -31,6 +31,7 @@ const communicationRoutes = require('../modules/communications/communication.rou
 const systemRoutes = require('../modules/system/system.routes');
 const helpdeskRoutes = require('../modules/helpdesk/ticket.routes');
 const documentRoutes = require('../modules/documents/document.routes');
+const institutionRoutes = require('../modules/institution/institution.routes');
 
 const {
   getAttendanceOverview,
@@ -137,6 +138,7 @@ v1Router.use('/assets', assetRoutes);
 v1Router.use('/placements', placementRoutes);
 v1Router.use('/communications', communicationRoutes);
 v1Router.use('/system', systemRoutes);
+v1Router.use('/institution', institutionRoutes);
 
 // Mount versioned API
 router.use('/v1', v1Router);
@@ -150,5 +152,6 @@ router.use('/helpdesk', helpdeskRoutes);
 router.use('/documents', documentRoutes);
 router.use('/parent-links', parentLinkRoutes);
 router.use('/parent', parentLinkRoutes);
+router.use('/institution', institutionRoutes);
 
 module.exports = router;

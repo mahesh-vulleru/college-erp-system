@@ -52,6 +52,7 @@ import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Notification from '../../components/common/Notification';
 import RoleLeaveManagement from '../../components/leave/RoleLeaveManagement';
+import InstitutionProfileManager from '../../components/institution/InstitutionProfileManager';
 import api from '../../api/apiClient';
 import { useToast } from '../../context/ToastContext';
 import {
@@ -880,61 +881,7 @@ export const AdminDashboard = () => {
 
       {/* TAB 4: Institution Profile & Settings */}
       {activeTab === 'settings' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card title="Institution Baseline Profile" subtitle="Single Engineering College Specification" className="lg:col-span-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div className="p-3.5 rounded-xl bg-warm-50 border border-navy-100">
-                <span className="text-navy-400 block font-semibold text-[10px] uppercase">College Name</span>
-                <span className="text-sm font-bold text-navy-900 mt-1 block">Apex Engineering College</span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-warm-50 border border-navy-100">
-                <span className="text-navy-400 block font-semibold text-[10px] uppercase">Affiliation / Council</span>
-                <span className="text-sm font-bold text-navy-900 mt-1 block">State Technical University & AICTE</span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-warm-50 border border-navy-100">
-                <span className="text-navy-400 block font-semibold text-[10px] uppercase">Target Student Capacity</span>
-                <span className="text-sm font-bold text-navy-900 mt-1 block">&lt; 1,000 Students</span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-warm-50 border border-navy-100">
-                <span className="text-navy-400 block font-semibold text-[10px] uppercase">Academic Year</span>
-                <span className="text-sm font-bold text-navy-900 mt-1 block">2025 - 2026</span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-warm-50 border border-navy-100">
-                <span className="text-navy-400 block font-semibold text-[10px] uppercase">Current Active Term</span>
-                <span className="text-sm font-bold text-navy-900 mt-1 block">Odd Semester (Sem 1, 3, 5, 7)</span>
-              </div>
-              <div className="p-3.5 rounded-xl bg-warm-50 border border-navy-100">
-                <span className="text-navy-400 block font-semibold text-[10px] uppercase">Multi-Tenancy Mode</span>
-                <span className="text-sm font-bold text-navy-900 mt-1 block">Single Institution (Dedicated)</span>
-              </div>
-            </div>
-          </Card>
-
-          <Card title="Security & Compliance Controls" subtitle="Phase 1 Safeguards">
-            <div className="space-y-3 text-xs text-navy-700">
-              <div className="flex items-start space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                <span>Bcrypt Password Hashing (Salt Rounds: 10)</span>
-              </div>
-              <div className="flex items-start space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                <span>JWT Bearer Authentication with 7-Day Expiry</span>
-              </div>
-              <div className="flex items-start space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                <span>Strict API-Level Role-Permission Enforcement</span>
-              </div>
-              <div className="flex items-start space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                <span>No Password Hashes Returned in API Responses</span>
-              </div>
-              <div className="flex items-start space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                <span>Immediate Access Denial for Disabled Users</span>
-              </div>
-            </div>
-          </Card>
-        </div>
+        <InstitutionProfileManager />
       )}
 
       {/* TAB 5: Institutional Leave & Workflow Matrix */}

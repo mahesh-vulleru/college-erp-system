@@ -612,7 +612,9 @@ export const App = () => {
                   </ProtectedRoute>
                 }
               />
-              <Route path="settings" element={<SettingsPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="institution" element={<Navigate to="/settings?tab=institution" replace />} />
+              <Route path="institution-profile" element={<Navigate to="/settings?tab=institution" replace />} />
 
               {/* Catch-all 404 inside layout */}
               <Route path="*" element={<NotFoundPage />} />
