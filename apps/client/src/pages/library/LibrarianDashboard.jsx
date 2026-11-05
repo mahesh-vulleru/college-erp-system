@@ -1201,9 +1201,13 @@ export const LibrarianDashboard = () => {
                 {
                   header: 'Title & Author',
                   render: (row) => (
-                    <div>
-                      <div className="font-bold text-slate-900">{row.title}</div>
-                      <div className="text-[11px] text-slate-500">By {row.author}</div>
+                    <div title={row.title}>
+                      <div className="font-bold text-slate-900" title={row.title}>
+                        {row.title}
+                      </div>
+                      <div className="text-[11px] text-slate-500">
+                        {row.author?.trim() ? `By ${row.author}` : 'Unknown Author'}
+                      </div>
                     </div>
                   )
                 },
@@ -2013,7 +2017,9 @@ export const LibrarianDashboard = () => {
                   render: (row) => (
                     <div>
                       <div className="font-bold text-slate-900">{row.title}</div>
-                      <div className="text-[11px] text-slate-500">By {row.author}</div>
+                      <div className="text-[11px] text-slate-500">
+                        {row.author?.trim() ? `By ${row.author}` : 'Unknown Author'}
+                      </div>
                     </div>
                   )
                 },
