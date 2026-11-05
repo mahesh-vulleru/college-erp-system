@@ -68,6 +68,9 @@ export const LibrarianDashboard = () => {
   const [totalBooks, setTotalBooks] = useState(0);
   const [isBooksLoading, setIsBooksLoading] = useState(false);
   const [bookSearch, setBookSearch] = useState('');
+  const handleClearBookSearch = () => {
+    setBookSearch('');
+  };
   const [bookCategoryFilter, setBookCategoryFilter] = useState('');
   const [bookStatusFilter, setBookStatusFilter] = useState('');
   const [selectedBookForCopies, setSelectedBookForCopies] = useState(null);
@@ -1144,10 +1147,10 @@ export const LibrarianDashboard = () => {
                   {bookSearch && (
                     <button
                       type="button"
-                      onClick={() => setBookSearch('')}
-                      className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
+                      onClick={handleClearBookSearch}
+                      className="absolute right-2.5 top-2.5 p-0.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus:outline-none cursor-pointer"
                       title="Clear search"
-                      aria-label="Clear search"
+                      aria-label="Clear book search"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
