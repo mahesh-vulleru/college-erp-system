@@ -1269,8 +1269,13 @@ export const TransportAdminDashboard = () => {
                     <tr key={bus._id} className="hover:bg-amber-50/40 transition-colors">
                       <td className="py-3 px-3 font-bold text-navy-950">{bus.busId}</td>
                       <td className="py-3 px-3">
-                        <span className="font-semibold text-navy-900 block">{bus.busName}</span>
-                        <span className="text-[11px] text-navy-500">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-navy-900">{bus.busName}</span>
+                          <Badge variant="neutral" size="xs" className="capitalize">
+                            {bus.busType?.trim() || bus.vehicleType?.trim() || 'Not Specified'}
+                          </Badge>
+                        </div>
+                        <span className="text-[11px] text-navy-500 block">
                           {bus.manufacturer} {bus.model} &bull; {bus.fuelType?.toUpperCase()}
                         </span>
                       </td>
