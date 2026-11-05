@@ -1217,11 +1217,20 @@ export const LibrarianDashboard = () => {
                 },
                 {
                   header: 'Category',
-                  render: (row) => (
-                    <Badge variant="teal" className="text-[11px]">
-                      {row.category?.name || 'General'}
-                    </Badge>
-                  )
+                  render: (row) => {
+                    const categoryName = row.category?.name || (typeof row.category === 'string' ? row.category : 'General');
+                    const colorVariants = ['teal', 'indigo', 'purple', 'blue', 'warning', 'info'];
+                    let hash = 0;
+                    for (let i = 0; i < categoryName.length; i++) {
+                      hash = categoryName.charCodeAt(i) + ((hash << 5) - hash);
+                    }
+                    const badgeVariant = colorVariants[Math.abs(hash) % colorVariants.length];
+                    return (
+                      <Badge variant={badgeVariant} size="xs" className="text-[11px] font-medium">
+                        {categoryName}
+                      </Badge>
+                    );
+                  }
                 },
                 {
                   header: 'Shelf / Location',
