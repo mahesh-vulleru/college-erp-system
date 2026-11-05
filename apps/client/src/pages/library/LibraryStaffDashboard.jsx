@@ -968,13 +968,24 @@ export const LibraryStaffDashboard = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="sm:col-span-2">
+            <div className="sm:col-span-2 relative">
               <Input
                 placeholder="Search by title, author, or ISBN..."
                 value={bookSearch}
                 onChange={(e) => setBookSearch(e.target.value)}
-                leftIcon={Search}
+                icon={Search}
               />
+              {bookSearch && (
+                <button
+                  type="button"
+                  onClick={() => setBookSearch('')}
+                  className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
+                  title="Clear search"
+                  aria-label="Clear search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
             <div>
               <Select

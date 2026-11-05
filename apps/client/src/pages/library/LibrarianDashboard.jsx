@@ -1123,8 +1123,19 @@ export const LibrarianDashboard = () => {
                     value={bookSearch}
                     onChange={(e) => setBookSearch(e.target.value)}
                     placeholder="Search by title, author, ISBN..."
-                    className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-rose-500"
+                    className={`w-full pl-9 ${bookSearch ? 'pr-8' : 'pr-3'} py-2 text-xs border border-slate-200 rounded-lg focus:outline-rose-500`}
                   />
+                  {bookSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setBookSearch('')}
+                      className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
+                      title="Clear search"
+                      aria-label="Clear search"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
                 <select
                   value={bookCategoryFilter}
