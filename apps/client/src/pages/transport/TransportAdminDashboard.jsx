@@ -34,7 +34,9 @@ import {
   Receipt,
   MessageSquare,
   Megaphone,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Copy,
+  Check
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import StatWidget from '../../components/common/StatWidget';
@@ -147,6 +149,28 @@ export const TransportAdminDashboard = () => {
   const [isAddBusModalOpen, setIsAddBusModalOpen] = useState(false);
   const [editingBus, setEditingBus] = useState(null);
   const [busFormSubmitting, setBusFormSubmitting] = useState(false);
+  const [copiedRegId, setCopiedRegId] = useState(null);
+
+  const handleCopyRegNumber = (regNumber, busId) => {
+    if (!regNumber) return;
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(regNumber);
+    } else {
+      const el = document.createElement('textarea');
+      el.value = regNumber;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    }
+    setCopiedRegId(busId);
+    if (typeof addToast === 'function') {
+      addToast('Registration number copied to clipboard', 'success');
+    }
+    setTimeout(() => {
+      setCopiedRegId((prev) => (prev === busId ? null : prev));
+    }, 2000);
+  };
 
   const [busForm, setBusForm] = useState({
     busId: '',
@@ -1233,8 +1257,9 @@ export const TransportAdminDashboard = () => {
             />
           </div>
 
-          <div className="text-xs text-navy-500 font-medium">
-            Inactive Vehicles: {(buses || []).filter((b) => (b.currentStatus || b.status)?.toLowerCase() === 'inactive').length}
+          <div className="flex items-center gap-4 text-xs text-navy-500 font-medium">
+            <span>Total Vehicles: {buses?.length || 0}</span>
+            <span>Inactive Vehicles: {(buses || []).filter((b) => (b.currentStatus || b.status)?.toLowerCase() === 'inactive').length}</span>
           </div>
 
           {/* Buses Table */}
@@ -1275,9 +1300,29 @@ export const TransportAdminDashboard = () => {
                         </span>
                       </td>
                       <td className="py-3 px-3">
-                        <span className="font-mono bg-navy-100 px-2 py-0.5 rounded text-navy-800 font-semibold">
-                          {bus.registrationNumber}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono bg-navy-100 px-2 py-0.5 rounded text-navy-800 font-semibold">
+                            {bus.registrationNumber?.trim() || 'Not Available'}
+                          </span>
+                          {bus.registrationNumber && (
+                            <button
+                              type="button"
+                              onClick={() => handleCopyRegNumber(bus.registrationNumber, bus._id || bus.busId)}
+                              className="text-navy-400 hover:text-navy-700 transition-colors p-1 rounded hover:bg-navy-50 cursor-pointer"
+                              title="Copy registration number"
+                              aria-label="Copy registration number"
+                            >
+                              {copiedRegId === (bus._id || bus.busId) ? (
+                                <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-0.5">
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span>Copied!</span>
+                                </span>
+                              ) : (
+                                <Copy className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3 px-3">
                         <span className="font-bold text-navy-950">{bus.seatingCapacity} Seats</span>
