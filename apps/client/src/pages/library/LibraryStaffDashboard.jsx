@@ -1016,9 +1016,14 @@ export const LibraryStaffDashboard = () => {
                       </td>
                       <td className="py-2.5 px-3 font-semibold text-navy-800">{bk.totalCopies || 0}</td>
                       <td className="py-2.5 px-3">
-                        <Badge variant={bk.availableCopies > 0 ? 'success' : 'danger'}>
-                          {bk.availableCopies || 0} Available
-                        </Badge>
+                        {(() => {
+                          const avail = bk.availableCopiesCount ?? bk.availableCopies ?? (bk.copies ? bk.copies.filter((c) => c.status === 'available').length : 0);
+                          return (
+                            <Badge variant={avail > 0 ? 'success' : 'danger'}>
+                              {avail > 0 ? `${avail} Available` : 'Out of Stock'}
+                            </Badge>
+                          );
+                        })()}
                       </td>
                       <td className="py-2.5 px-3 text-right">
                         <div className="flex items-center justify-end gap-1.5">
