@@ -1156,7 +1156,23 @@ export const StudentDashboard = () => {
 
         <DashboardHeaderBanner
 
-          title="Student Academic Portal"
+          title={
+            <span className="inline-flex items-center gap-2.5">
+              <span>Student Academic Portal</span>
+              <button
+                type="button"
+                onClick={() => setStudentActiveTab('notices')}
+                className="relative inline-flex items-center justify-center p-1.5 rounded-full text-slate-500 hover:text-teal-700 hover:bg-teal-50 transition-colors"
+                title="Campus Circulars & Notifications"
+                aria-label="Campus Circulars & Notifications"
+              >
+                <Bell className="w-5 h-5 text-teal-600" />
+                {myNotices && myNotices.length > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
+                )}
+              </button>
+            </span>
+          }
 
           subtitle="Semester course registration, attendance progress, internal test marks, digital hall tickets, and fee dues."
 
