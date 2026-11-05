@@ -118,6 +118,14 @@ export const StudentDashboard = () => {
 
   const isStudentRole = user?.role === ROLES.STUDENT;
 
+  // Student Dashboard Date Display
+  const todayDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
 
 
   // Student Self-Service State (When logged in as Student)
@@ -1115,6 +1123,16 @@ export const StudentDashboard = () => {
     return (
 
       <div className="space-y-6">
+
+        {/* Student Dashboard Date Display */}
+        <div className="flex items-center justify-between bg-white px-4 py-2.5 rounded-xl border border-slate-200/80 shadow-xs">
+          <div className="flex items-center space-x-2 text-slate-700">
+            <CalendarCheck className="w-4 h-4 text-teal-600" />
+            <span className="text-xs font-semibold text-slate-500">Today:</span>
+            <span className="text-xs sm:text-sm font-bold text-slate-900">{todayDate}</span>
+          </div>
+          <span className="text-[11px] font-medium text-slate-500 hidden sm:inline">Academic Session 2026 – 2027</span>
+        </div>
 
         {/* 1. Header Banner */}
 
