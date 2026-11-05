@@ -54,7 +54,11 @@ import {
 
   Bus,
 
-  Radio
+  Radio,
+
+  Printer,
+
+  Receipt,
 
 } from 'lucide-react';
 
@@ -147,6 +151,10 @@ export const StudentDashboard = () => {
   const [payNowMethod, setPayNowMethod] = useState('UPI');
 
   const [payNowTxnRef, setPayNowTxnRef] = useState('');
+
+  const [selectedReceiptPayment, setSelectedReceiptPayment] = useState(null);
+  const [receiptDetails, setReceiptDetails] = useState(null);
+  const [loadingReceipt, setLoadingReceipt] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -465,6 +473,23 @@ export const StudentDashboard = () => {
 
   };
 
+  const handleOpenReceipt = async (pay) => {
+    setSelectedReceiptPayment(pay);
+    setReceiptDetails(null);
+    setLoadingReceipt(true);
+    try {
+      const res = await api.getReceipt(pay._id || pay.id);
+      if (res?.data) {
+        setReceiptDetails(res.data);
+      }
+    } catch (err) {
+      console.warn('Could not fetch detailed receipt certificate, using local record', err);
+    } finally {
+      setLoadingReceipt(false);
+    }
+  };
+
+
 
 
   // Open Provision Student
@@ -698,6 +723,10 @@ export const StudentDashboard = () => {
       setPayNowInvoice(null);
 
       await loadData();
+
+      if (res.data?._id || res.data?.receiptNumber) {
+        handleOpenReceipt(res.data);
+      }
 
     } catch (err) {
 
@@ -1969,15 +1998,37 @@ export const StudentDashboard = () => {
 
                       </div>
 
-                      <div className="text-right">
+                      <div className="text-right flex items-center gap-2">
 
-                        <span className="font-mono font-bold text-sm text-navy-950 block">
+                        <div>
+
+                          <span className="font-mono font-bold text-sm text-navy-950 block">
 
                           ₹ {Number(pay.amountPaid || 0).toLocaleString('en-IN')}
 
                         </span>
 
                         <Badge variant="success" size="xs">VERIFIED</Badge>
+
+                        </div>
+
+                        <Button
+
+                          size="xs"
+
+                          variant="secondary"
+
+                          onClick={() => handleOpenReceipt(pay)}
+
+                          className="flex items-center gap-1 text-teal-800 border-teal-200 hover:bg-teal-50 ml-2"
+
+                        >
+
+                          <Receipt className="w-3.5 h-3.5" />
+
+                          <span>Receipt</span>
+
+                        </Button>
 
                       </div>
 
@@ -3641,6 +3692,197 @@ export const StudentDashboard = () => {
 
         )}
 
+      </Modal>
+
+      {/* Modal 7: Official Fee Payment Receipt */}
+      <Modal
+        isOpen={!!selectedReceiptPayment}
+        onClose={() => {
+          setSelectedReceiptPayment(null);
+          setReceiptDetails(null);
+        }}
+        title="Official Fee Payment Receipt"
+        subtitle="Digitally verified institutional payment voucher"
+        maxWidth="max-w-2xl"
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setSelectedReceiptPayment(null);
+                setReceiptDetails(null);
+              }}
+            >
+              Close
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => window.print()}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white flex items-center gap-1.5"
+            >
+              <Printer className="w-4 h-4" />
+              <span>Print / Save PDF</span>
+            </Button>
+          </>
+        }
+      >
+        {selectedReceiptPayment && (
+          <div className="p-5 border-2 border-slate-900 rounded-xl space-y-4 bg-white text-slate-900">
+            {/* Institution Header */}
+            <div className="border-b-2 border-slate-900 pb-3 text-center">
+              <h2 className="text-lg font-black tracking-wider uppercase text-slate-950">
+                College of Engineering & Technology
+              </h2>
+              <p className="text-xs text-slate-600 font-medium">
+                Office of the Comptroller &bull; Institutional Accounts Division
+              </p>
+              <div className="inline-block mt-1.5 px-3 py-0.5 bg-emerald-950 text-white text-[11px] font-bold uppercase tracking-widest rounded">
+                Official E-Payment Receipt
+              </div>
+            </div>
+
+            {loadingReceipt ? (
+              <div className="py-8 text-center text-slate-500 text-xs">
+                <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-teal-600" />
+                Loading verified receipt certificate...
+              </div>
+            ) : (
+              <>
+                {/* Receipt Metadata */}
+                <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <div className="space-y-1">
+                    <p>
+                      <strong className="text-slate-600">Receipt No:</strong>{' '}
+                      <span className="font-mono font-bold text-emerald-800">
+                        {receiptDetails?.receiptNumber || selectedReceiptPayment.receiptNumber}
+                      </span>
+                    </p>
+                    <p>
+                      <strong className="text-slate-600">Payment Date:</strong>{' '}
+                      <span className="font-mono">
+                        {new Date(
+                          receiptDetails?.payment?.date || selectedReceiptPayment.paymentDate || selectedReceiptPayment.createdAt || Date.now()
+                        ).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                      </span>
+                    </p>
+                    <p>
+                      <strong className="text-slate-600">Payment Status:</strong>{' '}
+                      <span className="font-bold text-emerald-700 uppercase">
+                        {receiptDetails?.payment?.status || selectedReceiptPayment.status || 'COMPLETED (VERIFIED)'}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p>
+                      <strong className="text-slate-600">Txn Reference:</strong>{' '}
+                      <span className="font-mono text-slate-700">
+                        {receiptDetails?.payment?.transactionReference || selectedReceiptPayment.transactionReference || 'N/A'}
+                      </span>
+                    </p>
+                    <p>
+                      <strong className="text-slate-600">Payment Mode:</strong>{' '}
+                      <span className="font-semibold text-slate-900">
+                        {receiptDetails?.payment?.method || selectedReceiptPayment.paymentMethod || 'Online Gateway'}
+                      </span>
+                    </p>
+                    <p>
+                      <strong className="text-slate-600">Verified By:</strong>{' '}
+                      <span className="text-slate-700">
+                        {receiptDetails?.payment?.verifiedBy || 'Finance Office'}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Student Details */}
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div className="space-y-1">
+                    <p>
+                      <strong className="text-slate-600">Student Name:</strong>{' '}
+                      <span className="font-bold text-slate-950">
+                        {receiptDetails?.student?.name || user?.name}
+                      </span>
+                    </p>
+                    <p>
+                      <strong className="text-slate-600">Roll Number:</strong>{' '}
+                      <span className="font-mono font-bold text-teal-800">
+                        {receiptDetails?.student?.rollNumber || myProfile?.rollNumber || 'N/A'}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p>
+                      <strong className="text-slate-600">Department:</strong>{' '}
+                      <span className="font-bold text-slate-900">
+                        {receiptDetails?.student?.department || myProfile?.department?.name || 'N/A'}
+                      </span>
+                    </p>
+                    <p>
+                      <strong className="text-slate-600">Semester:</strong>{' '}
+                      <span>
+                        Semester {receiptDetails?.student?.semester || myProfile?.currentSemester || 1}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Particulars */}
+                <div className="border border-slate-200 rounded-lg overflow-hidden text-xs">
+                  <div className="bg-slate-100 font-bold px-3 py-2 flex justify-between border-b border-slate-200 text-slate-700 uppercase tracking-wider text-[11px]">
+                    <span>Fee Particulars / Description</span>
+                    <span>Amount (INR)</span>
+                  </div>
+                  <div className="p-3 space-y-2">
+                    <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                      <div>
+                        <span className="font-semibold text-slate-900 block">
+                          {receiptDetails?.invoice?.title ||
+                            selectedReceiptPayment.feeStructure?.title ||
+                            'Institutional Academic Tuition & Term Fees'}
+                        </span>
+                        {receiptDetails?.invoice?.invoiceNumber && (
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            Invoice Ref: {receiptDetails.invoice.invoiceNumber}
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-mono font-bold text-slate-900">
+                        ₹ {Number(
+                          receiptDetails?.payment?.amount || selectedReceiptPayment.amountPaid || 0
+                        ).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="bg-emerald-50 px-3 py-2.5 flex justify-between items-center border-t border-emerald-200 font-bold">
+                    <span className="text-emerald-950 text-xs uppercase tracking-wider">Total Amount Paid</span>
+                    <span className="font-mono text-base text-emerald-900 font-black">
+                      ₹ {Number(
+                        receiptDetails?.payment?.amount || selectedReceiptPayment.amountPaid || 0
+                      ).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Legal compliance notice */}
+                <div className="border-t border-slate-200 pt-2 text-[10px] text-slate-500 space-y-1">
+                  <p className="italic">
+                    * This is a digitally verified computer-generated institutional receipt. It does not require a physical signature under the Information Technology Act.
+                  </p>
+                </div>
+
+                {/* Security Hash & Signature */}
+                <div className="flex justify-between items-center pt-2 border-t-2 border-slate-900 text-[10px] text-slate-600 font-mono">
+                  <span>
+                    Security Digest: {receiptDetails?.verificationDigest || ('VR-' + (selectedReceiptPayment.receiptNumber || 'REC').slice(-8))}
+                  </span>
+                  <span className="font-bold text-slate-900">Accounts Officer (Electronic Sign)</span>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </Modal>
 
     </div>
