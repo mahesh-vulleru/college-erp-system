@@ -751,8 +751,8 @@ export const LibrarianDashboard = () => {
         academicYear="2026 – 2027"
       />
 
-      {/* 2. 5-KPI Cards Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      {/* 2. KPI Cards Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         <DashboardKPICard
           title="Total Titles"
           value={dashboardData?.summary?.totalTitles ?? 12400}
@@ -788,6 +788,18 @@ export const LibrarianDashboard = () => {
           trend="+3.1%"
           trendDirection="up"
           color="purple"
+        />
+        <DashboardKPICard
+          title="Outstanding Fines"
+          value={`₹${(dashboardData?.summary?.unpaidFinesTotal || 0).toLocaleString('en-IN')}`}
+          icon={CreditCard}
+          trend={
+            dashboardData?.summary?.studentsWithPendingFines !== undefined
+              ? `${dashboardData.summary.studentsWithPendingFines} student${dashboardData.summary.studentsWithPendingFines === 1 ? '' : 's'} with dues`
+              : 'Pending Dues'
+          }
+          trendDirection="down"
+          color="rose"
         />
       </div>
 
@@ -900,8 +912,12 @@ export const LibrarianDashboard = () => {
             />
             <StatWidget
               title="Unpaid Fines"
-              value={`₹${dashboardData?.summary?.unpaidFinesTotal ?? 0}`}
-              subtitle="Pending Dues"
+              value={`₹${(dashboardData?.summary?.unpaidFinesTotal || 0).toLocaleString('en-IN')}`}
+              subtitle={
+                dashboardData?.summary?.studentsWithPendingFines !== undefined
+                  ? `${dashboardData.summary.studentsWithPendingFines} student${dashboardData.summary.studentsWithPendingFines === 1 ? '' : 's'} with dues`
+                  : 'Pending Dues'
+              }
               icon={DollarSign}
               color="amber"
             />

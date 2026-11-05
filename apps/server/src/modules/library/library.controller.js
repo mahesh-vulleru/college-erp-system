@@ -77,8 +77,17 @@ async function getLibraryDashboard(req, res, next) {
     const overdueIssues = activeIssues.filter((i) => i.dueDate && new Date(i.dueDate) < now);
     const overdueCount = overdueIssues.length;
 
-    // Total pending fines amount
-    const pendingFinesAmount = pendingFinesDocs.reduce((sum, f) => sum + (f.amount || 0) - (f.paidAmount || 0) - (f.waivedAmount || 0), 0);
+    // Total pending fines amount and students with pending fines
+    const pendingFinesAmount = pendingFinesDocs.reduce((sum, f) => sum + Math.max(0, (f.amount || 0) - (f.paidAmount || 0) - (f.waivedAmount || 0)), 0);
+    const distinctFineStudents = new Set(
+      pendingFinesDocs
+        .map((f) => (f.user?.toString() || f.member?.toString() || (f._id ? f._id.toString() : null)))
+        .filter(Boolean)
+    );
+    const studentsWithPendingFines = distinctFineStudents.size > 0
+      ? distinctFineStudents.size
+      : (pendingFinesDocs.length > 0 ? pendingFinesDocs.length : 0);
+    const pendingFinesCount = pendingFinesDocs.length;
 
     // Popular Books (top 5 by issue frequency)
     const popularAgg = await BookIssue.aggregate([
@@ -162,6 +171,8 @@ async function getLibraryDashboard(req, res, next) {
           overdueIssues: overdueCount,
           totalMembers,
           unpaidFinesTotal: pendingFinesAmount,
+          studentsWithPendingFines,
+          pendingFinesCount,
           pendingReservations
         },
         totalBooks,
@@ -172,6 +183,8 @@ async function getLibraryDashboard(req, res, next) {
         totalMembers,
         pendingReservations,
         pendingFinesAmount,
+        studentsWithPendingFines,
+        pendingFinesCount,
         categoriesCount,
         digitalCount,
         recentTransactions,
