@@ -147,10 +147,24 @@ export const LibraryStaffDashboard = () => {
   const fetchDashboard = useCallback(async () => {
     setIsDashboardLoading(true);
     try {
-      const res = await api.getStaffDashboard();
-      if (res.success) {
-        setDashboardData(res.data);
+      const [staffRes, generalRes] = await Promise.allSettled([
+        api.getStaffDashboard(),
+        api.getLibraryDashboard()
+      ]);
+      const data = {};
+      if (staffRes.status === 'fulfilled' && staffRes.value?.success) {
+        Object.assign(data, staffRes.value.data);
       }
+      if (generalRes.status === 'fulfilled' && generalRes.value?.success) {
+        const genSummary = generalRes.value.data?.summary || {};
+        data.summary = {
+          ...data.summary,
+          unpaidFinesTotal: genSummary.unpaidFinesTotal ?? 0,
+          studentsWithPendingFines: genSummary.studentsWithPendingFines ?? 0,
+          pendingFinesCount: genSummary.pendingFinesCount ?? 0
+        };
+      }
+      setDashboardData(data);
     } catch (err) {
       console.error('Error fetching staff dashboard:', err);
     } finally {
@@ -672,12 +686,16 @@ export const LibraryStaffDashboard = () => {
           color="rose"
         />
         <DashboardKPICard
-          title="Fines Collected"
-          value="₹ 750"
+          title="Outstanding Fines"
+          value={`₹${(dashboardData?.summary?.unpaidFinesTotal || 0).toLocaleString('en-IN')}`}
           icon={CreditCard}
-          trend="Reconciled"
-          trendDirection="up"
-          color="purple"
+          trend={
+            dashboardData?.summary?.studentsWithPendingFines !== undefined
+              ? `${dashboardData.summary.studentsWithPendingFines} student${dashboardData.summary.studentsWithPendingFines === 1 ? '' : 's'} with dues`
+              : 'Pending Dues'
+          }
+          trendDirection="down"
+          color="rose"
         />
       </div>
 
