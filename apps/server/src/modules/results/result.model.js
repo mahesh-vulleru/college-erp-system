@@ -44,12 +44,41 @@ const resultSchema = new mongoose.Schema(
       type: String,
       enum: ['passed', 'failed', 'absent', 'withheld'],
       default: 'passed'
+    },
+    verificationStatus: {
+      type: String,
+      enum: ['pending_verification', 'verified', 'flagged'],
+      default: 'pending_verification'
+    },
+    verifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    verifiedAt: {
+      type: Date
+    },
+    discrepancyNotes: {
+      type: String,
+      trim: true
+    },
+    isPublished: {
+      type: Boolean,
+      default: false
+    },
+    publishedAt: {
+      type: Date
+    },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
     }
   },
   { timestamps: true }
 );
 
 resultSchema.index({ examination: 1, student: 1, subject: 1 }, { unique: true });
+resultSchema.index({ examination: 1, isPublished: 1 });
+resultSchema.index({ examination: 1, verificationStatus: 1 });
 
 const Result = mongoose.model('Result', resultSchema);
 

@@ -3,7 +3,12 @@ const {
   getResults,
   recordResult,
   batchRecordResults,
-  getAcademicInsights
+  getAcademicInsights,
+  verifyResult,
+  batchVerifyResults,
+  processResults,
+  publishResults,
+  unpublishResults
 } = require('./result.controller');
 const { validateResultInput } = require('./result.validator');
 const authenticate = require('../../middleware/auth');
@@ -28,10 +33,45 @@ router.get(
   getAcademicInsights
 );
 
+// Batch verify marks (Examination Controller / HOD / Principal)
+router.post(
+  '/batch-verify',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  batchVerifyResults
+);
+
+// Results processing - audit completeness and recalculate stats
+router.post(
+  '/process/:examinationId',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  processResults
+);
+
+// Publish results to student portal
+router.post(
+  '/publish/:examinationId',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  publishResults
+);
+
+// Rollback / unpublish results
+router.post(
+  '/unpublish/:examinationId',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD),
+  unpublishResults
+);
+
 router.get(
   '/',
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY, ROLES.STUDENT),
   getResults
+);
+
+// Single result verification sign-off or flagging
+router.put(
+  '/:id/verify',
+  authorizeRoles(ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.HOD, ROLES.FACULTY),
+  verifyResult
 );
 
 // Marks entry restricted to Faculty, HOD, and Principal

@@ -13,6 +13,8 @@ async function getResults(req, res, next) {
     if (req.query.examination) query.examination = req.query.examination;
     if (req.query.student) query.student = req.query.student;
     if (req.query.subject) query.subject = req.query.subject;
+    if (req.query.verificationStatus) query.verificationStatus = req.query.verificationStatus;
+    if (req.query.isPublished !== undefined) query.isPublished = req.query.isPublished === 'true';
 
     // Security invariant: Students can ONLY query their own results AND only for published exams!
     if (req.user.role === ROLES.STUDENT) {
@@ -25,10 +27,11 @@ async function getResults(req, res, next) {
         });
       }
       query.student = profile._id;
+      query.isPublished = true;
 
       // Find published and active exams only
       const publishedExams = await Examination.find({
-        isPublished: true,
+        $or: [{ isPublished: true }, { isResultsPublished: true }],
         status: { $ne: 'cancelled' }
       }).select('_id');
       const publishedExamIds = publishedExams.map((e) => e._id);
@@ -60,13 +63,15 @@ async function getResults(req, res, next) {
     }
 
     const results = await Result.find(query)
-      .populate('examination', 'name examType academicYear semester isPublished status')
+      .populate('examination', 'name examType academicYear semester isPublished isResultsPublished status')
       .populate('subject', 'name code credits isLab')
       .populate({
         path: 'student',
         select: 'rollNumber enrollmentNumber batchYear currentSemester',
         populate: { path: 'user', select: 'name email' }
       })
+      .populate('verifiedBy', 'name email role')
+      .populate('approvedBy', 'name email role')
       .sort({ createdAt: -1 });
 
     return sendSuccess(res, {
@@ -247,7 +252,12 @@ module.exports = {
   getResults,
   recordResult,
   batchRecordResults,
-  getAcademicInsights
+  getAcademicInsights,
+  verifyResult,
+  batchVerifyResults,
+  processResults,
+  publishResults,
+  unpublishResults
 };
 
 /**
@@ -420,6 +430,311 @@ async function getAcademicInsights(req, res, next) {
         },
         students: insights
       }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * PUT /api/v1/results/:id/verify
+ * Verification desk single result sign-off or discrepancy flagging
+ */
+async function verifyResult(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { verificationStatus, discrepancyNotes } = req.body;
+    if (!['verified', 'flagged', 'pending_verification'].includes(verificationStatus)) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: 'Invalid verificationStatus. Allowed: verified, flagged, pending_verification',
+        code: 'INVALID_STATUS'
+      });
+    }
+
+    const updated = await Result.findByIdAndUpdate(
+      id,
+      {
+        verificationStatus,
+        discrepancyNotes: discrepancyNotes || '',
+        verifiedBy: req.user._id,
+        verifiedAt: new Date()
+      },
+      { new: true }
+    )
+      .populate('examination', 'name examType academicYear')
+      .populate('subject', 'name code credits')
+      .populate({
+        path: 'student',
+        select: 'rollNumber enrollmentNumber',
+        populate: { path: 'user', select: 'name email' }
+      })
+      .populate('verifiedBy', 'name email role');
+
+    if (!updated) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        message: 'Result entry not found',
+        code: 'RESULT_NOT_FOUND'
+      });
+    }
+
+    return sendSuccess(res, {
+      message: `Result marked as ${verificationStatus}`,
+      data: updated
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * POST /api/v1/results/batch-verify
+ * Batch verify or flag multiple results
+ */
+async function batchVerifyResults(req, res, next) {
+  try {
+    const { resultIds, examination, subject, verificationStatus = 'verified' } = req.body;
+    if (!['verified', 'flagged', 'pending_verification'].includes(verificationStatus)) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: 'Invalid verificationStatus',
+        code: 'INVALID_STATUS'
+      });
+    }
+
+    const query = {};
+    if (Array.isArray(resultIds) && resultIds.length > 0) {
+      query._id = { $in: resultIds };
+    } else if (examination) {
+      query.examination = examination;
+      if (subject) query.subject = subject;
+    } else {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: 'Either resultIds or examination must be specified',
+        code: 'INVALID_PARAMETERS'
+      });
+    }
+
+    const updateRes = await Result.updateMany(query, {
+      $set: {
+        verificationStatus,
+        verifiedBy: req.user._id,
+        verifiedAt: new Date()
+      }
+    });
+
+    return sendSuccess(res, {
+      message: `Batch verification updated ${updateRes.modifiedCount} records to ${verificationStatus}`,
+      data: { modifiedCount: updateRes.modifiedCount }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * POST /api/v1/results/process/:examinationId
+ * Audit exam results, recalculate grades, compute statistics
+ */
+async function processResults(req, res, next) {
+  try {
+    const examinationId = req.params.examinationId || req.body.examinationId;
+    if (!examinationId) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: 'Examination ID is required',
+        code: 'MISSING_EXAM_ID'
+      });
+    }
+
+    const exam = await Examination.findById(examinationId);
+    if (!exam) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        message: 'Examination not found',
+        code: 'EXAM_NOT_FOUND'
+      });
+    }
+
+    const results = await Result.find({ examination: examinationId }).populate('subject', 'credits name code');
+    if (results.length === 0) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: 'No result entries exist for this examination to process',
+        code: 'NO_RESULTS_FOUND'
+      });
+    }
+
+    let verifiedCount = 0;
+    let pendingCount = 0;
+    let flaggedCount = 0;
+    let passCount = 0;
+    let failCount = 0;
+
+    const bulkOps = [];
+    for (const r of results) {
+      if (r.verificationStatus === 'verified') verifiedCount++;
+      else if (r.verificationStatus === 'flagged') flaggedCount++;
+      else pendingCount++;
+
+      // synchronize totalMarks & grade
+      const totalMarks = (r.internalMarks || 0) + (r.externalMarks || 0);
+      let grade = 'F';
+      let status = 'failed';
+      if (r.status === 'absent') {
+        grade = 'AB';
+        status = 'absent';
+      } else if (r.status === 'withheld') {
+        grade = 'F';
+        status = 'withheld';
+      } else {
+        if (totalMarks >= 90) { grade = 'O'; status = 'passed'; }
+        else if (totalMarks >= 80) { grade = 'A+'; status = 'passed'; }
+        else if (totalMarks >= 70) { grade = 'A'; status = 'passed'; }
+        else if (totalMarks >= 60) { grade = 'B+'; status = 'passed'; }
+        else if (totalMarks >= 50) { grade = 'B'; status = 'passed'; }
+        else if (totalMarks >= 40) { grade = 'C'; status = 'passed'; }
+        else { grade = 'F'; status = 'failed'; }
+      }
+
+      if (status === 'passed') passCount++;
+      else failCount++;
+
+      bulkOps.push({
+        updateOne: {
+          filter: { _id: r._id },
+          update: { $set: { totalMarks, grade, status } }
+        }
+      });
+    }
+
+    if (bulkOps.length > 0) {
+      await Result.bulkWrite(bulkOps);
+    }
+
+    const totalStudents = new Set(results.map((r) => r.student.toString())).size;
+    const totalSubjects = new Set(results.map((r) => r.subject?._id?.toString() || r.subject?.toString())).size;
+    const passPercentage = results.length > 0 ? Math.round((passCount / results.length) * 100) : 0;
+
+    return sendSuccess(res, {
+      message: 'Examination results processed successfully',
+      data: {
+        examinationId,
+        examinationName: exam.name,
+        totalEntries: results.length,
+        totalStudents,
+        totalSubjects,
+        verifiedCount,
+        pendingCount,
+        flaggedCount,
+        passCount,
+        failCount,
+        passPercentage,
+        isReadyForPublication: pendingCount === 0 && flaggedCount === 0
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * POST /api/v1/results/publish/:examinationId
+ * Make verified marks visible to students/parents on student portal
+ */
+async function publishResults(req, res, next) {
+  try {
+    const examinationId = req.params.examinationId || req.body.examinationId;
+    if (!examinationId) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: 'Examination ID is required',
+        code: 'MISSING_EXAM_ID'
+      });
+    }
+
+    const exam = await Examination.findById(examinationId);
+    if (!exam) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        message: 'Examination not found',
+        code: 'EXAM_NOT_FOUND'
+      });
+    }
+
+    const flaggedCount = await Result.countDocuments({
+      examination: examinationId,
+      verificationStatus: 'flagged'
+    });
+    if (flaggedCount > 0 && !req.body.overrideFlagged) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: `Cannot publish results: ${flaggedCount} results have verification flags. Resolve flags or specify overrideFlagged: true`,
+        code: 'FLAGGED_RESULTS_EXIST'
+      });
+    }
+
+    const now = new Date();
+    const resultUpdate = await Result.updateMany(
+      { examination: examinationId },
+      {
+        $set: {
+          isPublished: true,
+          publishedAt: now,
+          approvedBy: req.user._id
+        }
+      }
+    );
+
+    exam.isPublished = true;
+    exam.isResultsPublished = true;
+    exam.resultsPublishedAt = now;
+    exam.resultsApprovedBy = req.user._id;
+    await exam.save();
+
+    return sendSuccess(res, {
+      message: `Results for examination "${exam.name}" successfully published to student portal`,
+      data: {
+        examinationId,
+        publishedCount: resultUpdate.modifiedCount,
+        publishedAt: now
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * POST /api/v1/results/unpublish/:examinationId
+ * Unpublish results in case of administrative review
+ */
+async function unpublishResults(req, res, next) {
+  try {
+    const examinationId = req.params.examinationId || req.body.examinationId;
+    const exam = await Examination.findById(examinationId);
+    if (!exam) {
+      return sendError(res, {
+        statusCode: HTTP_STATUS.NOT_FOUND,
+        message: 'Examination not found',
+        code: 'EXAM_NOT_FOUND'
+      });
+    }
+
+    await Result.updateMany(
+      { examination: examinationId },
+      { $set: { isPublished: false } }
+    );
+
+    exam.isPublished = false;
+    exam.isResultsPublished = false;
+    await exam.save();
+
+    return sendSuccess(res, {
+      message: `Results for examination "${exam.name}" have been unpublished`,
+      data: { examinationId, isPublished: false }
     });
   } catch (error) {
     next(error);

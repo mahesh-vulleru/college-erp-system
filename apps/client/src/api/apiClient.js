@@ -586,8 +586,100 @@ class ApiClient {
     const searchParams = new URLSearchParams();
     if (params.examination) searchParams.append('examination', params.examination);
     if (params.student) searchParams.append('student', params.student);
+    if (params.subject) searchParams.append('subject', params.subject);
+    if (params.verificationStatus) searchParams.append('verificationStatus', params.verificationStatus);
+    if (params.isPublished !== undefined) searchParams.append('isPublished', params.isPublished);
     const qs = searchParams.toString();
     return this.get(`/v1/results${qs ? `?${qs}` : ''}`);
+  }
+
+  // Examination Controller Intelligence & Operations
+  getExamControllerStats() {
+    return this.get('/v1/examinations/controller/stats');
+  }
+
+  checkExamClashes(data) {
+    return this.post('/v1/examinations/check-clash', data);
+  }
+
+  updateExamSchedules(id, schedules) {
+    return this.put(`/v1/examinations/${id}/schedules`, { schedules });
+  }
+
+  getExamReportsSummary(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.examination) searchParams.append('examination', params.examination);
+    const qs = searchParams.toString();
+    return this.get(`/v1/examinations/reports/summary${qs ? `?${qs}` : ''}`);
+  }
+
+  getExamRegistrations(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.examination) searchParams.append('examination', params.examination);
+    if (params.student) searchParams.append('student', params.student);
+    if (params.eligibilityStatus) searchParams.append('eligibilityStatus', params.eligibilityStatus);
+    const qs = searchParams.toString();
+    return this.get(`/v1/examinations/registrations${qs ? `?${qs}` : ''}`);
+  }
+
+  registerForExam(data) {
+    return this.post('/v1/examinations/registrations', data);
+  }
+
+  evaluateExamEligibility(id) {
+    return this.post(`/v1/examinations/${id}/evaluate-eligibility`);
+  }
+
+  condoneShortage(registrationId, data) {
+    return this.put(`/v1/examinations/registrations/${registrationId}/condone`, data);
+  }
+
+  generateHallTickets(id, data = {}) {
+    return this.post(`/v1/examinations/${id}/generate-hall-tickets`, data);
+  }
+
+  getHallTickets(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.examination) searchParams.append('examination', params.examination);
+    if (params.student) searchParams.append('student', params.student);
+    const qs = searchParams.toString();
+    return this.get(`/v1/examinations/hall-tickets${qs ? `?${qs}` : ''}`);
+  }
+
+  getHallTicketById(id) {
+    return this.get(`/v1/examinations/hall-tickets/${id}`);
+  }
+
+  getExamAttendance(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.examination) searchParams.append('examination', params.examination);
+    if (params.subject) searchParams.append('subject', params.subject);
+    const qs = searchParams.toString();
+    return this.get(`/v1/examinations/attendance${qs ? `?${qs}` : ''}`);
+  }
+
+  recordExamAttendanceBatch(data) {
+    return this.post('/v1/examinations/attendance/batch', data);
+  }
+
+  verifyResult(id, data) {
+    return this.put(`/v1/results/${id}/verify`, data);
+  }
+
+  batchVerifyResults(data) {
+    return this.post('/v1/results/batch-verify', data);
+  }
+
+  processExamResults(id) {
+    return this.post(`/v1/results/process/${id}`);
+  }
+
+  publishExamResults(id, data = {}) {
+    return this.post(`/v1/results/publish/${id}`, data);
+  }
+
+  unpublishExamResults(id) {
+    return this.post(`/v1/results/unpublish/${id}`);
   }
 
   getAttendance(params = {}) {

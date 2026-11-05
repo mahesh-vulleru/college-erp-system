@@ -53,10 +53,78 @@ const examSchema = new mongoose.Schema(
       type: String,
       enum: ['scheduled', 'ongoing', 'completed', 'cancelled'],
       default: 'scheduled'
+    },
+    schedules: [
+      {
+        subject: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Subject',
+          required: true
+        },
+        date: {
+          type: Date,
+          required: true
+        },
+        startTime: {
+          type: String,
+          required: true,
+          default: '09:30'
+        },
+        endTime: {
+          type: String,
+          required: true,
+          default: '12:30'
+        },
+        venue: {
+          type: String,
+          default: 'Main Examination Hall'
+        },
+        roomNumber: {
+          type: String,
+          default: 'Hall A'
+        },
+        maxCapacity: {
+          type: Number,
+          default: 60
+        },
+        invigilator: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User'
+        }
+      }
+    ],
+    registrationDeadline: {
+      type: Date
+    },
+    attendanceCutoffPercentage: {
+      type: Number,
+      default: 75,
+      min: 0,
+      max: 100
+    },
+    isResultsPublished: {
+      type: Boolean,
+      default: false
+    },
+    resultsPublishedAt: {
+      type: Date
+    },
+    resultsApprovedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    instructions: {
+      type: String,
+      trim: true
     }
   },
   { timestamps: true }
 );
+
+examSchema.index({ status: 1, startDate: 1 });
+examSchema.index({ academicYear: 1, semester: 1 });
+examSchema.index({ department: 1 });
+examSchema.index({ isResultsPublished: 1 });
 
 const Examination = mongoose.model('Examination', examSchema);
 
